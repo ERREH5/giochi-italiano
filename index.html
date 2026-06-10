@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Mini Giochi Italiano</title>
+
+<style>
+body {
+  font-family: Arial;
+  text-align: center;
+  background: linear-gradient(135deg,#74ebd5,#acb6e5);
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  margin: 20px auto;
+  width: 400px;
+  border-radius: 15px;
+  box-shadow: 0 5px 12px rgba(0,0,0,0.2);
+}
+
+button {
+  padding: 10px;
+  margin: 5px;
+  border: none;
+  border-radius: 10px;
+  background:#3498db;
+  color:white;
+  cursor:pointer;
+}
+button:hover { background:#2ecc71; }
+
+img { width:200px; border-radius:10px; }
+
+.word {
+  font-size:22px;
+  letter-spacing:5px;
+}
+
+/* memory */
+.memory {
+  display:grid;
+  grid-template-columns: repeat(4,1fr);
+  gap:10px;
+}
+
+/* ✅ MODIFICA QUI (fix definitivo) */
+.memory div {
+  background:#3498db;
+  height:80px;
+  border-radius:10px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:white;
+  cursor:pointer;
+  overflow:hidden;              /* ← evita uscita immagine */
+}
+
+/* ✅ AGGIUNTO QUESTO (fondamentale) */
+.memory img {
+  width:100%;
+  height:100%;
+  object-fit: cover;
+  border-radius:10px;
+}
+
+.revealed {
+  background:white !important;
+  color:black !important;
+}
+
+.memory div:not(.revealed):hover {
+  background: #2ecc71;
+  transform: scale(1.05);
+}
+
+.correct {
+  background: #2ecc71 !important; /* verde */
+}
+
+.wrong {
+  background: #e74c3c !important; /* rosso */
+}
+
+.day-box {
+  width:40px;
+  height:40px;
+  background:#3498db;
+  color:white;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  border-radius:8px;
+  font-weight:bold;
+}
+
+.active-day {
+  background:#2ecc71 !important;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>🎮 Mini Giochi Italiano</h1>
+
+<!-- GIOCO 1 -->
+<div class="card">
+<h1>Verbo</h1>
+<h2>Essere o Avere</h2>
+<p id="q1"></p>
+<div id="b1"></div>
+<button onclick="newQ1()">Skip</button>
+</div>
+
+<!-- GIOCO 2 -->
+<div class="card">
+<h1>Verbi Regolari</h1>
+<h2>ARE • ERE • IRE</h2>
+<p id="q2"></p>
+<div id="b2"></div>
+<button onclick="newQ2()">Skip</button>
+</div>
+
+<!-- GIOCO 3 -->
+<div class="card">
+<h2>Che cosa vedi?</h2>
+<img id="imgHint">
+<div id="word" class="word"></div>
+<div id="letters"></div>
+<p id="res"></p>
+<button onclick="newGame()">Avanti</button>
+</div>
+
+<!-- GIOCO 4 -->
+<div class="card">
+<h2>🧠 Memory</h2>
+<div class="memory" id="memory"></div>
+<p id="memResult"></p>
+<button onclick="initMemory()">Nuovo</button>
+</div>
+
+<!-- GIOCO 5 -->
+<div class="card">
+<h2>⚡ Verbi Irregolari</h2>
+<p id="q5"></p>
+<div id="b5"></div>
+<button onclick="newQ5()">Skip</button>
+</div>
+
+<!-- GIOCO 6 -->
+<div class="card">
+  <h2>Scegli la parola giusta</h2>
+  <img id="img6">
+  <div id="b6"></div>
+  <p id="res6"></p>
+  <button onclick="newQ6()">Avanti</button>
+</div>
+
+<!-- GIOCO 7 -->
+<div class="card">
+  <h2>🎨 Colori in Italiano</h2>
+  <div id="colorBox7" style="width:120px;height:120px;margin:15px auto;border-radius:15px;border:3px solid #ddd;"></div>
+  <p id="q7"></p>
+  <div id="b7"></div>
+  <button id="skip7" onclick="newQ7()">Skip</button>
+</div>
+
+<!-- GIOCO 8 -->
+<div class="card">
+  <h2>🔢 Numeri in Italiano</h2>
+  <p id="numBox8" style="font-size:48px;font-weight:bold;margin:20px 0;color:#2c3e50;"></p>
+  <p id="q8"></p>
+  <div id="b8"></div>
+  <button id="skip8" onclick="newQ8()">Skip</button>
+</div>
+
+<!-- GIOCO 9 -->
+<div class="card">
+  <h2>✏️ Participio Passato</h2>
+  <p id="q9" style="font-size:22px;font-weight:bold;"></p>
+  <div id="word9" class="word"></div>
+  <div id="letters9"></div>
+  <p id="res9"></p>
+  <button onclick="newQ9()">Avanti</button>
+</div>
+
+<!-- GIOCO 10 -->
+<div class="card">
+  <h1>Passato Prossimo</h1>
+  <h2>⚖️ Essere o Avere?</h2>
+  <p id="q10"></p>
+  <div id="b10"></div>
+  <button id="skip10" onclick="newQ10()">Skip</button>
+</div>
+
+<!-- GIOCO 11 -->
+<div class="card">
+  <h2>💛 Mi piace o Mi piacciono?</h2>
+  <p id="q11"></p>
+  <div id="b11"></div>
+  <button id="skip11" onclick="newQ11()">Skip</button>
+</div>
+
+<!-- GIOCO 12 -->
+<div class="card">
+  <h2>📅 Giorni della settimana</h2>
+
+  <div id="daysBar" style="display:flex;justify-content:center;gap:5px;margin-bottom:15px;"></div>
+
+  <p id="q12"></p>
+  <div id="b12"></div>
+  <button id="skip12" onclick="newQ12()">Skip</button>
+</div>
+
+<div class="card">
+  <h2>👨‍👩‍👧‍👦 Pronomi Possessivi</h2>
+  <p id="q13"></p>
+  <div id="b13"></div>
+  <button onclick="newQ13()">Avanti</button>
+</div>
+
+<!-- GIOCO 14 -->
+<div class="card">
+  <h2>🧳 Oggetti personali</h2>
+  <img id="img14">
+  <p id="q14"></p>
+  <div id="b14"></div>
+  <button id="skip14" onclick="newQ14()">Skip</button>
+</div>
+
+<!-- GIOCO 15 -->
+<div class="card">
+  <h2>📍 In o al?</h2>
+  <p id="q15"></p>
+  <div id="b15"></div>
+  <button id="skip15" onclick="newQ15()">Skip</button>
+</div>
+
+<script>
+
+// -------- NO RIPETIZIONI --------
+function pickRandom(arr, used){
+  let available = arr.filter(x => !used.includes(x));
+  if(available.length === 0){ used.length=0; available=arr; }
+  let val = available[Math.floor(Math.random()*available.length)];
+  used.push(val);
+  return val;
+}
+
+// -------- GIOCO 1 --------
+const g1Data = [
+{subject:'Io', essere:'sono', avere:'ho'},
+{subject:'Tu', essere:'sei', avere:'hai'},
+{subject:'Lui/Lei', essere:'è', avere:'ha'},
+{subject:'Noi', essere:'siamo', avere:'abbiamo'},
+{subject:'Voi', essere:'siete', avere:'avete'},
+{subject:'Loro', essere:'sono', avere:'hanno'}
+];
+
+let used1=[], correct1;
+
+function newQ1(){
+  let curr = pickRandom(g1Data, used1);
+  let type = Math.random()>0.5?'essere':'avere';
+  correct1 = curr[type];
+
+  document.getElementById('q1').innerText = curr.subject + ' ('+type+')';
+
+  let all = ['sono','sei','è','siamo','siete','ho','hai','ha','abbiamo','avete','hanno'];
+  let options=[correct1];
+
+  while(options.length<4){
+    let r=all[Math.random()*all.length|0];
+    if(!options.includes(r)) options.push(r);
+  }
+
+  options.sort(()=>Math.random()-0.5);
+
+  document.getElementById('b1').innerHTML =
+    options.map(o=>`<button onclick="check1('${o}')">${o}</button>`).join('');
+}
+
+function check1(v){
+  document.getElementById('q1').innerText += v===correct1?' ✅':' ❌';
+  setTimeout(newQ1,800);
+}
+
+// -------- GIOCO 2 --------
+const verbs = [
+{inf:'mangiare', forms:['mangio','mangi','mangia','mangiamo','mangiate','mangiano']},
+{inf:'credere', forms:['credo','credi','crede','crediamo','credete','credono']},
+{inf:'dormire', forms:['dormo','dormi','dorme','dormiamo','dormite','dormono']}
+];
+
+const subj=['Io','Tu','Lui/Lei','Noi','Voi','Loro'];
+let used2=[], correct2;
+
+function newQ2(){
+  let v = pickRandom(verbs, used2);
+  let i = Math.random()*6|0;
+
+  correct2 = v.forms[i];
+  document.getElementById('q2').innerText = subj[i]+' ('+v.inf+')';
+
+  let options=[...v.forms].sort(()=>Math.random()-0.5).slice(0,4);
+  if(!options.includes(correct2)) options[0]=correct2;
+
+  document.getElementById('b2').innerHTML =
+    options.map(o=>`<button onclick="check2('${o}')">${o}</button>`).join('');
+}
+
+function check2(v){
+  document.getElementById('q2').innerText += v===correct2?' ✅':' ❌';
+  setTimeout(newQ2,800);
+}
+
+// -------- IMPICCATO --------
+const words=[
+{word:'tavolo',img:'images/tavolo.jpg'},
+{word:'letto',img:'images/letto.jpg'},
+{word:'porta',img:'images/porta.jpg'},
+{word:'cucina',img:'images/cucina.jpg'},
+{word:'scala',img:'images/scala.jpg'},
+{word:'pavimento',img:'images/pavimento.jpg'},
+{word:'scrivania',img:'images/scrivania.jpg'},
+{word:'frigorifero',img:'images/frigorifero.jpg'},
+{word:'forno',img:'images/forno.jpg'},
+{word:'piatto',img:'images/piatto.jpg'},
+{word:'forchetta',img:'images/forchetta.jpg'},
+{word:'coltello',img:'images/coltello.jpg'},
+{word:'cucchiaio',img:'images/cucchiaio.jpg'},
+{word:'bicchiere',img:'images/bicchiere.jpg'},
+{word:'doccia',img:'images/doccia.jpg'},
+{word:'specchio',img:'images/specchio.jpg'},
+{word:'libreria',img:'images/libreria.jpg'},
+{word:'divano',img:'images/divano.jpg'},
+{word:'lavatrice',img:'images/lavatrice.jpg'}
+];
+
+let used3=[], selected, guessed=[];
+
+function newGame(){
+selected = pickRandom(words, used3);
+  guessed=[];
+
+  document.getElementById('res').innerText=''; // ✅ reset
+  document.getElementById('imgHint').src=selected.img;
+
+  draw();
+  createLetters();
+}
+
+function draw(){
+  document.getElementById('word').innerText =
+    selected.word.split('').map(l=>guessed.includes(l)?l:'_').join(' ');
+}
+
+function createLetters(){
+  let a='abcdefghijklmnopqrstuvwxyz';
+  document.getElementById('letters').innerHTML =
+    [...a].map(l=>`<button onclick="guess('${l}')">${l}</button>`).join('');
+}
+
+function guess(l){
+  if(guessed.includes(l)) return;
+
+  guessed.push(l);
+
+  // trova il bottone corrispondente alla lettera
+  const btns = document.querySelectorAll('#letters button');
+
+  btns.forEach(btn => {
+    if(btn.innerText === l){
+      if(selected.word.includes(l)){
+        btn.classList.add('correct'); // verde
+      } else {
+        btn.classList.add('wrong');   // rosso
+      }
+      btn.disabled = true;
+    }
+  });
+
+  draw();
+
+  // controllo vittoria
+  if(!document.getElementById('word').innerText.includes('_')){
+    document.getElementById('res').innerText='🎉 Bravo/a! Clicca Avanti';
+    document.getElementById('letters').innerHTML = ''; // blocca tutto
+  }
+}
+
+document.addEventListener('keydown',e=>{
+  let l=e.key.toLowerCase();
+  if(l.match(/^[a-z]$/)) guess(l);
+});
+
+// -------- MEMORY --------
+const pairs=[
+{word:'tavolo',img:'images/tavolo.jpg'},
+{word:'letto',img:'images/letto.jpg'},
+{word:'porta',img:'images/porta.jpg'},
+{word:'cucina',img:'images/cucina.jpg'},
+{word:'scala',img:'images/scala.jpg'},
+{word:'pavimento',img:'images/pavimento.jpg'},
+{word:'scrivania',img:'images/scrivania.jpg'},
+{word:'frigorifero',img:'images/frigorifero.jpg'},
+{word:'forno',img:'images/forno.jpg'},
+{word:'piatto',img:'images/piatto.jpg'},
+{word:'forchetta',img:'images/forchetta.jpg'},
+{word:'coltello',img:'images/coltello.jpg'},
+{word:'cucchiaio',img:'images/cucchiaio.jpg'},
+{word:'bicchiere',img:'images/bicchiere.jpg'},
+{word:'doccia',img:'images/doccia.jpg'},
+{word:'specchio',img:'images/specchio.jpg'},
+{word:'libreria',img:'images/libreria.jpg'},
+{word:'divano',img:'images/divano.jpg'},
+{word:'lavatrice',img:'images/lavatrice.jpg'}
+];
+
+let cards=[], selectedCards=[];
+
+function initMemory(){
+  cards=[];
+  selectedCards=[];
+
+  pairs.forEach(p=>{
+    cards.push({type:'text',v:p.word,m:p.word});
+    cards.push({type:'img',v:p.img,m:p.word});
+  });
+
+  cards.sort(()=>Math.random()-0.5);
+
+  document.getElementById('memory').innerHTML=
+ cards.map((c,i)=>`<div id="c${i}" onclick="flip(${i})">${i+1}</div>`).join('');
+}
+
+function flip(i){
+  if(selectedCards.length===2) return;
+
+  let c=cards[i];
+  let el=document.getElementById('c'+i);
+
+  if(el.classList.contains('revealed')) return;
+
+  if(c.type==='text') el.innerText=c.v;
+  else el.innerHTML=`<img src=\"${c.v}\">`;
+
+  el.classList.add('revealed');
+  selectedCards.push({i,c});
+
+  if(selectedCards.length===2) setTimeout(checkMem,800);
+}
+
+function checkMem(){
+  let [a,b]=selectedCards;
+
+  if(!(a.c.m===b.c.m && a.c.type!==b.c.type)){
+    document.getElementById('c'+a.i).innerText = a.i + 1;
+    document.getElementById('c'+b.i).innerText = b.i + 1;
+    document.getElementById('c'+a.i).classList.remove('revealed');
+    document.getElementById('c'+b.i).classList.remove('revealed');
+  }
+
+  selectedCards=[];
+}
+
+// -------- GIOCO 5 --------
+const irregulars = [
+{inf:'andare', forms:['vado','vai','va','andiamo','andate','vanno']},
+{inf:'venire', forms:['vengo','vieni','viene','veniamo','venite','vengono']},
+{inf:'uscire', forms:['esco','esci','esce','usciamo','uscite','escono']},
+{inf:'fare', forms:['faccio','fai','fa','facciamo','fate','fanno']},
+{inf:'dare', forms:['do','dai','dà','diamo','date','danno']},
+{inf:'potere', forms:['posso','puoi','può','possiamo','potete','possono']},
+{inf:'volere', forms:['voglio','vuoi','vuole','vogliamo','volete','vogliono']},
+{inf:'dovere', forms:['devo','devi','deve','dobbiamo','dovete','devono']},
+{inf:'sapere', forms:['so','sai','sa','sappiamo','sapete','sanno']},
+{inf:'bere', forms:['bevo','bevi','beve','beviamo','bevete','bevono']}
+];
+
+let used5 = [], correct5;
+
+function newQ5(){
+  let v = pickRandom(irregulars, used5);
+  let i = Math.floor(Math.random()*6);
+
+  correct5 = v.forms[i];
+
+  document.getElementById('q5').innerText =
+    subj[i] + ' (' + v.inf + ')';
+
+  let allForms = irregulars.flatMap(x => x.forms);
+
+  let options = [correct5];
+
+  while(options.length < 4){
+    let r = allForms[Math.floor(Math.random()*allForms.length)];
+    if(!options.includes(r)) options.push(r);
+  }
+
+  options.sort(() => Math.random() - 0.5);
+
+  document.getElementById('b5').innerHTML =
+    options.map(o=>`<button onclick="check5('${o}')">${o}</button>`).join('');
+}
+
+function check5(v){
+  document.getElementById('q5').innerText += v === correct5 ? ' ✅' : ' ❌';
+  setTimeout(newQ5, 800);
+}
+
+// -------- GIOCO 6 (IMMAGINE → SCELTA MULTIPLA) --------
+
+let used6 = [];
+let correct6;
+
+function newQ6(){
+  document.getElementById('res6').innerText = '';
+
+  let curr = pickRandom(words, used6);
+
+  if(!curr){
+    document.getElementById('res6').innerText = "🎉 Hai finito tutte le immagini!";
+    document.getElementById('b6').innerHTML = "";
+    document.getElementById('img6').src = "";
+    return;
+  }
+
+  correct6 = curr.word;
+
+  // mostra immagine
+  document.getElementById('img6').src = curr.img;
+
+  // crea opzioni
+  let options = [correct6];
+
+  while(options.length < 4){
+    let r = words[Math.floor(Math.random()*words.length)].word;
+    if(!options.includes(r)) options.push(r);
+  }
+
+  // mescola
+  options.sort(() => Math.random()-0.5);
+
+  // render bottoni
+  document.getElementById('b6').innerHTML =
+    options.map(o => `<button onclick="check6('${o}')">${o}</button>`).join('');
+}
+
+
+function check6(v){
+  const buttons = document.querySelectorAll('#b6 button');
+
+  buttons.forEach(btn => {
+    if(btn.innerText === correct6){
+      btn.classList.add('correct');
+    } else if(btn.innerText === v){
+      btn.classList.add('wrong');
+    }
+    btn.disabled = true;
+  });
+
+  if(v === correct6){
+    document.getElementById('res6').innerText = "✅ Giusto!";
+  } else {
+    document.getElementById('res6').innerText = "❌ Sbagliato!";
+  }
+
+  // ✅ NON passa automaticamente alla prossima domanda
+}
+
+// -------- GIOCO 7 - COLORI --------
+const colorsData7 = [
+  { name: 'rosso', color: 'red' },
+  { name: 'blu', color: 'blue' },
+  { name: 'verde', color: 'green' },
+  { name: 'giallo', color: 'yellow' },
+  { name: 'nero', color: 'black' },
+  { name: 'bianco', color: 'white' },
+  { name: 'arancione', color: 'orange' },
+  { name: 'viola', color: 'purple' },
+  { name: 'rosa', color: 'pink' },
+  { name: 'marrone', color: 'brown' },
+  { name: 'grigio', color: 'gray' }
+];
+
+let usedQ7 = [];
+let correct7 = '';
+
+function shuffle7(arr){
+  let a = [...arr];
+  for(let i = a.length - 1; i > 0; i--){
+    let j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function newQ7() {
+  // trova i colori ancora non usati
+  let available = colorsData7.filter(c => !usedQ7.includes(c.name));
+
+  if (available.length === 0) {
+    document.getElementById('q7').innerHTML = '<span class="finished">✅ Hai finito tutti i colori!</span>';
+    document.getElementById('b7').innerHTML = '';
+    document.getElementById('skip7').disabled = true;
+    document.getElementById('colorBox7').style.background = 'transparent';
+    return;
+  }
+
+  let curr = available[Math.floor(Math.random() * available.length)];
+  usedQ7.push(curr.name);
+  correct7 = curr.name;
+
+  document.getElementById('q7').innerText = 'Che colore è?';
+  document.getElementById('colorBox7').style.background = curr.color;
+
+  let options = [correct7];
+
+  while(options.length < 4){
+    let r = colorsData7[Math.floor(Math.random() * colorsData7.length)].name;
+    if(!options.includes(r)) options.push(r);
+  }
+
+  options = shuffle7(options);
+
+  document.getElementById('b7').innerHTML =
+    options.map(o => `<button onclick="check7('${o}')">${o}</button>`).join('');
+}
+
+function check7(v){
+  // disabilita i bottoni del gioco 7
+  document.querySelectorAll('#b7 button').forEach(btn => btn.disabled = true);
+
+  document.getElementById('q7').innerText += (v === correct7 ? ' ✅' : ' ❌');
+
+  setTimeout(newQ7, 800);
+}
+
+// -------- GIOCO 8 - NUMERI --------
+const numbersData8 = [
+  { num: 1, name: 'uno' },
+  { num: 2, name: 'due' },
+  { num: 3, name: 'tre' },
+  { num: 4, name: 'quattro' },
+  { num: 5, name: 'cinque' },
+  { num: 6, name: 'sei' },
+  { num: 7, name: 'sette' },
+  { num: 8, name: 'otto' },
+  { num: 9, name: 'nove' },
+  { num: 10, name: 'dieci' },
+  { num: 11, name: 'undici' },
+  { num: 12, name: 'dodici' },
+  { num: 13, name: 'tredici' },
+  { num: 14, name: 'quattordici' },
+  { num: 15, name: 'quindici' },
+  { num: 16, name: 'sedici' },
+  { num: 17, name: 'diciassette' },
+  { num: 18, name: 'diciotto' },
+  { num: 19, name: 'diciannove' },
+  { num: 20, name: 'venti' },
+  { num: 21, name: 'ventuno' },
+  { num: 30, name: 'trenta' },
+  { num: 40, name: 'quaranta' },
+  { num: 50, name: 'cinquanta' },
+  { num: 60, name: 'sessanta' },
+  { num: 70, name: 'settanta' },
+  { num: 80, name: 'ottanta' },
+  { num: 90, name: 'novanta' },
+  { num: 100, name: 'cento' },
+  { num: 1000, name: 'mille' }
+];
+
+let usedQ8 = [];
+let correct8 = '';
+
+function shuffle8(arr){
+  let a = [...arr];
+  for(let i = a.length - 1; i > 0; i--){
+    let j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function newQ8() {
+  let available = numbersData8.filter(n => !usedQ8.includes(n.num));
+
+  if (available.length === 0) {
+    document.getElementById('q8').innerHTML = '<span class="finished">✅ Hai finito tutti i numeri!</span>';
+    document.getElementById('b8').innerHTML = '';
+    document.getElementById('numBox8').innerText = '';
+    document.getElementById('skip8').disabled = true;
+    return;
+  }
+
+  let curr = available[Math.floor(Math.random() * available.length)];
+  usedQ8.push(curr.num);
+  correct8 = curr.name;
+
+  document.getElementById('numBox8').innerText = curr.num;
+  document.getElementById('q8').innerText = 'Come si dice questo numero in italiano?';
+
+  let options = [correct8];
+
+  while(options.length < 4){
+    let r = numbersData8[Math.floor(Math.random() * numbersData8.length)].name;
+    if(!options.includes(r)) options.push(r);
+  }
+
+  options = shuffle8(options);
+
+  document.getElementById('b8').innerHTML =
+    options.map(o => `<button onclick="check8('${o}')">${o}</button>`).join('');
+}
+
+function check8(v){
+  document.querySelectorAll('#b8 button').forEach(btn => btn.disabled = true);
+
+  document.getElementById('q8').innerText += (v === correct8 ? ' ✅' : ' ❌');
+
+  setTimeout(newQ8, 800);
+}
+
+// -------- GIOCO 9 - PARTICIPI PASSATI --------
+const verbsPP = [
+{inf:'fare',pp:'fatto'},
+{inf:'dire',pp:'detto'},
+{inf:'scrivere',pp:'scritto'},
+{inf:'leggere',pp:'letto'},
+{inf:'prendere',pp:'preso'},
+{inf:'scendere',pp:'sceso'},
+{inf:'chiedere',pp:'chiesto'},
+{inf:'rispondere',pp:'risposto'},
+{inf:'vedere',pp:'visto'},
+{inf:'venire',pp:'venuto'},
+{inf:'aprire',pp:'aperto'},
+{inf:'coprire',pp:'coperto'},
+{inf:'morire',pp:'morto'},
+{inf:'nascere',pp:'nato'},
+{inf:'mettere',pp:'messo'},
+{inf:'promettere',pp:'promesso'},
+{inf:'succedere',pp:'successo'},
+{inf:'accendere',pp:'acceso'},
+{inf:'chiudere',pp:'chiuso'},
+{inf:'spendere',pp:'speso'},
+{inf:'rompere',pp:'rotto'},
+{inf:'scegliere',pp:'scelto'},
+{inf:'correre',pp:'corso'},
+{inf:'piangere',pp:'pianto'},
+{inf:'vincere',pp:'vinto'},
+{inf:'vivere',pp:'vissuto'},
+{inf:'offrire',pp:'offerto'},
+{inf:'soffrire',pp:'sofferto'},
+{inf:'tradurre',pp:'tradotto'},
+{inf:'produrre',pp:'prodotto'},
+{inf:'condurre',pp:'condotto'},
+{inf:'giungere',pp:'giunto'},
+{inf:'spegnere',pp:'spento'},
+{inf:'togliere',pp:'tolto'},
+{inf:'raccogliere',pp:'raccolto'},
+{inf:'discutere',pp:'discusso'}
+];
+
+let current9 = null;
+let guessed9 = [];
+
+function newQ9(){
+  current9 = verbsPP[Math.floor(Math.random() * verbsPP.length)];
+  guessed9 = [];
+
+  document.getElementById('q9').innerText =
+    current9.inf + ' → ?';
+
+  document.getElementById('res9').innerText = '';
+
+  draw9();
+  createLetters9();
+}
+
+function draw9(){
+  document.getElementById('word9').innerText =
+    current9.pp.split('').map(l =>
+      guessed9.includes(l) ? l : '_'
+    ).join(' ');
+}
+
+function createLetters9(){
+  let a = 'abcdefghijklmnopqrstuvwxyz';
+  document.getElementById('letters9').innerHTML =
+    [...a].map(l =>
+      `<button onclick="guess9('${l}')" id="l9-${l}">${l}</button>`
+    ).join('');
+}
+
+function guess9(l){
+  if(guessed9.includes(l)) return;
+
+  guessed9.push(l);
+
+  let btn = document.getElementById('l9-'+l);
+
+  if(current9.pp.includes(l)){
+    btn.classList.add('correct');
+  } else {
+    btn.classList.add('wrong');
+  }
+
+  btn.disabled = true;
+
+  draw9();
+
+  if(!document.getElementById('word9').innerText.includes('_')){
+    document.getElementById('res9').innerText =
+      '🎉 Corretto! Clicca Avanti';
+    document.getElementById('letters9').innerHTML = '';
+  }
+}
+
+// tastiera
+document.addEventListener('keydown', e=>{
+  let l = e.key.toLowerCase();
+  if(l.match(/^[a-z]$/)) guess9(l);
+});
+
+// -------- GIOCO 10 --------
+const g10Data = [
+{text:"Ieri noi ________ (andare) al mercato rionale.", essere:"siamo andati", avere:"abbiamo andato", correct:"essere"},
+{text:"Tu ________ (portare) il cane dal veterinario?", essere:"sei portato", avere:"hai portato", correct:"avere"},
+{text:"Io ________ (ascoltare) la nuova canzone di Mengoni.", essere:"sono ascoltato", avere:"ho ascoltato", correct:"avere"},
+{text:"Voi ________ (provare) a chiamarmi ieri sera?", essere:"siete provati", avere:"avete provato", correct:"avere"},
+{text:"Luca ________ (diventare) molto bravo a cucinare.", essere:"è diventato", avere:"ha diventato", correct:"essere"},
+{text:"Noi ________ (accendere) il camino perché faceva freddo.", essere:"siamo accesi", avere:"abbiamo acceso", correct:"avere"},
+{text:"Tu ________ (lavare) la macchina stamattina?", essere:"sei lavato", avere:"hai lavato", correct:"avere"},
+{text:"I bambini ________ (rompere) un bicchiere giocando.", essere:"sono rotti", avere:"hanno rotto", correct:"avere"},
+{text:"Io ________ (scattare) molte foto durante la gita.", essere:"sono scattato", avere:"ho scattato", correct:"avere"},
+{text:"Maria ________ (spegnere) il computer prima di uscire.", essere:"è spenta", avere:"ha spento", correct:"avere"},
+{text:"Voi ________ (rimanere) a casa tutto il giorno?", essere:"siete rimasti", avere:"avete rimasto", correct:"essere"},
+{text:"Loro ________ (viaggiare) per tutta l’Europa.", essere:"sono viaggiati", avere:"hanno viaggiato", correct:"avere"},
+{text:"Tu ________ (compilare) quel modulo importante?", essere:"sei compilato", avere:"hai compilato", correct:"avere"},
+{text:"Io ________ (passare) a trovarti ieri pomeriggio.", essere:"sono passato", avere:"ho passato", correct:"entrambi"},
+{text:"Gli amici ________ (scendere) dal treno a Bologna.", essere:"sono scesi", avere:"hanno sceso", correct:"essere"},
+{text:"Noi ________ (seguire) la lezione online.", essere:"siamo seguiti", avere:"abbiamo seguito", correct:"avere"},
+{text:"Tu ________ (telefonare) a tua madre?", essere:"sei telefonato", avere:"hai telefonato", correct:"avere"},
+{text:"Io ________ (imparare) molte cose nuove.", essere:"sono imparato", avere:"ho imparato", correct:"avere"},
+{text:"Voi ________ (organizzare) una festa a sorpresa.", essere:"siete organizzati", avere:"avete organizzato", correct:"avere"},
+{text:"Il treno ________ (arrivare) in ritardo.", essere:"è arrivato", avere:"ha arrivato", correct:"essere"}
+];
+
+let used10 = [];
+let correct10;
+
+function newQ10(){
+  let available = g10Data.filter(x => !used10.includes(x));
+
+  if(available.length === 0){
+    document.getElementById('q10').innerHTML = '<span class="finished">✅ Hai finito!</span>';
+    document.getElementById('b10').innerHTML = '';
+    document.getElementById('skip10').disabled = true;
+    return;
+  }
+
+  let curr = available[Math.floor(Math.random() * available.length)];
+  used10.push(curr);
+  correct10 = curr.correct;
+
+  document.getElementById('q10').innerText = curr.text;
+
+  let options;
+
+  if(correct10 === "entrambi"){
+    options = [curr.essere, curr.avere];
+  } else {
+    options = [curr.essere, curr.avere];
+  }
+
+  // mescola
+  options.sort(() => Math.random() - 0.5);
+
+  document.getElementById('b10').innerHTML =
+    options.map(o => `<button onclick="check10('${o}','${curr.essere}','${curr.avere}','${correct10}')">${o}</button>`).join('');
+}
+
+function check10(choice, essere, avere, correct){
+  document.querySelectorAll('#b10 button').forEach(b=>b.disabled=true);
+
+  let isCorrect = false;
+
+  if(correct === "essere" && choice === essere) isCorrect = true;
+  if(correct === "avere" && choice === avere) isCorrect = true;
+  if(correct === "entrambi") isCorrect = true; // accettiamo entrambe
+
+  document.getElementById('q10').innerText += isCorrect ? ' ✅' : ' ❌';
+
+  setTimeout(newQ10, 900);
+}
+
+// -------- GIOCO 11 --------
+const g11Data = [
+{text:"______ il gelato al cioccolato.", correct:"mi piace"},
+{text:"______ i cani.", correct:"mi piacciono"},
+{text:"______ leggere libri.", correct:"mi piace"},
+{text:"______ le serie TV.", correct:"mi piacciono"},
+{text:"______ la pizza.", correct:"mi piace"},
+{text:"______ andare al mare.", correct:"mi piace"},
+{text:"______ le persone gentili.", correct:"mi piacciono"},
+{text:"______ il calcio.", correct:"mi piace"},
+{text:"______ le vacanze estive.", correct:"mi piacciono"},
+{text:"______ la musica classica.", correct:"mi piace"},
+{text:"______ i film d’azione.", correct:"mi piacciono"},
+{text:"______ studiare italiano.", correct:"mi piace"},
+{text:"______ le montagne.", correct:"mi piacciono"},
+{text:"______ il caffè.", correct:"mi piace"},
+{text:"______ cucinare.", correct:"mi piace"},
+{text:"______ i ristoranti italiani.", correct:"mi piacciono"},
+{text:"______ il mio lavoro.", correct:"mi piace"},
+{text:"______ le scarpe nuove.", correct:"mi piacciono"},
+{text:"______ viaggiare.", correct:"mi piace"},
+{text:"______ i bambini.", correct:"mi piacciono"}
+];
+
+let used11 = [];
+let correct11;
+
+function newQ11(){
+  let available = g11Data.filter(x => !used11.includes(x));
+
+  if(available.length === 0){
+    document.getElementById('q11').innerHTML = '<span class="finished">✅ Hai finito!</span>';
+    document.getElementById('b11').innerHTML = '';
+    document.getElementById('skip11').disabled = true;
+    return;
+  }
+
+  let curr = available[Math.floor(Math.random() * available.length)];
+  used11.push(curr);
+  correct11 = curr.correct;
+
+  document.getElementById('q11').innerText = curr.text;
+
+  let options = ['mi piace', 'mi piacciono'];
+
+  options.sort(() => Math.random() - 0.5);
+
+  document.getElementById('b11').innerHTML =
+    options.map(o => `<button onclick="check11('${o}')">${o}</button>`).join('');
+}
+
+function check11(v){
+  document.querySelectorAll('#b11 button').forEach(b=>b.disabled=true);
+
+  document.getElementById('q11').innerText += (v === correct11 ? ' ✅' : ' ❌');
+
+  setTimeout(newQ11, 800);
+}
+
+// -------- GIOCO 12 --------
+const days = [
+  "lunedì",
+  "martedì",
+  "mercoledì",
+  "giovedì",
+  "venerdì",
+  "sabato",
+  "domenica"
+];
+
+let used12 = [];
+let correct12 = '';
+
+function initDaysBar(){
+  document.getElementById('daysBar').innerHTML =
+    days.map((d,i)=>`<div class="day-box" id="day${i}">${i+1}</div>`).join('');
+}
+
+function newQ12(){
+  // reset colori
+  document.querySelectorAll('.day-box').forEach(el=>{
+    el.classList.remove('active-day');
+  });
+
+  let available = [0,1,2,3,4,5,6].filter(i => !used12.includes(i));
+
+  if(available.length === 0){
+    document.getElementById('q12').innerHTML = '<span class="finished">✅ Hai finito!</span>';
+    document.getElementById('b12').innerHTML = '';
+    document.getElementById('skip12').disabled = true;
+    return;
+  }
+
+  let idx = available[Math.floor(Math.random()*available.length)];
+  used12.push(idx);
+
+  correct12 = days[idx];
+
+  // illumina numero
+  document.getElementById('day'+idx).classList.add('active-day');
+
+  document.getElementById('q12').innerText = 'Che giorno è?';
+
+  let options = [correct12];
+
+  while(options.length < 3){
+    let r = days[Math.floor(Math.random()*days.length)];
+    if(!options.includes(r)) options.push(r);
+  }
+
+  options.sort(() => Math.random()-0.5);
+
+  document.getElementById('b12').innerHTML =
+    options.map(o => `<button onclick="check12('${o}')">${o}</button>`).join('');
+}
+
+function check12(v){
+  document.querySelectorAll('#b12 button').forEach(b=>b.disabled=true);
+
+  document.getElementById('q12').innerText += (v === correct12 ? ' ✅' : ' ❌');
+
+  setTimeout(newQ12, 900);
+}
+
+// -------- GIOCO 13 --------
+
+const g13Data = [
+{
+  text:"______ nonni vivono in campagna.",
+  correct:["i miei","i tuoi","i suoi","i nostri","i vostri","i loro"]
+},
+{
+  text:"______ madre è molto gentile.",
+  correct:["mia","tua","sua","nostra","vostra","loro"]
+},
+{
+  text:"______ amico vive a Milano.",
+  correct:["il mio","il tuo","il suo","il nostro","il vostro","il loro"]
+},
+{
+  text:"______ casa è bella.",
+  correct:["la mia","la tua","la sua","la nostra","la vostra","la loro"]
+}
+];
+
+const possessives = [
+  "il mio","il tuo","il suo","il nostro","il vostro","il loro",
+  "la mia","la tua","la sua","la nostra","la vostra","la loro",
+  "i miei","i tuoi","i suoi","i nostri","i vostri","i loro",
+  "le mie","le tue","le sue","le nostre","le vostre","le loro",
+  "mio","tuo","suo","nostro","vostro","loro",
+  "mia","tua","sua","nostra","vostra","loro"
+];
+
+let correct13;
+
+function newQ13(){
+
+  let curr = g13Data[Math.floor(Math.random()*g13Data.length)];
+  correct13 = curr.correct;
+
+  document.getElementById('q13').innerText = curr.text;
+
+  let options = [];
+
+  // ✅ scegli UNA risposta corretta da mostrare
+  let correctPick = correct13[Math.floor(Math.random()*correct13.length)];
+  options.push(correctPick);
+
+  // ❌ aggiungi sbagliate
+  while(options.length < 4){
+    let r = possessives[Math.floor(Math.random()*possessives.length)];
+    if(!options.includes(r)) options.push(r);
+  }
+
+  // 🎲 mescola
+  options.sort(()=>Math.random()-0.5);
+
+  document.getElementById('b13').innerHTML =
+    options.map(o => `<button onclick="check13('${o}')">${o}</button>`).join('');
+}
+
+
+function check13(v){
+
+  document.querySelectorAll('#b13 button').forEach(b=>b.disabled=true);
+
+  let isCorrect = correct13.includes(v);
+
+  document.getElementById('q13').innerText += isCorrect ? ' ✅' : ' ❌';
+
+}
+
+// -------- GIOCO 14 --------
+const objects14 = [
+{word:'il telefono', img:'images/oggetti personali comuni/telefono.jpg'},
+{word:'il portafoglio', img:'images/oggetti personali comuni/portafoglio.jpg'},
+{word:'le chiavi', img:'images/oggetti personali comuni/chiavi.jpg'},
+{word:'la borsa', img:'images/oggetti personali comuni/borsa.jpg'},
+{word:'lo zaino', img:'images/oggetti personali comuni/zaino.jpg'},
+{word:'gli occhiali', img:'images/oggetti personali comuni/occhiali.jpg'},
+{word:'gli occhiali da sole', img:'images/oggetti personali comuni/occhiali_da_sole.jpg'},
+{word:'l’orologio', img:'images/oggetti personali comuni/orologio.jpg'},
+{word:'la cintura', img:'images/oggetti personali comuni/cintura.jpg'},
+{word:'il cappello', img:'images/oggetti personali comuni/cappello.jpg'},
+
+{word:'la penna', img:'images/oggetti personali comuni/penna.jpg'},
+{word:'la matita', img:'images/oggetti personali comuni/matita.jpg'},
+{word:'il quaderno', img:'images/oggetti personali comuni/quaderno.jpg'},
+{word:'il libro', img:'images/oggetti personali comuni/libro.jpg'},
+{word:'il computer', img:'images/oggetti personali comuni/computer.jpg'},
+
+{word:'lo spazzolino', img:'images/oggetti personali comuni/spazzolino.jpg'},
+{word:'il dentifricio', img:'images/oggetti personali comuni/dentifricio.jpg'},
+{word:'il sapone', img:'images/oggetti personali comuni/sapone.jpg'},
+{word:'il profumo', img:'images/oggetti personali comuni/profumo.jpg'},
+{word:'il fazzoletto', img:'images/oggetti personali comuni/fazzoletto.jpg'},
+
+{word:'la bottiglia d’acqua', img:'images/oggetti personali comuni/bottiglia.jpg'},
+{word:'la tazza', img:'images/oggetti personali comuni/tazza.jpg'},
+{word:'il pranzo al sacco', img:'images/oggetti personali comuni/pranzo.jpg'},
+{word:'le cuffie', img:'images/oggetti personali comuni/cuffie.jpg'},
+{word:'la valigia', img:'images/oggetti personali comuni/valigia.jpg'}
+];
+
+let used14 = [];
+let correct14;
+
+function newQ14(){
+
+  let available = objects14.filter(x => !used14.includes(x));
+
+  if(available.length === 0){
+    document.getElementById('q14').innerHTML = '<span class="finished">✅ Hai finito!</span>';
+    document.getElementById('b14').innerHTML = '';
+    document.getElementById('img14').src = '';
+    document.getElementById('skip14').disabled = true;
+    return;
+  }
+
+  let curr = available[Math.floor(Math.random()*available.length)];
+  used14.push(curr);
+  correct14 = curr.word;
+
+  document.getElementById('img14').src = curr.img;
+  document.getElementById('q14').innerText = 'Che cos’è?';
+
+  let options = [correct14];
+
+  while(options.length < 4){
+    let r = objects14[Math.floor(Math.random()*objects14.length)].word;
+    if(!options.includes(r)) options.push(r);
+  }
+
+  options.sort(() => Math.random()-0.5);
+
+  document.getElementById('b14').innerHTML =
+    options.map(o=>`<button onclick="check14('${o}')">${o}</button>`).join('');
+}
+
+function check14(v){
+  document.querySelectorAll('#b14 button').forEach(b=>b.disabled=true);
+
+  document.getElementById('q14').innerText += (v === correct14 ? ' ✅' : ' ❌');
+
+  setTimeout(newQ14, 900);
+}
+
+// -------- GIOCO 15 --------
+
+const g15Data = [
+{text:"Vado __ bar.", correct:"al"},
+{text:"Sono __ cucina.", correct:"in"},
+{text:"Sono __ spiaggia.", correct:"in"},
+{text:"Vado __ supermercato.", correct:"al"},
+{text:"Sono __ ufficio.", correct:"in"},
+{text:"Vado __ ristorante.", correct:"al"},
+{text:"Vado __ cinema.", correct:"al"},
+{text:"Sono __ montagna.", correct:"in"},
+{text:"Vado __ parco.", correct:"al"},
+{text:"Sono __ piscina.", correct:"in"},
+{text:"Vado __ negozio.", correct:"al"},
+{text:"Sono __ biblioteca.", correct:"in"},
+{text:"Vado __ bar con gli amici.", correct:"al"},
+{text:"Sono __ bagno.", correct:"in"},
+{text:"Vado __ mare.", correct:"al"},
+{text:"Sono __ giardino.", correct:"in"},
+{text:"Vado __ pronto soccorso.", correct:"al"},
+{text:"Sono __ classe.", correct:"in"},
+{text:"Vado __ centro commerciale.", correct:"al"},
+{text:"Sono __ spiaggia con amici.", correct:"in"}
+];
+
+let used15 = [];
+let correct15;
+
+function newQ15(){
+
+  let available = g15Data.filter(x => !used15.includes(x));
+
+  if(available.length === 0){
+    document.getElementById('q15').innerHTML = '<span class="finished">✅ Hai finito!</span>';
+    document.getElementById('b15').innerHTML = '';
+    document.getElementById('skip15').disabled = true;
+    return;
+  }
+
+  let curr = available[Math.floor(Math.random()*available.length)];
+  used15.push(curr);
+  correct15 = curr.correct;
+
+  document.getElementById('q15').innerText = curr.text;
+
+  let options = ["in", "al"];
+
+  options.sort(()=>Math.random()-0.5);
+
+  document.getElementById('b15').innerHTML =
+    options.map(o=>`<button onclick="check15('${o}')">${o}</button>`).join('');
+}
+
+function check15(v){
+  document.querySelectorAll('#b15 button').forEach(b=>b.disabled=true);
+
+  document.getElementById('q15').innerText += (v === correct15 ? ' ✅' : ' ❌');
+
+  setTimeout(newQ15, 900);
+}
+
+newQ1();
+newQ2();
+newQ5();
+newQ6();
+newQ7();
+newQ8();
+newQ9();
+newQ10();
+newQ11();
+initDaysBar();
+newQ12();
+newQ13();
+newQ14();
+newQ15();
+newGame();
+initMemory();
+
+
+</script>
+
+</body>
+</html>
