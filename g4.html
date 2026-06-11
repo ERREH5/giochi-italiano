@@ -1,0 +1,199 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory</title>
+
+<link rel="stylesheet" href="style.css">
+
+<style>
+
+/* griglia */
+.memory{
+  display:grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap:10px;
+  margin-top:15px;
+}
+
+/* carte */
+.memory div{
+  height:80px;
+  background:#3498db;
+  color:white;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:bold;
+  overflow:hidden;
+  transition: all 0.2s ease;
+  font-size: 18px;
+  font-weight: bold;
+
+}
+
+/* hover */
+.memory div:not(.revealed):hover{
+  background:#2ecc71;
+  transform:scale(1.05);
+}
+
+/* immagine */
+.memory img{
+  width:100%;
+  height:100%;
+  object-fit: cover;
+}
+
+/* carte aperte */
+.revealed{
+  background:white !important;
+  color:black !important;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- HEADER -->
+<a href="index.html" class="top-bar">
+  🎮 Mini Giochi Italiano
+</a>
+
+<div class="card">
+
+  <h2>🧠 Memory</h2>
+
+  <div id="memory" class="memory"></div>
+
+  <p id="result"></p>
+
+  <button class="next-btn" onclick="start()">Nuovo</button>
+
+</div>
+
+<script>
+
+let cards = [];
+let first = null;
+let second = null;
+
+// ✅ DATI
+const data = [
+{word:'tavolo',img:'images/tavolo.jpg'},
+{word:'letto',img:'images/letto.jpg'},
+{word:'porta',img:'images/porta.jpg'},
+{word:'cucina',img:'images/cucina.jpg'},
+{word:'scala',img:'images/scala.jpg'},
+{word:'pavimento',img:'images/pavimento.jpg'},
+{word:'scrivania',img:'images/scrivania.jpg'},
+{word:'frigorifero',img:'images/frigorifero.jpg'},
+{word:'forno',img:'images/forno.jpg'},
+{word:'piatto',img:'images/piatto.jpg'},
+{word:'forchetta',img:'images/forchetta.jpg'},
+{word:'coltello',img:'images/coltello.jpg'},
+{word:'cucchiaio',img:'images/cucchiaio.jpg'},
+{word:'bicchiere',img:'images/bicchiere.jpg'},
+{word:'doccia',img:'images/doccia.jpg'},
+{word:'specchio',img:'images/specchio.jpg'},
+{word:'libreria',img:'images/libreria.jpg'},
+{word:'divano',img:'images/divano.jpg'},
+{word:'lavatrice',img:'images/lavatrice.jpg'}
+];
+
+// ✅ CREA GIOCO
+function start(){
+
+  cards = [];
+  first = null;
+  second = null;
+
+  document.getElementById('result').innerText = '';
+
+  // crea coppie
+  data.forEach(d=>{
+    cards.push({type:'text', value:d.word, match:d.word});
+    cards.push({type:'img', value:d.img, match:d.word});
+  });
+
+  // mescola
+  cards.sort(()=>Math.random()-0.5);
+
+  let html = '';
+
+  for(let i=0; i<cards.length; i++){
+    html += `<div onclick="clickCard(${i})">${i+1}</div>`;
+  }
+
+  document.getElementById('memory').innerHTML = html;
+}
+
+// ✅ CLICK
+function clickCard(i){
+
+  let el = document.getElementById('memory').children[i];
+  let card = cards[i];
+
+  if(el.classList.contains('revealed')) return;
+
+  if(card.type === 'text'){
+    el.innerText = card.value;
+  } else {
+    let img = document.createElement("img");
+    img.src = card.value;
+
+    el.innerHTML = "";
+    el.appendChild(img);
+  }
+
+  el.classList.add('revealed');
+
+  if(first === null){
+    first = {index:i, el:el, card:card};
+  } else if(second === null){
+    second = {index:i, el:el, card:card};
+    setTimeout(check, 700);
+  }
+}
+
+// ✅ CONTROLLO
+function check(){
+
+  if(first.card.match !== second.card.match){
+
+   
+    first.el.innerHTML = first.index + 1;
+    second.el.innerHTML = second.index + 1
+
+
+    first.el.classList.remove('revealed');
+    second.el.classList.remove('revealed');
+  }
+
+  first = null;
+  second = null;
+
+  // vittoria
+  let all = document.getElementById('memory').children;
+  let done = [...all].every(el => el.classList.contains('revealed'));
+
+  if(done){
+    document.getElementById('result').innerText = "🎉 Completato!";
+  }
+}
+
+// AVVIO
+start();
+
+</script>
+
+</body>
+</html>
+``
+

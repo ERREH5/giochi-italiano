@@ -1,0 +1,131 @@
+* {
+  box-sizing: border-box;
+}
+
+
+body{
+  font-family: Arial, sans-serif;
+  margin:0;
+  padding:15px;
+
+  /* 🔥 nuovo background */
+  background: linear-gradient(
+    135deg,
+    #6dd5ed,
+    #2193b0
+  );
+
+  /* migliora rendering */
+  min-height: 100vh;
+}
+
+
+/* CARD */
+.card {
+  background:white;
+  padding:20px;
+  margin:20px auto;
+  width:100%;
+  max-width:400px;
+  border-radius:12px;
+  box-shadow:0 5px 12px rgba(0,0,0,0.2);
+}
+
+/* TESTO */
+h1 {
+  font-size:22px;
+}
+
+#domanda {
+  font-size:20px;
+  margin-bottom:15px;
+}
+
+/* BOTTONI */
+button {
+  width:100%;                 /* ✅ importante */
+  padding:14px;
+  margin:5px 0;
+  border:none;
+  border-radius:10px;
+  background:#3498db;
+  color:white;
+  font-size:16px;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.next-btn {
+  background: #e67e22; /* arancione */
+  margin-top: 15px;
+}
+
+.next-btn:hover {
+  background: #d35400;
+}
+
+/* hover (desktop) */
+button:hover {
+  background:#2ecc71;
+}
+
+/* click mobile */
+button:active {
+  transform:scale(0.97);
+}
+
+/* VERSIONE DESKTOP */
+@media (min-width: 768px) {
+
+  body {
+    padding:30px;
+  }
+
+  .card {
+    padding:30px;
+  }
+
+  button {
+    max-width:250px;
+  }
+
+}
+
+.correct {
+  background: #2ecc71 !important;
+}
+
+.wrong {
+  background: #e74c3c !important;
+}
+
+.top-bar {
+  display: block;           /* importante per farlo a tutta larghezza */
+  width: 100%;
+  background: #2c3e50;
+  color: white;
+  text-align: center;
+  padding: 15px;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  text-decoration: none;   /* toglie underline del link */
+}
+
+.top-bar:hover {
+  background: #34495e;
+}
+
+.keyboard {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.keyboard button {
+  padding: 10px 0;
+  font-size: 14px;
+  border-radius: 8px;
+}

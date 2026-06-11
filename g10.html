@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Passato Prossimo</title>
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<a href="index.html" class="top-bar">
+  🎮 Mini Giochi Italiano
+</a>
+
+<div class="card">
+
+  <h2>⚖️ Essere o Avere?</h2>
+
+  <p id="domanda"></p>
+
+  <div id="bottoni"></div>
+
+  <button id="nextBtn" class="next-btn" onclick="nuovaDomanda()" disabled>Avanti</button>
+
+</div>
+
+<script>
+
+// DATI
+const dati = [
+{text:"Io ________ andato al supermercato.", essere:"sono", avere:"ho", correct:"essere"},
+{text:"Tu ________ mangiato la pizza.", essere:"sei", avere:"hai", correct:"avere"},
+{text:"Lui ________ arrivato tardi.", essere:"è", avere:"ha", correct:"essere"},
+{text:"Noi ________ studiato molto.", essere:"siamo", avere:"abbiamo", correct:"avere"},
+{text:"Voi ________ andati al cinema.", essere:"siete", avere:"avete", correct:"essere"},
+{text:"Loro ________ comprato una casa.", essere:"sono", avere:"hanno", correct:"avere"},
+{text:"Io ________ parlato con il professore.", essere:"sono", avere:"ho", correct:"avere"},
+{text:"Tu ________ rimasto a casa.", essere:"sei", avere:"hai", correct:"essere"},
+{text:"Lei ________ lavorato tutto il giorno.", essere:"è", avere:"ha", correct:"avere"},
+{text:"Noi ________ usciti ieri sera.", essere:"siamo", avere:"abbiamo", correct:"essere"}
+];
+
+let usati = [];
+let rispostaCorretta;
+
+// NUOVA DOMANDA
+function nuovaDomanda(){
+
+  document.getElementById('nextBtn').disabled = true;
+
+  if(usati.length === dati.length){
+    document.getElementById('domanda').innerText = "✅ Completato!";
+    document.getElementById('bottoni').innerHTML = "";
+    return;
+  }
+
+  let disponibili = dati.filter(x => !usati.includes(x));
+  let curr = disponibili[Math.floor(Math.random()*disponibili.length)];
+
+  usati.push(curr);
+
+  rispostaCorretta = curr.correct;
+
+  document.getElementById('domanda').innerText = curr.text;
+
+  let opzioni = [curr.essere, curr.avere];
+
+  opzioni.sort(() => Math.random() - 0.5);
+
+  let html = '';
+
+  for(let o of opzioni){
+    html += `<button onclick="controlla('${o}', '${curr.essere}', '${curr.avere}', '${curr.correct}')">${o}</button>`;
+  }
+
+  document.getElementById('bottoni').innerHTML = html;
+}
+
+// CONTROLLO
+function controlla(val, essere, avere, correct){
+
+  let bottoni = document.querySelectorAll('#bottoni button');
+
+  bottoni.forEach(btn => {
+
+    // evidenzia corretto
+    if((correct === "essere" && btn.innerText === essere) ||
+       (correct === "avere" && btn.innerText === avere)){
+      btn.classList.add('correct');
+    }
+
+    // evidenzia errore
+    if(btn.innerText === val && val !== (correct === "essere" ? essere : avere)){
+      btn.classList.add('wrong');
+    }
+
+    btn.disabled = true;
+  });
+
+  document.getElementById('nextBtn').disabled = false;
+}
+
+// AVVIO
+nuovaDomanda();
+
+</script>
+
+</body>
+</html>

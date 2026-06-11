@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vocabolario Casa</title>
+
+<link rel="stylesheet" href="style.css">
+
+<style>
+#imgBox {
+  width: 200px;
+  height: 200px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  margin:15px auto;
+  background:#f5f5f5;
+  border-radius:12px;
+}
+
+#imgBox img {
+  max-width:100%;
+  max-height:100%;
+}
+
+.word {
+  font-size:22px;
+  letter-spacing:5px;
+}
+
+.keyboard {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.keyboard button {
+  padding:8px;
+  font-size:14px;
+}
+</style>
+
+</head>
+
+<body>
+
+<a href="index.html" class="top-bar">
+  🎮 Mini Giochi Italiano
+</a>
+
+<!-- ✅ GIOCO FACILE -->
+<div class="card">
+
+  <h2>🏠 Vocabolario casa (facile)</h2>
+
+  <div id="imgBox">
+    <img id="img1">
+  </div>
+
+  <p id="domanda1"></p>
+
+  <div id="bottoni1"></div>
+
+  <button id="nextBtn1" class="next-btn" onclick="nuovaDomanda1()" disabled>Avanti</button>
+
+</div>
+
+
+<!-- ✅ GIOCO DIFFICILE -->
+<div class="card">
+
+  <h2>🧠 Indovina la parola</h2>
+
+  <div id="imgBox">
+    <img id="img2">
+  </div>
+
+  <div id="word" class="word"></div>
+
+  <div id="letters"></div>
+
+  <p id="res"></p>
+
+  <button class="next-btn" onclick="nuovaDomanda2()">Avanti</button>
+
+</div>
+
+<script>
+
+// DATI
+const parole = [
+{word:'tavolo',img:'images/tavolo.jpg'},
+{word:'letto',img:'images/letto.jpg'},
+{word:'porta',img:'images/porta.jpg'},
+{word:'cucina',img:'images/cucina.jpg'},
+{word:'scala',img:'images/scala.jpg'},
+{word:'pavimento',img:'images/pavimento.jpg'}
+];
+
+
+// ======================
+// ✅ GIOCO 1 (FACILE)
+// ======================
+
+let usati1 = [];
+let rispostaCorretta1;
+
+function nuovaDomanda1(){
+
+  document.getElementById('nextBtn1').disabled = true;
+
+  if(usati1.length === parole.length){
+    document.getElementById('domanda1').innerText = "✅ Completato!";
+    document.getElementById('bottoni1').innerHTML = "";
+    return;
+  }
+
+  let disponibili = parole.filter(p => !usati1.includes(p));
+  let curr = disponibili[Math.floor(Math.random()*disponibili.length)];
+
+  usati1.push(curr);
+
+  rispostaCorretta1 = curr.word;
+
+  document.getElementById('img1').src = curr.img;
+  document.getElementById('domanda1').innerText = "Che cos’è?";
+
+  let opzioni = [rispostaCorretta1];
+
+  while(opzioni.length < 4){
+    let r = parole[Math.floor(Math.random()*parole.length)].word;
+    if(!opzioni.includes(r)) opzioni.push(r);
+  }
+
+  opzioni.sort(() => Math.random() - 0.5);
+
+  let html = '';
+  for(let o of opzioni){
+    html += `<button onclick="check1('${o}')">${o}</button>`;
+  }
+
+  document.getElementById('bottoni1').innerHTML = html;
+}
+
+function check1(val){
+
+  let bottoni = document.querySelectorAll('#bottoni1 button');
+
+  bottoni.forEach(btn => {
+
+    if(btn.innerText === rispostaCorretta1){
+      btn.classList.add('correct');
+    }
+
+    if(btn.innerText === val && val !== rispostaCorretta1){
+      btn.classList.add('wrong');
+    }
+
+    btn.disabled = true;
+  });
+
+  document.getElementById('nextBtn1').disabled = false;
+}
+
+
+// ======================
+// 🔥 GIOCO 2 (IMPICCATO)
+// ======================
+
+let usati2 = [];
+let parola;
+let guessed = [];
+
+function nuovaDomanda2(){
+
+  document.getElementById('res').innerText = "";
+
+  if(usati2.length === parole.length){
+    document.getElementById('res').innerText = "✅ Completato!";
+    document.getElementById('letters').innerHTML = "";
+    document.getElementById('word').innerText = "";
+    return;
+  }
+
+  let disponibili = parole.filter(p => !usati2.includes(p));
+  let curr = disponibili[Math.floor(Math.random()*disponibili.length)];
+
+  usati2.push(curr);
+
+  parola = curr.word;
+  guessed = [];
+
+  document.getElementById('img2').src = curr.img;
+
+  disegna();
+  creaLettere();
+}
+
+function disegna(){
+  document.getElementById('word').innerText =
+    parola.split('').map(l => guessed.includes(l) ? l : '_').join(' ');
+}
+
+function creaLettere(){
+
+  let righe = [
+    "qwertyuiop",
+    "asdfghjkl",
+    "zxcvbnm"
+  ];
+
+  let html = '';
+
+  for(let riga of righe){
+
+    html += '<div class="keyboard">';
+
+    for(let l of riga){
+      html += `<button onclick="scegli('${l}')">${l}</button>`;
+    }
+
+    html += '</div>';
+  }
+
+  document.getElementById('letters').innerHTML = html;
+}
+
+function scegli(l){
+
+  if(guessed.includes(l)) return;
+
+  guessed.push(l);
+
+  let bottoni = document.querySelectorAll('#letters button');
+
+  bottoni.forEach(btn => {
+    if(btn.innerText === l){
+
+      if(parola.includes(l)){
+        btn.classList.add('correct');
+      } else {
+        btn.classList.add('wrong');
+      }
+
+      btn.disabled = true;
+    }
+  });
+
+  disegna();
+
+  if(!document.getElementById('word').innerText.includes('_')){
+    document.getElementById('res').innerText = "🎉 Bravo! Premi Avanti";
+    document.getElementById('letters').innerHTML = "";
+  }
+}
+
+// ✅ tastiera fisica
+document.addEventListener('keydown', function(e){
+
+  let l = e.key.toLowerCase();
+
+  if(l.match(/^[a-z]$/)){
+    scegli(l);
+  }
+
+});
+
+
+// AVVIO
+nuovaDomanda1();
+nuovaDomanda2();
+
+</script>
+
+</body>
+</html>
