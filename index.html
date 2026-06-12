@@ -4,105 +4,38 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mini Giochi Italiano</title>
-
-<style>
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg,#74ebd5,#acb6e5);
-}
-
-/* HEADER */
-header {
-  padding: 20px 15px;
-  text-align: center;
-  color: #2c3e50;
-}
-
-header h1 {
-  margin: 0;
-  font-size: 24px;
-}
-
-/* CONTAINER */
-.container {
-  padding: 10px;
-  max-width: 600px;
-  margin: auto;
-}
-
-/* CARD */
-.card {
-  background: white;
-  border-radius: 16px;
-  padding: 15px;
-  box-shadow: 0 5px 12px rgba(0,0,0,0.15);
-}
-
-/* BOTTONI */
-.game-btn {
-  width: 100%;
-  padding: 14px;
-  margin: 6px 0;
-  border: none;
-  border-radius: 12px;
-  background: #3498db;
-  color: white;
-  font-size: 16px;
-  text-align: left;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.game-btn:hover {
-  background: #2ecc71;
-}
-
-.game-btn span {
-  font-size: 18px;
-}
-
-/* MOBILE TOUCH */
-.game-btn:active {
-  transform: scale(0.98);
-}
-
-/* SEZIONI */
-.section-title {
-  margin: 15px 0 5px;
-  font-size: 14px;
-  color: #555;
-  text-align: left;
-}
-
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <header>
-  <h1>🎮 Mini Giochi Italiano</h1>
+<a href="index.html" class="top-bar">
+  🎮 Mini Giochi Italiano
+</a>
 </header>
 
 <div class="container">
   <div class="card">
 
     <div class="section-title">Verbi</div>
+    <button class="game-btn" onclick="go('pronuncia.html')">🔊 Pronuncia</button>
     <button class="game-btn" onclick="go('g1.html')">📘 Verbo Essere e Avere</button>
     <button class="game-btn" onclick="go('g2.html')">📗 Verbi Regolari</button>
+    <button class="game-btn" onclick="go('verbi_riflessivi.html')">🪞 Verbi Riflessivi</button>
+    <button class="game-btn" onclick="go('presente_progressivo.html')">➡️ Presente progressivo</button>
     <button class="game-btn" onclick="go('g5.html')">⚡ Verbi Irregolari</button>
     <button class="game-btn" onclick="go('g9.html')">✏️ Participio Passato Irregolare</button>
     <button class="game-btn" onclick="go('g10.html')">⚖️ Passato Prossimo con Essere o Avere</button>
+    <button class="game-btn" onclick="go('verbi_riflessivi_passato.html')">⏳ Passato Prossimo Verbi Riflessivi</button>
+    <button class="game-btn" onclick="go('g16.html')">⏳ Imperfetto</button>
 
     <div class="section-title">Vocabolario</div>
     <button class="game-btn" onclick="go('g7.html')">🎨 Colori</button>
     <button class="game-btn" onclick="go('g8.html')">🔢 Numeri</button>
     <button class="game-btn" onclick="go('g14.html')">🧳 Oggetti</button>
-    <button class="game-btn" onclick="go('g3.html')">🏠Vocabolario Casa</button>
+    <button class="game-btn" onclick="go('g3.html')">🏠 Casa</button>
+    <button class="game-btn" onclick="go('routine.html')">🔄 Routine</button>
     <button class="game-btn" onclick="go('g4.html')">🧠 Memory</button>
     <button class="game-btn" onclick="go('g12.html')">📅 Giorni settimana</button>
 
@@ -110,10 +43,12 @@ header h1 {
     <button class="game-btn" onclick="go('g11.html')">💛 Mi piace / piacciono</button>
     <button class="game-btn" onclick="go('g13.html')">👨‍👩‍👧‍👦 Pronomi possessivi</button>
     <button class="game-btn" onclick="go('g15.html')">📍 In / Al</button>
+    <button class="game-btn" onclick="go('g17.html')">⚡️ Preposizioni articolate</button>
 
   </div>
 </div>
 
+versione: beta 0.0.2
 <script>
 function go(page){
   window.location.href = page;
