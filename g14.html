@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oggetti personali</title>
+
+<link rel="stylesheet" href="style.css">
+
+<style>
+#imgBox {
+  width: 200px;
+  height: 200px;
+  margin: 15px auto;
+  border-radius: 12px;
+  overflow: hidden;
+
+  background: #f5f5f5; /* sfondo neutro */
+}
+
+#imgBox img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* ✅ NON taglia */
+}
+
+</style>
+
+</head>
+
+<body>
+
+<a href="index.html" class="top-bar">
+  🎮 Mini Giochi Italiano
+</a>
+
+<div class="card">
+
+  <h2>🧳 Oggetti personali</h2>
+
+  <div id="imgBox">
+    <img id="immagine">
+  </div>
+
+  <p id="domanda"></p>
+
+  <div id="bottoni"></div>
+
+  <button id="nextBtn" class="next-btn" onclick="nuovaDomanda()" disabled>Avanti</button>
+
+</div>
+
+<script>
+
+// DATI
+const oggetti = [
+{nome:'il telefono', img:'images/oggetti_personali/telefono.jpg'},
+{nome:'il portafoglio', img:'images/oggetti_personali/portafoglio.jpg'},
+{nome:'le chiavi', img:'images/oggetti_personali/chiavi.jpg'},
+{nome:'la borsa', img:'images/oggetti_personali/borsa.jpg'},
+{nome:'lo zaino', img:'images/oggetti_personali/zaino.jpg'},
+{nome:'gli occhiali', img:'images/oggetti_personali/occhiali.jpg'},
+{nome:'gli occhiali da sole', img:'images/oggetti_personali/occhiali_da_sole.jpg'},
+{nome:'l’orologio', img:'images/oggetti_personali/orologio.jpg'},
+{nome:'la cintura', img:'images/oggetti_personali/cintura.jpg'},
+{nome:'il cappello', img:'images/oggetti_personali/cappello.jpg'},
+
+{nome:'la penna', img:'images/oggetti_personali/penna.jpg'},
+{nome:'la matita', img:'images/oggetti_personali/matita.jpg'},
+{nome:'il quaderno', img:'images/oggetti_personali/quaderno.jpg'},
+{nome:'il libro', img:'images/oggetti_personali/libro.jpg'},
+{nome:'il computer', img:'images/oggetti_personali/computer.jpg'},
+
+{nome:'lo spazzolino', img:'images/oggetti_personali/spazzolino.jpg'},
+{nome:'il dentifricio', img:'images/oggetti_personali/dentifricio.jpg'},
+{nome:'il sapone', img:'images/oggetti_personali/sapone.jpg'},
+{nome:'il profumo', img:'images/oggetti_personali/profumo.jpg'},
+{nome:'il fazzoletto', img:'images/oggetti_personali/fazzoletto.jpg'},
+
+{nome:'la bottiglia d’acqua', img:'images/oggetti_personali/bottiglia.jpg'},
+{nome:'la tazza', img:'images/oggetti_personali/tazza.jpg'},
+{nome:'il pranzo al sacco', img:'images/oggetti_personali/pranzo.jpg'},
+{nome:'le cuffie', img:'images/oggetti_personali/cuffie.jpg'},
+{nome:'la valigia', img:'images/oggetti_personali/valigia.jpg'}
+];
+
+let usati = [];
+let rispostaCorretta;
+
+// NUOVA DOMANDA
+function nuovaDomanda(){
+
+  document.getElementById('nextBtn').disabled = true;
+
+  if(usati.length === oggetti.length){
+    document.getElementById('domanda').innerText = "✅ Completato!";
+    document.getElementById('bottoni').innerHTML = "";
+    document.getElementById('immagine').src = "";
+    return;
+  }
+
+  let disponibili = oggetti.filter(o => !usati.includes(o));
+  let curr = disponibili[Math.floor(Math.random()*disponibili.length)];
+
+  usati.push(curr);
+
+  rispostaCorretta = curr.nome;
+
+  // mostra immagine
+  document.getElementById('immagine').src = curr.img;
+
+  document.getElementById('domanda').innerText = "Che cos’è?";
+
+  let opzioni = [rispostaCorretta];
+
+  while(opzioni.length < 4){
+    let r = oggetti[Math.floor(Math.random()*oggetti.length)].nome;
+    if(!opzioni.includes(r)) opzioni.push(r);
+  }
+
+  opzioni.sort(() => Math.random() - 0.5);
+
+  let html = '';
+
+  for(let o of opzioni){
+    html += `<button onclick="controlla('${o}')">${o}</button>`;
+  }
+
+  document.getElementById('bottoni').innerHTML = html;
+}
+
+// CONTROLLO
+function controlla(val){
+
+  let bottoni = document.querySelectorAll('#bottoni button');
+
+  bottoni.forEach(btn => {
+
+    if(btn.innerText === rispostaCorretta){
+      btn.classList.add('correct');
+    }
+
+    if(btn.innerText === val && val !== rispostaCorretta){
+      btn.classList.add('wrong');
+    }
+
+    btn.disabled = true;
+  });
+
+  document.getElementById('nextBtn').disabled = false;
+}
+
+// AVVIO
+nuovaDomanda();
+
+</script>
+
+</body>
+</html>
+

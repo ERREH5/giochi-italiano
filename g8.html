@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Numeri</title>
+
+<link rel="stylesheet" href="style.css">
+
+<style>
+#numero {
+  font-size: 48px;
+  font-weight: bold;
+  margin: 20px 0;
+  color: #2c3e50;
+}
+</style>
+
+</head>
+
+<body>
+
+<a href="index.html" class="top-bar">
+  🎮 Mini Giochi Italiano
+</a>
+
+<div class="card">
+
+  <h2>🔢 Numeri</h2>
+
+  <div id="numero"></div>
+
+  <p id="domanda"></p>
+
+  <div id="bottoni"></div>
+
+  <button id="nextBtn" class="next-btn" onclick="nuovaDomanda()" disabled>Avanti</button>
+
+</div>
+
+<script>
+
+// DATI
+const numeri = [
+{num:1, nome:'uno'},
+{num:2, nome:'due'},
+{num:3, nome:'tre'},
+{num:4, nome:'quattro'},
+{num:5, nome:'cinque'},
+{num:6, nome:'sei'},
+{num:7, nome:'sette'},
+{num:8, nome:'otto'},
+{num:9, nome:'nove'},
+{num:10, nome:'dieci'},
+{num:11, nome:'undici'},
+{num:12, nome:'dodici'},
+{num:13, nome:'tredici'},
+{num:14, nome:'quattordici'},
+{num:15, nome:'quindici'},
+{num:16, nome:'sedici'},
+{num:17, nome:'diciassette'},
+{num:18, nome:'diciotto'},
+{num:19, nome:'diciannove'},
+{num:20, nome:'venti'}
+];
+
+let usati = [];
+let rispostaCorretta;
+
+// NUOVA DOMANDA
+function nuovaDomanda(){
+
+  document.getElementById('nextBtn').disabled = true;
+
+  if(usati.length === numeri.length){
+    document.getElementById('domanda').innerText = "✅ Completato!";
+    document.getElementById('bottoni').innerHTML = "";
+    document.getElementById('numero').innerText = "";
+    return;
+  }
+
+  let disponibili = numeri.filter(n => !usati.includes(n.num));
+  let curr = disponibili[Math.floor(Math.random()*disponibili.length)];
+
+  usati.push(curr.num);
+
+  rispostaCorretta = curr.nome;
+
+  // mostra numero
+  document.getElementById('numero').innerText = curr.num;
+
+  document.getElementById('domanda').innerText =
+    "Come si dice questo numero?";
+
+  let opzioni = [rispostaCorretta];
+
+  while(opzioni.length < 4){
+    let r = numeri[Math.floor(Math.random()*numeri.length)].nome;
+    if(!opzioni.includes(r)) opzioni.push(r);
+  }
+
+  opzioni.sort(() => Math.random() - 0.5);
+
+  let html = '';
+
+  for(let o of opzioni){
+    html += `<button onclick="controlla('${o}')">${o}</button>`;
+  }
+
+  document.getElementById('bottoni').innerHTML = html;
+}
+
+// CONTROLLO
+function controlla(val){
+
+  let bottoni = document.querySelectorAll('#bottoni button');
+
+  bottoni.forEach(btn => {
+
+    if(btn.innerText === rispostaCorretta){
+      btn.classList.add('correct');
+    }
+
+    if(btn.innerText === val && val !== rispostaCorretta){
+      btn.classList.add('wrong');
+    }
+
+    btn.disabled = true;
+  });
+
+  document.getElementById('nextBtn').disabled = false;
+}
+
+// AVVIO
+nuovaDomanda();
+
+</script>
+
+</body>
+</html>
+

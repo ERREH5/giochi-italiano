@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pronomi possessivi</title>
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<a href="index.html" class="top-bar">
+  🎮 Mini Giochi Italiano
+</a>
+
+<div class="card">
+
+  <h2>👨‍👩‍👧‍👦 Pronomi possessivi</h2>
+
+  <p id="domanda"></p>
+
+  <div id="bottoni"></div>
+
+  <button id="nextBtn" class="next-btn" onclick="nuovaDomanda()" disabled>Avanti</button>
+
+</div>
+
+<script>
+
+// DATI
+const dati = [
+{
+  text:"______ nonni vivono in campagna.",
+  correct:["i miei","i tuoi","i suoi","i nostri","i vostri","i loro"]
+},
+{
+  text:"______ madre è molto gentile.",
+  correct:["mia","tua","sua","nostra","vostra","loro"]
+},
+{
+  text:"______ amico vive a Milano.",
+  correct:["il mio","il tuo","il suo","il nostro","il vostro","il loro"]
+},
+{
+  text:"______ casa è bella.",
+  correct:["la mia","la tua","la sua","la nostra","la vostra","la loro"]
+}
+];
+
+// lista completa per generare errori
+const tutte = [
+"il mio","il tuo","il suo","il nostro","il vostro","il loro",
+"la mia","la tua","la sua","la nostra","la vostra","la loro",
+"i miei","i tuoi","i suoi","i nostri","i vostri","i loro",
+"le mie","le tue","le sue","le nostre","le vostre","le loro",
+"mio","tuo","suo","nostro","vostro","loro",
+"mia","tua","sua","nostra","vostra","loro"
+];
+
+let usati = [];
+let risposteCorrette;
+
+// NUOVA DOMANDA
+function nuovaDomanda(){
+
+  document.getElementById('nextBtn').disabled = true;
+
+  if(usati.length === dati.length){
+    document.getElementById('domanda').innerText = "✅ Completato!";
+    document.getElementById('bottoni').innerHTML = "";
+    return;
+  }
+
+  let disponibili = dati.filter(x => !usati.includes(x));
+  let curr = disponibili[Math.floor(Math.random()*disponibili.length)];
+
+  usati.push(curr);
+
+  risposteCorrette = curr.correct;
+
+  document.getElementById('domanda').innerText = curr.text;
+
+  // scegli UNA corretta da mostrare
+  let corretta = risposteCorrette[Math.floor(Math.random()*risposteCorrette.length)];
+
+  let opzioni = [corretta];
+
+  while(opzioni.length < 4){
+    let r = tutte[Math.floor(Math.random()*tutte.length)];
+    if(!opzioni.includes(r)) opzioni.push(r);
+  }
+
+  opzioni.sort(() => Math.random() - 0.5);
+
+  let html = '';
+
+  for(let o of opzioni){
+    html += `<button onclick="controlla('${o}')">${o}</button>`;
+  }
+
+  document.getElementById('bottoni').innerHTML = html;
+}
+
+// CONTROLLO
+function controlla(val){
+
+  let bottoni = document.querySelectorAll('#bottoni button');
+
+  bottoni.forEach(btn => {
+
+    if(risposteCorrette.includes(btn.innerText)){
+      btn.classList.add('correct');
+    }
+
+    if(btn.innerText === val && !risposteCorrette.includes(val)){
+      btn.classList.add('wrong');
+    }
+
+    btn.disabled = true;
+  });
+
+  document.getElementById('nextBtn').disabled = false;
+}
+
+// AVVIO
+nuovaDomanda();
+
+</script>
+
+</body>
+</html>

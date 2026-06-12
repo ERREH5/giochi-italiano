@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pronuncia</title>
+
+<link rel="stylesheet" href="style.css">
+
+<style>
+<style>
+
+h2 {
+  margin-bottom: 10px;
+}
+
+/* separatori */
+hr {
+  margin: 20px 0;
+  border: none;
+  border-top: 2px solid #eee;
+}
+
+/* gruppi */
+.group {
+  margin-bottom: 20px;
+}
+
+/* bottone suono principale (CI, GI...) */
+.group > button {
+  font-size: 18px;
+  padding: 10px 15px;
+  background:#2c3e50;
+}
+
+/* parole */
+.word {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* bottoni parole */
+.word button {
+  font-size: 14px;
+  padding: 6px 10px;
+  background:#3498db;
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+
+/* hover */
+.word button:hover {
+  background:#2ecc71;
+}
+
+
+/* effetto visivo click */
+button:active {
+  transform: scale(0.95);
+}
+
+</style>
+</style>
+
+</head>
+
+<body>
+
+<a href="index.html" class="top-bar">
+  🎮 Mini Giochi Italiano
+</a>
+
+<div class="card">
+
+  <h2>🔊 Pronuncia</h2>
+  <h3>Clicca per ascoltare</h3>
+
+  <!-- CI -->
+  <div class="group">
+    <button onclick="play('ci')">CI</button>
+    <div class="word">
+      <button onclick="play('ciao')">ciao </button>
+      <button onclick="play('cibo')">cibo </button>
+    </div>
+  </div>
+
+  <!-- CE -->
+  <div class="group">
+    <button onclick="play('ce')">CE</button>
+    <div class="word">
+      <button onclick="play('cena')">cena </button>
+      <button onclick="play('centro')">centro </button>
+    </div>
+  </div>
+
+  <!-- CA -->
+  <div class="group">
+    <button onclick="play('ca')">CA</button>
+    <div class="word">
+      <button onclick="play('casa')">casa </button>
+      <button onclick="play('cane')">cane </button>
+    </div>
+  </div>
+
+  <!-- CO -->
+  <div class="group">
+    <button onclick="play('co')">CO</button>
+    <div class="word">
+      <button onclick="play('cosa')">cosa </button>
+      <button onclick="play('corto')">corto </button>
+    </div>
+  </div>
+
+  <!-- CHI -->
+  <div class="group">
+    <button onclick="play('chi')">CHI</button>
+    <div class="word">
+      <button onclick="play('chiave')">chiave </button>
+      <button onclick="play('chiesa')">chiesa </button>
+    </div>
+  </div>
+
+  <!-- CHE -->
+  <div class="group">
+    <button onclick="play('che')">CHE</button>
+    <div class="word">
+      <button onclick="play('che')">che </button>
+      <button onclick="play('perche')">perché </button>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- GI -->
+  <div class="group">
+    <button onclick="play('gi')">GI</button>
+    <div class="word">
+      <button onclick="play('giro')">giro </button>
+      <button onclick="play('giorno')">giorno </button>
+    </div>
+  </div>
+
+  <!-- GE -->
+  <div class="group">
+    <button onclick="play('ge')">GE</button>
+    <div class="word">
+      <button onclick="play('gelato')">gelato </button>
+      <button onclick="play('gente')">gente </button>
+    </div>
+  </div>
+
+  <!-- GA -->
+  <div class="group">
+    <button onclick="play('ga')">GA</button>
+    <div class="word">
+      <button onclick="play('gatto')">gatto </button>
+      <button onclick="play('gamba')">gamba </button>
+    </div>
+  </div>
+
+  <!-- GO -->
+  <div class="group">
+    <button onclick="play('go')">GO</button>
+    <div class="word">
+      <button onclick="play('gomma')">gomma </button>
+      <button onclick="play('gol')">gol </button>
+    </div>
+  </div>
+
+  <!-- GHI -->
+  <div class="group">
+    <button onclick="play('ghi')">GHI</button>
+    <div class="word">
+      <button onclick="play('ghiro')">ghiro </button>
+      <button onclick="play('ghisa')">ghisa </button>
+    </div>
+  </div>
+
+  <!-- GHE -->
+  <div class="group">
+    <button onclick="play('ghe')">GHE</button>
+    <div class="word">
+      <button onclick="play('ghepardo')">ghepardo </button>
+      <button onclick="play('spaghetti')">spaghetti </button>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- SCI -->
+  <div class="group">
+    <button onclick="play('sci')">SCI</button>
+    <div class="word">
+      <button onclick="play('sciare')">sciare </button>
+      <button onclick="play('scimmia')">scimmia </button>
+    </div>
+  </div>
+
+  <!-- SCE -->
+  <div class="group">
+    <button onclick="play('sce')">SCE</button>
+    <div class="word">
+      <button onclick="play('scena')">scena </button>
+      <button onclick="play('scelta')">scelta </button>
+    </div>
+  </div>
+
+  <!-- SCA -->
+  <div class="group">
+    <button onclick="play('sca')">SCA</button>
+    <div class="word">
+      <button onclick="play('scala')">scala </button>
+      <button onclick="play('scarpa')">scarpa </button>
+    </div>
+  </div>
+
+  <!-- SCO -->
+  <div class="group">
+    <button onclick="play('sco')">SCO</button>
+    <div class="word">
+      <button onclick="play('scuola')">scuola </button>
+      <button onclick="play('scopa')">scopa </button>
+    </div>
+  </div>
+
+  <!-- SCHI -->
+  <div class="group">
+    <button onclick="play('schi')">SCHI</button>
+    <div class="word">
+      <button onclick="play('schiena')">schiena </button>
+      <button onclick="play('schifo')">schifo </button>
+    </div>
+  </div>
+
+  <!-- SCHE -->
+  <div class="group">
+    <button onclick="play('sche')">SCHE</button>
+    <div class="word">
+      <button onclick="play('schema')">schema </button>
+      <button onclick="play('scheda')">scheda </button>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- GN -->
+  <div class="group">
+    <button onclick="play('gn')">GN</button>
+    <div class="word">
+      <button onclick="play('gnomo')">gnomo </button>
+      <button onclick="play('bagno')">bagno </button>
+    </div>
+  </div>
+
+  <!-- GLI -->
+  <div class="group">
+    <button onclick="play('gli')">GLI</button>
+    <div class="word">
+      <button onclick="play('figlia')">figlia </button>
+      <button onclick="play('maglia')">maglia </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+
+let audio;
+let isPlaying = false;
+
+function play(sound){
+
+  if(isPlaying) return;
+
+  audio = new Audio("audio/" + sound + ".mp3");
+  isPlaying = true;
+
+  audio.play();
+
+  audio.onended = function(){
+    isPlaying = false;
+  };
+}
+
+</script>
+
+</body>
+</html>

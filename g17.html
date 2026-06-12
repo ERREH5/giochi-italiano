@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preposizioni articolate</title>
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<a href="index.html" class="top-bar">
+  🎮 Mini Giochi Italiano
+</a>
+
+<div class="card">
+
+  <h2>📍 Preposizioni articolate</h2>
+
+  <p id="domanda"></p>
+
+  <div id="bottoni"></div>
+
+  <button id="nextBtn" class="next-btn" onclick="nuovaDomanda()" disabled>Avanti</button>
+
+</div>
+
+<script>
+
+// ✅ DATI
+const dati = [
+
+{ text:"Vado ___ ristorante.", correct:"al", tipo:"a" },
+{ text:"Vado ___ stadio.", correct:"allo", tipo:"a" },
+{ text:"Vado ___ banca.", correct:"alla", tipo:"a" },
+{ text:"Parlo ___ bambini.", correct:"ai", tipo:"a" },
+{ text:"Parlo ___ studenti.", correct:"agli", tipo:"a" },
+{ text:"Parlo ___ ragazze.", correct:"alle", tipo:"a" },
+{ text:"Vado ___ università.", correct:"all’", tipo:"a" },
+
+{ text:"Il libro ___ professore è interessante.", correct:"del", tipo:"di" },
+{ text:"Il tetto ___ stadio è nuovo.", correct:"dello", tipo:"di" },
+{ text:"La porta ___ casa è chiusa.", correct:"della", tipo:"di" },
+{ text:"I colori ___ quadri sono vivaci.", correct:"dei", tipo:"di" },
+{ text:"I libri ___ studenti sono qui.", correct:"degli", tipo:"di" },
+{ text:"Le scarpe ___ ragazze sono eleganti.", correct:"delle", tipo:"di" },
+{ text:"Il nome ___ amico è Marco.", correct:"dell’", tipo:"di" },
+
+{ text:"Vivo ___ centro della città.", correct:"nel", tipo:"in" },
+{ text:"Sono ___ stadio ora.", correct:"nello", tipo:"in" },
+{ text:"Abito ___ casa grande.", correct:"nella", tipo:"in" },
+{ text:"Cammino ___ parchi.", correct:"nei", tipo:"in" },
+{ text:"Studio ___ uffici moderni.", correct:"negli", tipo:"in" },
+{ text:"Faranno i concerti ___ città italiane.", correct:"nelle", tipo:"in" },
+{ text:"Abito ___ appartamento nuovo.", correct:"nell’", tipo:"in" },
+
+{ text:"Il gatto è ___ tavolo.", correct:"sul", tipo:"su" },
+{ text:"Il quadro è ___ scaffale.", correct:"sullo", tipo:"su" },
+{ text:"Il libro è ___ sedia.", correct:"sulla", tipo:"su" },
+{ text:"I bicchieri sono ___ tavoli.", correct:"sui", tipo:"su" },
+{ text:"I libri sono ___ scaffali.", correct:"sugli", tipo:"su" },
+{ text:"Le borse sono ___ sedie.", correct:"sulle", tipo:"su" },
+{ text:"Il gatto salta ___ albero", correct:"sull’", tipo:"su" }
+
+];
+
+// ✅ MAPPA OPZIONI
+const opzioniMap = {
+  "a": ["al","allo","alla","ai","agli","alle","all’"],
+  "di": ["del","dello","della","dei","degli","delle","dell’"],
+  "in": ["nel","nello","nella","nei","negli","nelle","nell’"],
+  "su": ["sul","sullo","sulla","sui","sugli","sulle","sull’"]
+};
+
+let usati = [];
+let rispostaCorretta;
+
+// ✅ NUOVA DOMANDA
+function nuovaDomanda(){
+
+  document.getElementById('nextBtn').disabled = true;
+
+  if(usati.length === dati.length){
+    document.getElementById('domanda').innerText = "✅ Completato!";
+    document.getElementById('bottoni').innerHTML = "";
+    return;
+  }
+
+  let disponibili = dati.filter(x => !usati.includes(x));
+  let curr = disponibili[Math.floor(Math.random()*disponibili.length)];
+
+  usati.push(curr);
+
+  rispostaCorretta = curr.correct;
+
+  document.getElementById('domanda').innerText = curr.text;
+
+  // ✅ PRENDI SOLO OPZIONI DELLA STESSA PREPOSIZIONE
+  let tutte = opzioniMap[curr.tipo];
+
+  let altre = tutte.filter(x => x !== rispostaCorretta);
+
+  // ✅ scegli 3 sbagliate
+  altre.sort(()=>Math.random()-0.5);
+  let opzioni = altre.slice(0,3);
+
+  // ✅ aggiungi corretta
+  opzioni.push(rispostaCorretta);
+
+  // ✅ mescola
+  opzioni.sort(()=>Math.random()-0.5);
+
+  let html = '';
+
+  for(let o of opzioni){
+    html += `<button onclick="controlla('${o}')">${o}</button>`;
+  }
+
+  document.getElementById('bottoni').innerHTML = html;
+}
+
+// ✅ CONTROLLO
+function controlla(val){
+
+  let bottoni = document.querySelectorAll('#bottoni button');
+
+  bottoni.forEach(btn=>{
+
+    if(btn.innerText === rispostaCorretta){
+      btn.classList.add('correct');
+    }
+
+    if(btn.innerText === val && val !== rispostaCorretta){
+      btn.classList.add('wrong');
+    }
+
+    btn.disabled = true;
+  });
+
+  document.getElementById('nextBtn').disabled = false;
+}
+
+// START
+nuovaDomanda();
+
+</script>
+
+</body>
+</html>

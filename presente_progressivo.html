@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerundio</title>
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<a href="index.html" class="top-bar">
+  🎮 Mini Giochi Italiano
+</a>
+
+<div class="card">
+
+  <h2>➡️ Presente progressivo</h2>
+  <h3>Stare + Gerundio</h3>
+
+  <p id="domanda"></p>
+
+  <div id="bottoni"></div>
+
+  <button id="nextBtn" class="next-btn" onclick="nuovaDomanda()" disabled>Avanti</button>
+
+</div>
+
+<script>
+
+// ✅ DATI
+const dati = [
+
+{
+text:"Io _______.",
+correct:"sto mangiando",
+forms:[
+"sto mangiando",
+"stai mangiando",
+"sta mangiando",
+"stiamo mangiando",
+"state mangiando",
+"stanno mangiando"
+]
+},
+
+{
+text:"Tu _______ la TV.",
+correct:"stai guardando",
+forms:[
+"sto guardando",
+"stai guardando",
+"sta guardando",
+"stiamo guardando",
+"state guardando",
+"stanno guardando"
+]
+},
+
+{
+text:"Lui _______.",
+correct:"sta dormendo",
+forms:[
+"sto dormendo",
+"stai dormendo",
+"sta dormendo",
+"stiamo dormendo",
+"state dormendo",
+"stanno dormendo"
+]
+},
+
+{
+text:"Noi _______.",
+correct:"stiamo studiando",
+forms:[
+"sto studiando",
+"stai studiando",
+"sta studiando",
+"stiamo studiando",
+"state studiando",
+"stanno studiando"
+]
+},
+
+{
+text:"Voi _______.",
+correct:"state lavorando",
+forms:[
+"sto lavorando",
+"stai lavorando",
+"sta lavorando",
+"stiamo lavorando",
+"state lavorando",
+"stanno lavorando"
+]
+},
+
+{
+text:"Loro _______.",
+correct:"stanno parlando",
+forms:[
+"sto parlando",
+"stai parlando",
+"sta parlando",
+"stiamo parlando",
+"state parlando",
+"stanno parlando"
+]
+},
+
+{
+text:"Io _______ un libro.",
+correct:"sto leggendo",
+forms:[
+"sto leggendo",
+"stai leggendo",
+"sta leggendo",
+"stiamo leggendo",
+"state leggendo",
+"stanno leggendo"
+]
+},
+
+{
+text:"Tu _______ musica.",
+correct:"stai ascoltando",
+forms:[
+"sto ascoltando",
+"stai ascoltando",
+"sta ascoltando",
+"stiamo ascoltando",
+"state ascoltando",
+"stanno ascoltando"
+]
+},
+
+{
+text:"Noi _______ a casa.",
+correct:"stiamo restando",
+forms:[
+"sto restando",
+"stai restando",
+"sta restando",
+"stiamo restando",
+"state restando",
+"stanno restando"
+]
+},
+
+{
+text:"Loro _______ nel parco.",
+correct:"stanno camminando",
+forms:[
+"sto camminando",
+"stai camminando",
+"sta camminando",
+"stiamo camminando",
+"state camminando",
+"stanno camminando"
+]
+}
+
+];
+
+let usati = [];
+let rispostaCorretta;
+
+// ✅ NUOVA DOMANDA
+function nuovaDomanda(){
+
+  document.getElementById('nextBtn').disabled = true;
+
+  if(usati.length === dati.length){
+    document.getElementById('domanda').innerText = "✅ Completato!";
+    document.getElementById('bottoni').innerHTML = "";
+    return;
+  }
+
+  let disponibili = dati.filter(x => !usati.includes(x));
+  let curr = disponibili[Math.floor(Math.random()*disponibili.length)];
+
+  usati.push(curr);
+
+  rispostaCorretta = curr.correct;
+
+  document.getElementById('domanda').innerText = curr.text;
+
+  // ✅ selezione opzioni (stesso verbo)
+  let altre = curr.forms.filter(x => x !== rispostaCorretta);
+
+  altre.sort(()=>Math.random()-0.5);
+  let opzioni = altre.slice(0,3);
+
+  opzioni.push(rispostaCorretta);
+  opzioni.sort(()=>Math.random()-0.5);
+
+  let html = '';
+
+  for(let o of opzioni){
+    html += `<button onclick="controlla('${o}')">${o}</button>`;
+  }
+
+  document.getElementById('bottoni').innerHTML = html;
+}
+
+// ✅ CONTROLLO
+function controlla(val){
+
+  let bottoni = document.querySelectorAll('#bottoni button');
+
+  bottoni.forEach(btn=>{
+
+    if(btn.innerText === rispostaCorretta){
+      btn.classList.add('correct');
+    }
+
+    if(btn.innerText === val && val !== rispostaCorretta){
+      btn.classList.add('wrong');
+    }
+
+    btn.disabled = true;
+  });
+
+  document.getElementById('nextBtn').disabled = false;
+}
+
+// START
+nuovaDomanda();
+
+</script>
+
+</body>
+</html>
+

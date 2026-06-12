@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Colori</title>
+
+<link rel="stylesheet" href="style.css">
+
+<style>
+#colorBox {
+  width:120px;
+  height:120px;
+  margin:15px auto;
+  border-radius:15px;
+  border:3px solid #ddd;
+}
+</style>
+
+</head>
+
+<body>
+
+<a href="index.html" class="top-bar">
+  🎮 Mini Giochi Italiano
+</a>
+
+<div class="card">
+
+  <h2>🎨 Colori</h2>
+
+  <div id="colorBox"></div>
+
+  <p id="domanda"></p>
+
+  <div id="bottoni"></div>
+
+  <button id="nextBtn" class="next-btn" onclick="nuovaDomanda()" disabled>Avanti</button>
+
+</div>
+
+<script>
+
+// DATI
+const colori = [
+{nome:'rosso', valore:'red'},
+{nome:'blu', valore:'blue'},
+{nome:'verde', valore:'green'},
+{nome:'giallo', valore:'yellow'},
+{nome:'nero', valore:'black'},
+{nome:'bianco', valore:'white'},
+{nome:'arancione', valore:'orange'},
+{nome:'viola', valore:'purple'},
+{nome:'rosa', valore:'pink'},
+{nome:'marrone', valore:'#6c3c0c'},
+{nome:'grigio', valore:'gray'}
+];
+
+let usati = [];
+let rispostaCorretta;
+
+// NUOVA DOMANDA
+function nuovaDomanda(){
+
+  document.getElementById('nextBtn').disabled = true;
+
+  if(usati.length === colori.length){
+    document.getElementById('domanda').innerText = "✅ Completato!";
+    document.getElementById('bottoni').innerHTML = "";
+    document.getElementById('colorBox').style.background = "transparent";
+    return;
+  }
+
+  let disponibili = colori.filter(c => !usati.includes(c.nome));
+  let curr = disponibili[Math.floor(Math.random()*disponibili.length)];
+
+  usati.push(curr.nome);
+
+  rispostaCorretta = curr.nome;
+
+  // mostra colore
+  document.getElementById('colorBox').style.background = curr.valore;
+
+  document.getElementById('domanda').innerText = "Che colore è?";
+
+  // opzioni
+  let opzioni = [rispostaCorretta];
+
+  while(opzioni.length < 4){
+    let r = colori[Math.floor(Math.random()*colori.length)].nome;
+    if(!opzioni.includes(r)) opzioni.push(r);
+  }
+
+  opzioni.sort(() => Math.random() - 0.5);
+
+  let html = '';
+
+  for(let o of opzioni){
+    html += `<button onclick="controlla('${o}')">${o}</button>`;
+  }
+
+  document.getElementById('bottoni').innerHTML = html;
+}
+
+// CONTROLLO
+function controlla(val){
+
+  let bottoni = document.querySelectorAll('#bottoni button');
+
+  bottoni.forEach(btn => {
+
+    if(btn.innerText === rispostaCorretta){
+      btn.classList.add('correct');
+    }
+
+    if(btn.innerText === val && val !== rispostaCorretta){
+      btn.classList.add('wrong');
+    }
+
+    btn.disabled = true;
+  });
+
+  document.getElementById('nextBtn').disabled = false;
+}
+
+// AVVIO
+nuovaDomanda();
+
+</script>
+
+</body>
+</html>

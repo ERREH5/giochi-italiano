@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verbi riflessivi</title>
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<a href="index.html" class="top-bar">
+  🎮 Mini Giochi Italiano
+</a>
+
+<div class="card">
+
+  <h2>🪞 Verbi riflessivi</h2>
+
+  <p id="domanda"></p>
+
+  <div id="bottoni"></div>
+
+  <button id="nextBtn" class="next-btn" onclick="nuovaDomanda()" disabled>Avanti</button>
+
+</div>
+
+<script>
+
+// ✅ DATI
+const dati = [
+
+{
+text:"Io _______ alle 7.",
+correct:"mi sveglio",
+forms:["mi sveglio","ti svegli","si sveglia","ci svegliamo","vi svegliate","si svegliano"]
+},
+
+{
+text:"Tu _______ la mattina presto.",
+correct:"ti alzi",
+forms:["mi alzo","ti alzi","si alza","ci alziamo","vi alzate","si alzano"]
+},
+
+{
+text:"Lui _______ subito dopo pranzo.",
+correct:"si riposa",
+forms:["mi riposo","ti riposi","si riposa","ci riposiamo","vi riposate","si riposano"]
+},
+
+{
+text:"Noi _______ alle 8.",
+correct:"ci laviamo",
+forms:["mi lavo","ti lavi","si lava","ci laviamo","vi lavate","si lavano"]
+},
+
+{
+text:"Voi _______ velocemente.",
+correct:"vi vestite",
+forms:["mi vesto","ti vesti","si veste","ci vestiamo","vi vestite","si vestono"]
+},
+
+{
+text:"Loro _______ sempre tardi.",
+correct:"si addormentano",
+forms:["mi addormento","ti addormenti","si addormenta","ci addormentiamo","vi addormentate","si addormentano"]
+},
+
+{
+text:"Io _______ i denti.",
+correct:"mi lavo",
+forms:["mi lavo","ti lavi","si lava","ci laviamo","vi lavate","si lavano"]
+},
+
+{
+text:"Tu _______ molto bene.",
+correct:"ti senti",
+forms:["mi sento","ti senti","si sente","ci sentiamo","vi sentite","si sentono"]
+},
+
+{
+text:"Noi _______ ogni giorno.",
+correct:"ci incontriamo",
+forms:["mi incontro","ti incontri","si incontra","ci incontriamo","vi incontrate","si incontrano"]
+},
+
+{
+text:"Loro _______ per la festa.",
+correct:"si preparano",
+forms:["mi preparo","ti prepari","si prepara","ci prepariamo","vi preparate","si preparano"]
+}
+
+];
+
+let usati = [];
+let rispostaCorretta;
+
+// ✅ NUOVA DOMANDA
+function nuovaDomanda(){
+
+  document.getElementById('nextBtn').disabled = true;
+
+  if(usati.length === dati.length){
+    document.getElementById('domanda').innerText = "✅ Completato!";
+    document.getElementById('bottoni').innerHTML = "";
+    return;
+  }
+
+  let disponibili = dati.filter(x => !usati.includes(x));
+  let curr = disponibili[Math.floor(Math.random()*disponibili.length)];
+
+  usati.push(curr);
+
+  rispostaCorretta = curr.correct;
+
+  document.getElementById('domanda').innerText = curr.text;
+
+  // ✅ scegli 4 forme dello stesso verbo
+  let altre = curr.forms.filter(x => x !== rispostaCorretta);
+
+  altre.sort(()=>Math.random()-0.5);
+  let opzioni = altre.slice(0,3);
+
+  opzioni.push(rispostaCorretta);
+
+  opzioni.sort(()=>Math.random()-0.5);
+
+  let html = '';
+
+  for(let o of opzioni){
+    html += `<button onclick="controlla('${o}')">${o}</button>`;
+  }
+
+  document.getElementById('bottoni').innerHTML = html;
+}
+
+// ✅ CONTROLLO
+function controlla(val){
+
+  let bottoni = document.querySelectorAll('#bottoni button');
+
+  bottoni.forEach(btn=>{
+
+    if(btn.innerText === rispostaCorretta){
+      btn.classList.add('correct');
+    }
+
+    if(btn.innerText === val && val !== rispostaCorretta){
+      btn.classList.add('wrong');
+    }
+
+    btn.disabled = true;
+  });
+
+  document.getElementById('nextBtn').disabled = false;
+}
+
+// START
+nuovaDomanda();
+
+</script>
+
+</body>
+</html>

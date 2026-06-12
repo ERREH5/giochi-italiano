@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Imperfetto</title>
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<a href="index.html" class="top-bar">
+  🎮 Mini Giochi Italiano
+</a>
+
+<div class="card">
+
+  <h2>⏳ Imperfetto</h2>
+
+  <p id="domanda"></p>
+
+  <div id="bottoni"></div>
+
+  <button id="nextBtn" class="next-btn" onclick="nuovaDomanda()" disabled>Avanti</button>
+
+</div>
+
+<script>
+const dati = [
+
+{
+text:"Quando ero piccolo, (giocare) ______ sempre al parco.",
+correct:"giocavo",
+forms:["giocavo","giocavi","giocava","giocavamo","giocavate","giocavano"]
+},
+
+{
+text:"Da bambini (noi) (andare) ______ al mare ogni estate.",
+correct:"andavamo",
+forms:["andavo","andavi","andava","andavamo","andavate","andavano"]
+},
+
+{
+text:"Mentre tu studiavi, io (ascoltare) ______ la musica.",
+correct:"ascoltavo",
+forms:["ascoltavo","ascoltavi","ascoltava","ascoltavamo","ascoltavate","ascoltavano"]
+},
+
+{
+text:"Ogni domenica mia nonna (preparare) ______ il pranzo.",
+correct:"preparava",
+forms:["preparavo","preparavi","preparava","preparavamo","preparavate","preparavano"]
+},
+
+{
+text:"Da giovane mio padre (lavorare) ______ in fabbrica.",
+correct:"lavorava",
+forms:["lavoravo","lavoravi","lavorava","lavoravamo","lavoravate","lavoravano"]
+},
+
+{
+text:"Noi (abitare) ______ in una casa molto grande.",
+correct:"abitavamo",
+forms:["abitavo","abitavi","abitava","abitavamo","abitavate","abitavano"]
+},
+
+{
+text:"A quell’epoca (noi) (essere) ______ tutti più rilassati.",
+correct:"eravamo",
+forms:["ero","eri","era","eravamo","eravate","erano"]
+},
+
+{
+text:"Quando pioveva, Maria (restare) ______ a casa.",
+correct:"restava",
+forms:["restavo","restavi","restava","restavamo","restavate","restavano"]
+},
+
+{
+text:"Da studenti (noi) (avere) ______ pochi soldi.",
+correct:"avevamo",
+forms:["avevo","avevi","aveva","avevamo","avevate","avevano"]
+},
+
+{
+text:"Ogni sera (guardare) ______ la televisione insieme.",
+correct:"guardavamo",
+forms:["guardavo","guardavi","guardava","guardavamo","guardavate","guardavano"]
+},
+
+{
+text:"Da piccolo (io) (credere) ______ a Babbo Natale.",
+correct:"credevo",
+forms:["credevo","credevi","credeva","credevamo","credevate","credevano"]
+},
+
+{
+text:"Mentre cucinavo, i bambini (dormire) ______.",
+correct:"dormivano",
+forms:["dormivo","dormivi","dormiva","dormivamo","dormivate","dormivano"]
+},
+
+{
+text:"A scuola (piacere) ______ molto la matematica.",
+correct:"Mi piaceva",
+forms:["Mi piacevo","Mi piacevi","Mi piaceva","Mi piacevamo","Mi piacevate","Mi piacevano"]
+},
+
+{
+text:"Da adolescente (io) (volere) ______ viaggiare.",
+correct:"volevo",
+forms:["volevo","volevi","voleva","volevamo","volevate","volevano"]
+},
+
+{
+text:"Noi (fare) ______ passeggiate.",
+correct:"facevamo",
+forms:["facevo","facevi","faceva","facevamo","facevate","facevano"]
+}
+
+];
+
+let usati = [];
+let rispostaCorretta;
+
+// ✅ NUOVA DOMANDA
+function nuovaDomanda(){
+
+  document.getElementById('nextBtn').disabled = true;
+
+  if(usati.length === dati.length){
+    document.getElementById('domanda').innerText = "✅ Completato!";
+    document.getElementById('bottoni').innerHTML = "";
+    return;
+  }
+
+  let disponibili = dati.filter(x => !usati.includes(x));
+  let curr = disponibili[Math.floor(Math.random()*disponibili.length)];
+
+  usati.push(curr);
+
+  rispostaCorretta = curr.correct;
+
+  document.getElementById('domanda').innerText = curr.text;
+
+  // ✅ PRENDI SOLO FORME DEL VERBO
+  let opzioni = [...curr.forms];
+
+  // scegli 4 casuali
+  opzioni.sort(()=>Math.random()-0.5);
+  opzioni = opzioni.slice(0,4);
+
+  // assicurati che la corretta sia dentro
+  if(!opzioni.includes(rispostaCorretta)){
+    opzioni[0] = rispostaCorretta;
+  }
+
+  opzioni.sort(()=>Math.random()-0.5);
+
+  let html = '';
+
+  for(let o of opzioni){
+    html += `<button onclick="controlla('${o}')">${o}</button>`;
+  }
+
+  document.getElementById('bottoni').innerHTML = html;
+}
+
+// ✅ CONTROLLO
+function controlla(val){
+
+  let bottoni = document.querySelectorAll('#bottoni button');
+
+  bottoni.forEach(btn=>{
+
+    if(btn.innerText === rispostaCorretta){
+      btn.classList.add('correct');
+    }
+
+    if(btn.innerText === val && val !== rispostaCorretta){
+      btn.classList.add('wrong');
+    }
+
+    btn.disabled = true;
+  });
+
+  document.getElementById('nextBtn').disabled = false;
+}
+
+// START
+nuovaDomanda();
+``
+</script>
+
+</body>
+</html>

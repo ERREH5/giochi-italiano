@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Riflessivi Passato Prossimo</title>
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<a href="index.html" class="top-bar">
+  🎮 Mini Giochi Italiano
+</a>
+
+<div class="card">
+
+  <h2>⏳ Verbi riflessivi (Passato prossimo)</h2>
+
+  <p id="domanda"></p>
+
+  <div id="bottoni"></div>
+
+  <button id="nextBtn" class="next-btn" onclick="nuovaDomanda()" disabled>Avanti</button>
+
+</div>
+
+<script>
+
+// ✅ DATI
+const dati = [
+
+{
+text:"Io _______ alle 7.",
+correct:"mi sono svegliato",
+forms:[
+"mi sono svegliato",
+"ti sei svegliato",
+"si è svegliato",
+"ci siamo svegliati",
+"vi siete svegliati",
+"si sono svegliati"
+]
+},
+
+{
+text:"Tu _______ presto.",
+correct:"ti sei alzato",
+forms:[
+"mi sono alzato",
+"ti sei alzato",
+"si è alzato",
+"ci siamo alzati",
+"vi siete alzati",
+"si sono alzati"
+]
+},
+
+{
+text:"Lui _______ dopo pranzo.",
+correct:"si è riposato",
+forms:[
+"mi sono riposato",
+"ti sei riposato",
+"si è riposato",
+"ci siamo riposati",
+"vi siete riposati",
+"si sono riposati"
+]
+},
+
+{
+text:"Noi _______ alle 8.",
+correct:"ci siamo lavati",
+forms:[
+"mi sono lavato",
+"ti sei lavato",
+"si è lavato",
+"ci siamo lavati",
+"vi siete lavati",
+"si sono lavati"
+]
+},
+
+{
+text:"Voi _______ velocemente.",
+correct:"vi siete vestiti",
+forms:[
+"mi sono vestito",
+"ti sei vestito",
+"si è vestito",
+"ci siamo vestiti",
+"vi siete vestiti",
+"si sono vestiti"
+]
+},
+
+{
+text:"Loro _______ tardi.",
+correct:"si sono addormentati",
+forms:[
+"mi sono addormentato",
+"ti sei addormentato",
+"si è addormentato",
+"ci siamo addormentati",
+"vi siete addormentati",
+"si sono addormentati"
+]
+},
+
+{
+text:"Io _______ i denti.",
+correct:"mi sono lavato",
+forms:[
+"mi sono lavato",
+"ti sei lavato",
+"si è lavato",
+"ci siamo lavati",
+"vi siete lavati",
+"si sono lavati"
+]
+},
+
+{
+text:"Tu _______ bene.",
+correct:"ti sei sentito",
+forms:[
+"mi sono sentito",
+"ti sei sentito",
+"si è sentito",
+"ci siamo sentiti",
+"vi siete sentiti",
+"si sono sentiti"
+]
+},
+
+{
+text:"Noi _______ ieri.",
+correct:"ci siamo incontrati",
+forms:[
+"mi sono incontrato",
+"ti sei incontrato",
+"si è incontrato",
+"ci siamo incontrati",
+"vi siete incontrati",
+"si sono incontrati"
+]
+},
+
+{
+text:"Loro _______ per la festa.",
+correct:"si sono preparati",
+forms:[
+"mi sono preparato",
+"ti sei preparato",
+"si è preparato",
+"ci siamo preparati",
+"vi siete preparati",
+"si sono preparati"
+]
+}
+
+];
+
+let usati = [];
+let rispostaCorretta;
+
+// ✅ NUOVA DOMANDA
+function nuovaDomanda(){
+
+  document.getElementById('nextBtn').disabled = true;
+
+  if(usati.length === dati.length){
+    document.getElementById('domanda').innerText = "✅ Completato!";
+    document.getElementById('bottoni').innerHTML = "";
+    return;
+  }
+
+  let disponibili = dati.filter(x => !usati.includes(x));
+  let curr = disponibili[Math.floor(Math.random()*disponibili.length)];
+
+  usati.push(curr);
+
+  rispostaCorretta = curr.correct;
+
+  document.getElementById('domanda').innerText = curr.text;
+
+  // ✅ scegli 4 forme dello stesso verbo
+  let altre = curr.forms.filter(x => x !== rispostaCorretta);
+
+  altre.sort(()=>Math.random()-0.5);
+  let opzioni = altre.slice(0,3);
+
+  opzioni.push(rispostaCorretta);
+  opzioni.sort(()=>Math.random()-0.5);
+
+  let html = '';
+
+  for(let o of opzioni){
+    html += `<button onclick="controlla('${o}')">${o}</button>`;
+  }
+
+  document.getElementById('bottoni').innerHTML = html;
+}
+
+// ✅ CONTROLLO
+function controlla(val){
+
+  let bottoni = document.querySelectorAll('#bottoni button');
+
+  bottoni.forEach(btn=>{
+
+    if(btn.innerText === rispostaCorretta){
+      btn.classList.add('correct');
+    }
+
+    if(btn.innerText === val && val !== rispostaCorretta){
+      btn.classList.add('wrong');
+    }
+
+    btn.disabled = true;
+  });
+
+  document.getElementById('nextBtn').disabled = false;
+}
+
+// START
+nuovaDomanda();
+
+</script>
+
+</body>
+</html>
