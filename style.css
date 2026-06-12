@@ -2,23 +2,21 @@
   box-sizing: border-box;
 }
 
-
 body{
   font-family: Arial, sans-serif;
   margin:0;
   padding:15px;
 
-  /* 🔥 nuovo background */
+  /* ✅ gradient più moderno */
   background: linear-gradient(
     135deg,
-    #6dd5ed,
-    #2193b0
+    #5f9cff,
+    #6a82fb,
+    #8f6ed5
   );
 
-  /* migliora rendering */
   min-height: 100vh;
 }
-
 
 /* CARD */
 .card {
@@ -27,8 +25,18 @@ body{
   margin:20px auto;
   width:100%;
   max-width:400px;
-  border-radius:12px;
-  box-shadow:0 5px 12px rgba(0,0,0,0.2);
+  border-radius:14px;
+
+  /* ✅ ombra migliorata */
+  box-shadow:0 8px 18px rgba(0,0,0,0.25);
+
+  /* ✅ animazione ingresso */
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity:0; transform: translateY(8px); }
+  to { opacity:1; transform: translateY(0); }
 }
 
 /* TESTO */
@@ -43,35 +51,41 @@ h1 {
 
 /* BOTTONI */
 button {
-  width:100%;                 /* ✅ importante */
+  width:100%;
   padding:14px;
   margin:5px 0;
   border:none;
-  border-radius:10px;
-  background:#3498db;
+  border-radius:12px;
+
+  /* ✅ blu più moderno */
+  background: linear-gradient(90deg,#4facfe,#00c6ff);
+
   color:white;
   font-size:16px;
   cursor:pointer;
-  transition:0.2s;
+
+  transition: all 0.2s ease;
 }
 
-.next-btn {
-  background: #e67e22; /* arancione */
-  margin-top: 15px;
-}
-
-.next-btn:hover {
-  background: #d35400;
-}
-
-/* hover (desktop) */
+/* ✅ hover più elegante */
 button:hover {
-  background:#2ecc71;
+  transform: translateY(-2px);
+  filter: brightness(0.95);
 }
 
 /* click mobile */
 button:active {
-  transform:scale(0.97);
+  transform:scale(0.96);
+}
+
+/* NEXT */
+.next-btn {
+  background: linear-gradient(90deg,#ff9966,#ff5e62);
+  margin-top: 15px;
+}
+
+.next-btn:hover {
+  filter: brightness(0.95);
 }
 
 /* VERSIONE DESKTOP */
@@ -86,23 +100,25 @@ button:active {
   }
 
   button {
-    max-width:250px;
+    max-width:100%;
   }
 
 }
 
+/* ✅ stati più vivi */
 .correct {
-  background: #2ecc71 !important;
+  background: linear-gradient(90deg,#2ecc71,#27ae60) !important;
 }
 
 .wrong {
-  background: #e74c3c !important;
+  background: linear-gradient(90deg,#ff6a6a,#e74c3c) !important;
 }
 
+/* ✅ TOP BAR NON CAMBIATA STRUTTURA */
 .top-bar {
-  display: block;           /* importante per farlo a tutta larghezza */
+  display: block;
   width: 100%;
-  background: #2c3e50;
+  background: linear-gradient(90deg,#2c3e50,#34495e);
   color: white;
   text-align: center;
   padding: 15px;
@@ -110,13 +126,14 @@ button:active {
   font-weight: bold;
   border-radius: 10px;
   margin-bottom: 15px;
-  text-decoration: none;   /* toglie underline del link */
+  text-decoration: none;
 }
 
 .top-bar:hover {
-  background: #34495e;
+  filter: brightness(1.1);
 }
 
+/* KEYBOARD */
 .keyboard {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
