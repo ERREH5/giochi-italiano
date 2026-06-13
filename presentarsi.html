@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presentarsi</title>
+<link rel="stylesheet" href="style.css">
+
+<style>
+.stats {
+  display: flex;
+ justify-content: space-between;
+  margin-bottom: 15px;
+  font-size: 14px;
+  color: #555;
+  background: #f0f0f0;
+  padding: 8px 12px;
+  border-radius: 10px;
+}
+
+/* Stili per il gioco di ordinamento */
+.parole-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px 0;
+  overflow-y: auto;
+  padding: 10px;
+  background: #fafafa;
+  border-radius: 12px;
+}
+
+.parola {
+  background: linear-gradient(90deg, #4facfe, #00c6ff);
+  color: white;
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: all 0.2s ease;
+  user-select: none;
+  display: inline-block;
+}
+
+.parola:hover {
+  transform: translateY(-2px);
+  filter: brightness(0.95);
+}
+
+.parola:active {
+  transform: scale(0.96);
+}
+
+.frase-costruita {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 20px 0;
+  padding: 15px;
+  background: #f5f5f5;
+  border-radius: 12px;
+  min-height: 70px;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.parola-selezionata {
+  background: #2ecc71;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 15px;
+  display: inline-block;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.parola-selezionata:hover {
+  transform: translateY(-2px);
+  filter: brightness(0.9);
+}
+
+.parola-selezionata:active {
+  transform: scale(0.96);
+}
+
+.btn-reset {
+  background: linear-gradient(90deg, #ff9966, #ff5e62);
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.btn-reset:hover {
+  filter: brightness(0.95);
+}
+
+.btn-controlla {
+  background: linear-gradient(90deg, #2ecc71, #27ae60);
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.btn-controlla:hover {
+  filter: brightness(0.95);
+}
+
+.feedback-messaggio {
+  text-align: center;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 10px;
+  font-weight: bold;
+  display: none;
+}
+
+.feedback-corretto {
+  background: #2ecc71;
+  color: white;
+}
+
+.feedback-sbagliato {
+  background: #e74c3c;
+  color: white;
+}
+
+.frase-nascosta {
+  background: #f0f0f0;
+  padding: 15px;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 16px;
+  color: #555;
+  margin: 15px 0;
+  border: 2px dashed #ccc;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.button-group button {
+  flex: 1;
+}
+</style>
+</head>
+
+<body>
+
+<a href="index.html" class="top-bar">
+  🎮 Mini Giochi Italiano
+</a>
+
+<!-- ===================== -->
+<!-- GIOCO 1 - RICONOSCIMENTO -->
+<!-- ===================== -->
+
+<div class="card">
+  <h2>👋 Presentarsi</h2>
+  <h3>Che cosa significa?</h3>
+  
+  <div class="stats">
+    <span>📋 Domanda: <span id="contatore1">1</span>/<span id="totale1"></span></span>
+  </div>
+
+  <p id="domanda1" style="font-size:18px; font-weight:bold; text-align:center; margin:20px 0;"></p>
+  <div id="bottoni1"></div>
+  <button id="nextBtn1" class="next-btn" onclick="prossimaDomanda1()" disabled>▶ Avanti</button>
+</div>
+
+<!-- ===================== -->
+<!-- GIOCO 2 - COMPLETA -->
+<!-- ===================== -->
+
+<div class="card">
+  <h2>✏️ Completa la frase</h2>
+
+  <div class="stats">
+    <span>📋 Domanda: <span id="contatore2">1</span>/<span id="totale2"></span></span>
+  </div>
+
+  <p id="domanda2" style="font-size:18px; font-weight:bold; text-align:center; margin:20px 0;"></p>
+  <div id="bottoni2"></div>
+  <button id="nextBtn2" class="next-btn" onclick="prossimaDomanda2()" disabled>▶ Avanti</button>
+</div>
+
+<!-- ===================== -->
+<!-- GIOCO 3 - ORDINA LA FRASE -->
+<!-- ===================== -->
+
+<div class="card">
+  <h2>🔄 Ordina la frase</h2>
+  <p style="text-align:center; font-size:14px; color:#666;">Clicca sulle parole nell'ordine corretto per formare la frase</p>
+
+  <div class="stats">
+    <span>📋 Domanda: <span id="contatore3">1</span>/<span id="totale3"></span></span>
+  </div>
+
+  <div class="frase-nascosta">
+    📝 <strong>Traduzione / Indizio:</strong><br>
+    <span id="indizioFrase" style="color:#6a82fb;">???</span>
+  </div>
+
+  <div id="paroleContainer" class="parole-container">
+    <!-- Parole mescolate -->
+  </div>
+
+  <div id="fraseCostruita" class="frase-costruita">
+    <!-- Parole selezionate in ordine -->
+  </div>
+
+  <div id="feedback3" class="feedback-messaggio"></div>
+
+  <div class="button-group">
+    <button id="resetBtn3" class="btn-reset" onclick="resetSelezione3()" disabled>🗑️ Cancella tutto</button>
+    <button id="controllaBtn3" class="btn-controlla" onclick="controllaFrase()" disabled>✅ Controlla</button>
+  </div>
+  
+  <button id="nextBtn3" class="next-btn" onclick="prossimaDomanda3()" disabled>▶ Avanti</button>
+</div>
+
+<script>
+
+/* =======================
+   GIOCO 1 – RICONOSCIMENTO
+   ======================= */
+
+const dati1 = [
+{text:"Come ti chiami?", correct:"What is your name?", options:["What is your name?","How old are you?","Where are you from?","What do you do?"]},
+{text:"Mi chiamo Anna.", correct:"To say your name", options:["To say your name","To say your age","To say your job","To say where you are from"]},
+{text:"Quanti anni hai?", correct:"How old are you?", options:["How old are you?","What is your name?","Where are you from?","What do you do?"]},
+{text:"Ho 25 anni.", correct:"To say your age", options:["To say your age","To say your name","To say your job","To say where you are from"]},
+{text:"Di dove sei?", correct:"Where are you from?", options:["Where are you from?","How old are you?","What is your name?","What do you do?"]},
+{text:"Sono di Roma.", correct:"To say where you are from", options:["To say where you are from","To say your age","To say your name","To say your job"]}
+];
+
+let usati1 = [], rispostaCorretta1, giocoCompletato1 = false;
+let domandaIndex1 = 0, domandeTotali1 = dati1.length;
+
+function aggiornaContatore1() {
+  document.getElementById("contatore1").innerText = domandaIndex1 + 1;
+  document.getElementById("totale1").innerText = domandeTotali1;
+}
+
+function mostraFineGioco1() {
+  if(giocoCompletato1) return;
+  giocoCompletato1 = true;
+  document.getElementById('domanda1').innerHTML = "✅ COMPLETATO! Hai finito tutte le domande! 🎉";
+  document.getElementById('bottoni1').innerHTML = "";
+  document.getElementById('nextBtn1').disabled = true;
+  
+  let ricominciaBtn = document.createElement("button");
+  ricominciaBtn.innerText = "🔄 Ricomincia Gioco 1";
+  ricominciaBtn.style.marginTop = "15px";
+  ricominciaBtn.onclick = () => inizializzaGioco1();
+  document.getElementById('bottoni1').appendChild(ricominciaBtn);
+}
+
+function nuovaDomanda1(){
+  document.getElementById('nextBtn1').disabled = true;
+  
+  // Controlla se abbiamo finito TUTTE le domande
+  if(usati1.length === domandeTotali1) {
+    mostraFineGioco1();
+    return;
+  }
+  
+  let disponibili = dati1.filter(x => !usati1.includes(x));
+  let curr = disponibili[Math.floor(Math.random()*disponibili.length)];
+  usati1.push(curr);
+  rispostaCorretta1 = curr.correct;
+  document.getElementById('domanda1').innerHTML = curr.text;
+  let opzioni = [...curr.options].sort(()=>Math.random()-0.5);
+  document.getElementById('bottoni1').innerHTML = opzioni.map(o => `<button onclick="controlla1('${o.replace(/'/g, "\\'")}')">${o}</button>`).join('');
+}
+
+function controlla1(val){
+  document.querySelectorAll('#bottoni1 button').forEach(btn=>{
+    if(btn.innerText === rispostaCorretta1) btn.classList.add('correct');
+    if(btn.innerText === val && val !== rispostaCorretta1) btn.classList.add('wrong');
+    btn.disabled = true;
+  });
+  document.getElementById('nextBtn1').disabled = false;
+}
+
+function prossimaDomanda1(){
+  if(giocoCompletato1) return;
+  
+  // Se abbiamo già finito le domande, non fare nulla
+  if(usati1.length === domandeTotali1) {
+    mostraFineGioco1();
+    return;
+  }
+  
+  domandaIndex1++;
+  aggiornaContatore1();
+  nuovaDomanda1();
+}
+
+function inizializzaGioco1(){
+  giocoCompletato1 = false;
+  domandaIndex1 = 0;
+  usati1 = [];
+  aggiornaContatore1();
+  nuovaDomanda1();
+}
+
+/* =======================
+   GIOCO 2 – COMPLETA
+   ======================= */
+
+const dati2 = [
+{text:"Mi ______ Marco.", correct:"chiamo", options:["chiamo","sono","ho","vengo"]},
+{text:"Ho ______ anni.", correct:"25", options:["25","Marco","Roma","studio"]},
+{text:"Sono ______ Milano.", correct:"di", options:["di","a","in","da"]},
+{text:"______ italiano.", correct:"Studio", options:["Studio","Lavoro","Vengo","Vado"]},
+{text:"Lavoro ______ ufficio.", correct:"in", options:["in","a","di","con"]},
+{text:"______ uno studente.", correct:"Sono", options:["Sono","Ho","Vengo","Studio"]},
+{text:"Vengo ______ Italia.", correct:"dall'", options:["dall'","al","nel","sul"]},
+{text:"Mi chiamo ______.", correct:"Anna", options:["Anna","25","Italia","studente"]}
+];
+
+let usati2 = [], rispostaCorretta2, giocoCompletato2 = false;
+let domandaIndex2 = 0, domandeTotali2 = dati2.length;
+
+function aggiornaContatore2() {
+  document.getElementById("contatore2").innerText = domandaIndex2 + 1;
+  document.getElementById("totale2").innerText = domandeTotali2;
+}
+
+function mostraFineGioco2() {
+  if(giocoCompletato2) return;
+  giocoCompletato2 = true;
+  document.getElementById('domanda2').innerHTML = "✅ COMPLETATO! Hai finito tutte le domande! 🎉";
+  document.getElementById('bottoni2').innerHTML = "";
+  document.getElementById('nextBtn2').disabled = true;
+  
+  let ricominciaBtn = document.createElement("button");
+  ricominciaBtn.innerText = "🔄 Ricomincia Gioco 2";
+  ricominciaBtn.style.marginTop = "15px";
+  ricominciaBtn.onclick = () => inizializzaGioco2();
+  document.getElementById('bottoni2').appendChild(ricominciaBtn);
+}
+
+function nuovaDomanda2(){
+  document.getElementById('nextBtn2').disabled = true;
+  
+  if(usati2.length === domandeTotali2) {
+    mostraFineGioco2();
+    return;
+  }
+  
+  let disponibili = dati2.filter(x => !usati2.includes(x));
+  let curr = disponibili[Math.floor(Math.random()*disponibili.length)];
+  usati2.push(curr);
+  rispostaCorretta2 = curr.correct;
+  document.getElementById('domanda2').innerHTML = curr.text;
+  let opzioni = [...curr.options].sort(()=>Math.random()-0.5);
+  document.getElementById('bottoni2').innerHTML = opzioni.map(o => `<button onclick="controlla2('${o.replace(/'/g, "\\'")}')">${o}</button>`).join('');
+}
+
+function controlla2(val){
+  document.querySelectorAll('#bottoni2 button').forEach(btn=>{
+    if(btn.innerText === rispostaCorretta2) btn.classList.add('correct');
+    if(btn.innerText === val && val !== rispostaCorretta2) btn.classList.add('wrong');
+    btn.disabled = true;
+  });
+  document.getElementById('nextBtn2').disabled = false;
+}
+
+function prossimaDomanda2(){
+  if(giocoCompletato2) return;
+  
+  if(usati2.length === domandeTotali2) {
+    mostraFineGioco2();
+    return;
+  }
+  
+  domandaIndex2++;
+  aggiornaContatore2();
+  nuovaDomanda2();
+}
+
+function inizializzaGioco2(){
+  giocoCompletato2 = false;
+  domandaIndex2 = 0;
+  usati2 = [];
+  aggiornaContatore2();
+  nuovaDomanda2();
+}
+
+/* =======================
+   GIOCO 3 – ORDINA LA FRASE
+   ======================= */
+
+const dati3 = [
+  { frase: "Ciao, mi chiamo Marco.", indizio: "Hi, my name is Marco." },
+  { frase: "Sono Marco.", indizio: "I'm Marco." },
+  { frase: "Piacere di conoscerti.", indizio: "Nice to meet you." },
+  { frase: "Ho vent'anni.", indizio: "I am twenty years old." },
+  { frase: "Ho trentacinque anni.", indizio: "I am thirty-five years old." },
+  { frase: "Quanti anni hai?", indizio: "How old are you?" },
+  { frase: "Sono italiano.", indizio: "I am Italian (masculine)." },
+  { frase: "Sono italiana.", indizio: "I am Italian (feminine)." },
+  { frase: "Vengo dall'Italia.", indizio: "I come from Italy." },
+  { frase: "Sono di Milano.", indizio: "I am from Milan." },
+  { frase: "Di dove sei?", indizio: "Where are you from?" },
+  { frase: "Sono studente.", indizio: "I am a student (masculine)." },
+  { frase: "Sono studentessa.", indizio: "I am a student (feminine)." },
+  { frase: "Lavoro come insegnante.", indizio: "I work as a teacher." },
+  { frase: "Studio ingegneria.", indizio: "I study engineering." },
+  { frase: "Faccio il medico.", indizio: "I am a doctor (masculine)." },
+  { frase: "Parlo italiano e inglese.", indizio: "I speak Italian and English." },
+  { frase: "Sto imparando l'italiano.", indizio: "I am learning Italian." },
+  { frase: "Parli inglese?", indizio: "Do you speak English?" },
+  { frase: "Mi piace leggere.", indizio: "I like reading." },
+  { frase: "Mi piace la musica.", indizio: "I like music." },
+  { frase: "Nel tempo libero gioco a calcio.", indizio: "In my free time I play football." },
+  { frase: "Adoro viaggiare.", indizio: "I love travelling." }
+];
+
+let usati3 = [], giocoCompletato3 = false;
+let domandaIndex3 = 0, domandeTotali3 = dati3.length;
+let paroleMescolate = [], paroleSelezionate = [], fraseCorrente = "", rispostaEsattaArray = [], haSbagliato = false;
+
+function aggiornaContatore3() {
+  document.getElementById("contatore3").innerText = domandaIndex3 + 1;
+  document.getElementById("totale3").innerText = domandeTotali3;
+}
+
+function mostraFineGioco3() {
+  if(giocoCompletato3) return;
+  giocoCompletato3 = true;
+  
+  document.getElementById('indizioFrase').innerHTML = "🎉 COMPLETATO! Hai finito tutte le frasi! 🎉";
+  document.getElementById('paroleContainer').innerHTML = "";
+  document.getElementById('fraseCostruita').innerHTML = "";
+  document.getElementById('resetBtn3').disabled = true;
+  document.getElementById('controllaBtn3').disabled = true;
+  document.getElementById('nextBtn3').disabled = true;
+  document.getElementById('feedback3').style.display = "none";
+  
+  let ricominciaBtn = document.createElement("button");
+  ricominciaBtn.innerText = "🔄 Ricomincia Gioco 3";
+  ricominciaBtn.style.marginTop = "15px";
+  ricominciaBtn.style.width = "100%";
+  ricominciaBtn.onclick = () => inizializzaGioco3();
+  ricominciaBtn.classList.add("ricomincia-btn3");
+  
+  let container = document.getElementById('paroleContainer');
+  if (container) {
+    let oldBtn = container.querySelector(".ricomincia-btn3");
+    if (oldBtn) oldBtn.remove();
+    container.appendChild(ricominciaBtn);
+  }
+}
+
+function mescolaArray(arr) {
+  let nuovo = [...arr];
+  for (let i = nuovo.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [nuovo[i], nuovo[j]] = [nuovo[j], nuovo[i]];
+  }
+  return nuovo;
+}
+
+function rimuoviParolaSelezionata(index) {
+  if (haSbagliato) return;
+  if (paroleSelezionate.length === 0) return;
+  
+  let parolaRimossa = paroleSelezionate[index];
+  paroleSelezionate.splice(index, 1);
+  
+  paroleMescolate.push(parolaRimossa);
+  paroleMescolate = mescolaArray(paroleMescolate);
+  
+  aggiornaInterfaccia3();
+  document.getElementById('controllaBtn3').disabled = false;
+  document.getElementById('resetBtn3').disabled = false;
+  document.getElementById('nextBtn3').disabled = true;
+  document.getElementById('feedback3').style.display = "none";
+  document.getElementById('fraseCostruita').style.background = "#f5f5f5";
+}
+
+function resetSelezione3() {
+  if (haSbagliato) return;
+  
+  paroleSelezionate = [];
+  paroleMescolate = [...rispostaEsattaArray];
+  paroleMescolate = mescolaArray(paroleMescolate);
+  aggiornaInterfaccia3();
+  document.getElementById('controllaBtn3').disabled = false;
+  document.getElementById('resetBtn3').disabled = true;
+  document.getElementById('nextBtn3').disabled = true;
+  document.getElementById('feedback3').style.display = "none";
+  document.getElementById('fraseCostruita').style.background = "#f5f5f5";
+}
+
+function selezionaParola3(parola, index) {
+  if (paroleSelezionate.length >= rispostaEsattaArray.length) return;
+  if (haSbagliato) return;
+  
+  paroleMescolate.splice(index, 1);
+  paroleSelezionate.push(parola);
+  
+  aggiornaInterfaccia3();
+  document.getElementById('resetBtn3').disabled = false;
+  document.getElementById('controllaBtn3').disabled = false;
+}
+
+function controllaFrase() {
+  if (paroleSelezionate.length !== rispostaEsattaArray.length) {
+    let feedbackDiv = document.getElementById('feedback3');
+    feedbackDiv.innerHTML = "⚠️ Seleziona tutte le parole prima di controllare! ⚠️";
+    feedbackDiv.className = "feedback-messaggio feedback-sbagliato";
+    feedbackDiv.style.display = "block";
+    return;
+  }
+  
+  let fraseUtente = paroleSelezionate.join(' ');
+  let feedbackDiv = document.getElementById('feedback3');
+  
+  if (fraseUtente === fraseCorrente) {
+    feedbackDiv.innerHTML = "✅ CORRETTO! Bravo! ✅";
+    feedbackDiv.className = "feedback-messaggio feedback-corretto";
+    feedbackDiv.style.display = "block";
+    document.getElementById('nextBtn3').disabled = false;
+    document.getElementById('controllaBtn3').disabled = true;
+    document.getElementById('resetBtn3').disabled = true;
+    document.getElementById('fraseCostruita').style.background = "#a8e6cf";
+    
+    document.querySelectorAll('#paroleContainer .parola').forEach(el => {
+      el.style.opacity = "0.5";
+      el.style.cursor = "not-allowed";
+      el.onclick = null;
+    });
+    
+    document.querySelectorAll('.parola-selezionata').forEach(el => {
+      el.style.cursor = "not-allowed";
+      el.onclick = null;
+    });
+  } else {
+    haSbagliato = true;
+    feedbackDiv.innerHTML = `❌ SBAGLIATO! La frase corretta è:<br><strong>"${fraseCorrente}"</strong> ❌`;
+    feedbackDiv.className = "feedback-messaggio feedback-sbagliato";
+    feedbackDiv.style.display = "block";
+    document.getElementById('nextBtn3').disabled = false;
+    document.getElementById('controllaBtn3').disabled = true;
+    document.getElementById('resetBtn3').disabled = true;
+    document.getElementById('fraseCostruita').style.background = "#ffcccc";
+    
+    document.querySelectorAll('#paroleContainer .parola').forEach(el => {
+      el.style.opacity = "0.5";
+      el.style.cursor = "not-allowed";
+      el.onclick = null;
+    });
+    
+    document.querySelectorAll('.parola-selezionata').forEach(el => {
+      el.style.cursor = "not-allowed";
+      el.onclick = null;
+    });
+  }
+}
+
+function aggiornaInterfaccia3() {
+  let paroleHtml = paroleMescolate.map((p, i) => 
+    `<div class="parola" onclick="selezionaParola3('${p.replace(/'/g, "\\'")}', ${i})">${p}</div>`
+  ).join('');
+  document.getElementById('paroleContainer').innerHTML = paroleHtml || "<div style='color:green; text-align:center;'>✅ Tutte le parole sono state selezionate!</div>";
+  
+  let fraseHtml = paroleSelezionate.map((p, i) => 
+    `<div class="parola-selezionata" onclick="rimuoviParolaSelezionata(${i})" title="Clicca per rimuovere">${p} ✕</div>`
+  ).join('');
+  document.getElementById('fraseCostruita').innerHTML = fraseHtml || "<span style='color:#999;'>Clicca sulle parole nell'ordine corretto...</span>";
+}
+
+function nuovaDomanda3() {
+  document.getElementById('nextBtn3').disabled = true;
+  document.getElementById('resetBtn3').disabled = true;
+  document.getElementById('controllaBtn3').disabled = true;
+  document.getElementById('fraseCostruita').style.background = "#f5f5f5";
+  document.getElementById('feedback3').style.display = "none";
+  haSbagliato = false;
+  
+  if(usati3.length === domandeTotali3) {
+    mostraFineGioco3();
+    return;
+  }
+  
+  let disponibili = dati3.filter(x => !usati3.includes(x));
+  let curr = disponibili[Math.floor(Math.random()*disponibili.length)];
+  usati3.push(curr);
+  
+  fraseCorrente = curr.frase;
+  rispostaEsattaArray = fraseCorrente.split(' ');
+  paroleMescolate = mescolaArray(rispostaEsattaArray);
+  paroleSelezionate = [];
+  
+  document.getElementById('indizioFrase').innerHTML = curr.indizio;
+  
+  aggiornaInterfaccia3();
+}
+
+function prossimaDomanda3() {
+  if(giocoCompletato3) return;
+  
+  if(usati3.length === domandeTotali3) {
+    mostraFineGioco3();
+    return;
+  }
+  
+  domandaIndex3++;
+  aggiornaContatore3();
+  nuovaDomanda3();
+}
+
+function inizializzaGioco3(){
+  giocoCompletato3 = false;
+  domandaIndex3 = 0;
+  usati3 = [];
+  haSbagliato = false;
+  aggiornaContatore3();
+  nuovaDomanda3();
+}
+
+/* =======================
+   AVVIO TUTTI I GIOCHI
+   ======================= */
+
+function inizializzaGiochi(){
+  inizializzaGioco1();
+  inizializzaGioco2();
+  inizializzaGioco3();
+}
+
+inizializzaGiochi();
+
+</script>
+
+</body>
+</html>

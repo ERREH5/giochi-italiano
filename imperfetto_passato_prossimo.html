@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Imperfetto o Passato Prossimo?</title>
+<link rel="stylesheet" href="style.css">
+
+<style>
+#feedback {
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: bold;
+  display: none;
+}
+
+.feedback-correct {
+  background: #2ecc71;
+  color: white;
+}
+
+.feedback-wrong {
+  background: #e74c3c;
+  color: white;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  font-size: 14px;
+  color: #555;
+  background: #f0f0f0;
+  padding: 8px 12px;
+  border-radius: 10px;
+}
+
+.domanda-testo {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 20px 0;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.blank {
+  display: inline-block;
+  min-width: 120px;
+  background: #f0f0f0;
+  border-radius: 8px;
+  margin: 0 2px;
+}
+</style>
+</head>
+<body>
+
+<a href="index.html" class="top-bar">
+  🎮 Mini Giochi Italiano
+</a>
+
+<div class="card">
+  <h2>📖 Imperfetto o Passato Prossimo?</h2>
+  <p style="text-align:center; font-size:14px; color:#666;">Scegli il tempo corretto per completare la frase</p>
+
+  <div class="stats">
+    <span>📋 Domanda: <span id="contatore">1</span>/<span id="totale"></span></span>
+  </div>
+
+  <div id="quizDomanda" class="domanda-testo">
+    <!-- domanda qui -->
+  </div>
+
+  <div id="quizOpzioni"></div>
+
+  <div id="feedback"></div>
+
+  <button id="nextQuizBtn" class="next-btn" onclick="prossimaDomanda()" disabled>▶ Avanti</button>
+</div>
+
+<script>
+
+// === DATI DEL QUIZ ===
+// Ogni oggetto: frase, opzioni (array di 4), corretta (valore esatto), verboInfo (opzionale per chiarezza)
+const domandeImperfettoPassato = [
+  { frase: "Ieri sera _____ molto stanco, quindi _____ presto.", opzioni: ["ero / andavo", "sono stato / sono andato", "ero / sono andato", "sono stato / andavo"], corretta: "ero / sono andato" },
+  { frase: "Quando ero bambino _____ spesso al parco con mio nonno.", opzioni: ["sono andato", "andavo", "ho andato", "andai"], corretta: "andavo" },
+  { frase: "Mentre _____ la cena, il telefono _____.", opzioni: ["preparavo / squillava", "ho preparato / è squillato", "preparavo / è squillato", "ho preparato / squillava"], corretta: "preparavo / è squillato" },
+  { frase: "L'anno scorso _____ a vivere a Milano.", opzioni: ["mi trasferivo", "mi sono trasferito", "trasferivo", "ho trasferito"], corretta: "mi sono trasferito" },
+  { frase: "Da piccolo _____ paura del buio.", opzioni: ["ho avuto", "avevo", "ebbi", "ho stato"], corretta: "avevo" },
+  { frase: "Ieri _____ tutta la giornata a studiare.", opzioni: ["passavo", "ho passato", "passai", "ero passato"], corretta: "ho passato" },
+  { frase: "Quando _____ all'università, _____ in un bar.", opzioni: ["studiavo / lavoravo", "ho studiato / ho lavorato", "studiavo / ho lavorato", "ho studiato / lavoravo"], corretta: "studiavo / lavoravo" },
+  { frase: "Stamattina _____ tardi perché _____ male.", opzioni: ["mi svegliavo / dormivo", "mi sono svegliato / ho dormito", "mi svegliavo / ho dormito", "mi sono svegliato / dormivo"], corretta: "mi sono svegliato / dormivo" },
+  { frase: "Mentre _____ a casa, _____ a piovere.", opzioni: ["camminavo / cominciava", "ho camminato / ha cominciato", "camminavo / ha cominciato", "ho camminato / cominciava"], corretta: "camminavo / ha cominciato" },
+  { frase: "Da giovani _____ spesso insieme al cinema.", opzioni: ["siamo andati", "andavamo", "andammo", "siamo andavamo"], corretta: "andavamo" },
+  { frase: "La settimana scorsa _____ Laura per caso.", opzioni: ["incontravo", "ho incontrato", "incontrai", "stavo incontrando"], corretta: "ho incontrato" },
+  { frase: "Quando _____ in Spagna, _____ lo spagnolo.", opzioni: ["vivevo / studiavo", "ho vissuto / ho studiato", "vivevo / ho studiato", "ho vissuto / studiavo"], corretta: "vivevo / studiavo" },
+  { frase: "Ieri pomeriggio _____ caldo e _____ molta gente al mare.", opzioni: ["faceva / c'era", "ha fatto / c'è stata", "faceva / c'è stata", "ha fatto / c'era"], corretta: "faceva / c'era" },
+  { frase: "Da bambino _____ sempre cartoni animati il pomeriggio.", opzioni: ["ho guardato", "guardavo", "guardai", "stavo guardando"], corretta: "guardavo" },
+  { frase: "Mentre _____ il libro, _____ un messaggio.", opzioni: ["leggevo / arrivava", "ho letto / è arrivato", "leggevo / è arrivato", "ho letto / arrivava"], corretta: "leggevo / è arrivato" },
+  { frase: "L'altra sera _____ a cena con degli amici.", opzioni: ["uscivo", "sono uscito", "uscii", "stavo uscendo"], corretta: "sono uscito" },
+  { frase: "Quando _____ pioggia, _____ a casa.", opzioni: ["c'era / restavo", "c'è stata / sono restato", "c'era / sono restato", "c'è stata / restavo"], corretta: "c'era / restavo" },
+  { frase: "Ieri _____ una decisione importante.", opzioni: ["prendevo", "ho preso", "prendevo", "presi"], corretta: "ho preso" },
+  { frase: "Da piccolo non _____ mangiare le verdure.", opzioni: ["mi piaceva", "mi è piaciuto", "mi piacevo", "mi ha piaciuto"], corretta: "mi piaceva" },
+  { frase: "Mentre _____ la macchina, _____ la radio.", opzioni: ["guidavo / ascoltavo", "ho guidato / ho ascoltato", "guidavo / ho ascoltato", "ho guidato / ascoltavo"], corretta: "guidavo / ascoltavo" },
+  { frase: "L'estate scorsa _____ due settimane in Sicilia.", opzioni: ["passavo", "ho passato", "passai", "ero passato"], corretta: "ho passato" },
+  { frase: "Quando _____ giovane, _____ molto sport.", opzioni: ["ero / facevo", "sono stato / ho fatto", "ero / ho fatto", "sono stato / facevo"], corretta: "ero / facevo" },
+  { frase: "Ieri _____ per tutta la mattina.", opzioni: ["pioveva", "ha piovuto", "pioveva", "piovve"], corretta: "ha piovuto" },
+  { frase: "Mentre _____ con lui, _____ qualcosa di strano.", opzioni: ["parlavo / notavo", "ho parlato / ho notato", "parlavo / ho notato", "ho parlato / notavo"], corretta: "parlavo / ho notato" },
+  { frase: "Da studenti _____ sempre insieme.", opzioni: ["studiavamo", "abbiamo studiato", "studiammo", "studiando"], corretta: "studiavamo" },
+  { frase: "Ieri sera _____ un film bellissimo.", opzioni: ["vedevo", "ho visto", "vedevo", "vidi"], corretta: "ho visto" },
+  { frase: "Quando _____ a Roma, _____ spesso nei musei.", opzioni: ["vivevo / andavo", "ho vissuto / sono andato", "vivevo / sono andato", "ho vissuto / andavo"], corretta: "vivevo / andavo" },
+  { frase: "Stamattina _____ il treno e _____ tardi al lavoro.", opzioni: ["perdevo / arrivavo", "ho perso / sono arrivato", "perdevo / sono arrivato", "ho perso / arrivavo"], corretta: "ho perso / sono arrivato" },
+  { frase: "Da piccolo _____ il gelato tutti i giorni.", opzioni: ["mangiavo", "ho mangiato", "mangiavo", "mangiai"], corretta: "mangiavo" },
+  { frase: "Mentre _____ a casa, _____ qualcuno alla porta.", opzioni: ["ero / bussava", "sono stato / ha bussato", "ero / ha bussato", "sono stato / bussava"], corretta: "ero / ha bussato" }
+];
+
+let domandeOrdinate = [];
+let domandaIndex = 0;
+let domandeTotali = 30;
+let rispostaSelezionata = false;
+
+// === MESCOLA ARRAY ===
+function mescolaArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// === INIZIALIZZA QUIZ ===
+function inizializzaQuiz() {
+  domandeOrdinate = mescolaArray([...domandeImperfettoPassato]);
+  domandaIndex = 0;
+  rispostaSelezionata = false;
+  
+  document.getElementById("totale").innerText = domandeTotali;
+  document.getElementById("contatore").innerText = "1";
+  
+  caricaDomanda();
+}
+
+// === CARICA DOMANDA ===
+function caricaDomanda() {
+  if (domandaIndex >= domandeTotali) {
+    fineQuiz();
+    return;
+  }
+  
+  rispostaSelezionata = false;
+  document.getElementById("nextQuizBtn").disabled = true;
+  document.getElementById("feedback").style.display = "none";
+  
+  let domandaCorrente = domandeOrdinate[domandaIndex];
+  
+  document.getElementById("contatore").innerText = domandaIndex + 1;
+  
+  // Mostra la frase
+  document.getElementById("quizDomanda").innerHTML = domandaCorrente.frase;
+  
+  // Crea bottoni opzioni
+  let opzioniHtml = "";
+  let opzioniMescolate = mescolaArray([...domandaCorrente.opzioni]);
+  
+  for (let opt of opzioniMescolate) {
+    let optEscaped = opt.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    opzioniHtml += `<button class="quiz-opt-btn" onclick="controllaRisposta('${optEscaped}')">${opt}</button>`;
+  }
+  
+  document.getElementById("quizOpzioni").innerHTML = opzioniHtml;
+}
+
+// === CONTROLLA RISPOSTA ===
+function controllaRisposta(rispostaUtente) {
+  if (rispostaSelezionata) return;
+  
+  rispostaSelezionata = true;
+  let domandaCorrente = domandeOrdinate[domandaIndex];
+  let isCorretto = (rispostaUtente === domandaCorrente.corretta);
+  
+  let feedbackDiv = document.getElementById("feedback");
+  feedbackDiv.style.display = "block";
+  
+  let bottoni = document.querySelectorAll(".quiz-opt-btn");
+  
+  bottoni.forEach(btn => {
+    btn.disabled = true;
+    if (btn.innerText === domandaCorrente.corretta) {
+      btn.classList.add("correct");
+    }
+    if (btn.innerText === rispostaUtente && rispostaUtente !== domandaCorrente.corretta) {
+      btn.classList.add("wrong");
+    }
+  });
+  
+  if (isCorretto) {
+    feedbackDiv.innerHTML = "✅ Corretto!";
+    feedbackDiv.className = "feedback-correct";
+  } else {
+    feedbackDiv.innerHTML = `❌ Sbagliato!<br>Risposta corretta: "${domandaCorrente.corretta}"`;
+    feedbackDiv.className = "feedback-wrong";
+  }
+  
+  document.getElementById("nextQuizBtn").disabled = false;
+}
+
+// === PROSSIMA DOMANDA ===
+function prossimaDomanda() {
+  if (!rispostaSelezionata) return;
+  
+  domandaIndex++;
+  caricaDomanda();
+}
+
+// === FINE QUIZ ===
+function fineQuiz() {
+  document.getElementById("quizDomanda").innerHTML = "🎉 Complimenti! Hai completato tutte le domande! 🎉";
+  document.getElementById("quizOpzioni").innerHTML = "<p style='text-align:center; font-size:16px;'>Ottimo lavoro con imperfetto e passato prossimo!</p>";
+  document.getElementById("feedback").style.display = "none";
+  document.getElementById("nextQuizBtn").disabled = true;
+  
+  let ricominciaBtn = document.createElement("button");
+  ricominciaBtn.innerText = "🔄 Ricomincia";
+  ricominciaBtn.style.marginTop = "15px";
+  ricominciaBtn.onclick = function() {
+    inizializzaQuiz();
+  };
+  
+  let containerOpzioni = document.getElementById("quizOpzioni");
+  // Rimuovi eventuale bottone precedente
+  let oldBtn = containerOpzioni.querySelector(".ricomincia-btn");
+  if (oldBtn) oldBtn.remove();
+  ricominciaBtn.classList.add("ricomincia-btn");
+  containerOpzioni.appendChild(ricominciaBtn);
+}
+
+// === START ===
+window.addEventListener("DOMContentLoaded", () => {
+  inizializzaQuiz();
+});
+
+</script>
+</body>
+</html>
