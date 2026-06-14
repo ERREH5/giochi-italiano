@@ -5,8 +5,94 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Essere / Avere</title>
 <link rel="stylesheet" href="style.css">
-</head>
 
+<style>
+/* solo stili aggiuntivi per tabelle e giochi - mantengo le regole originali di style.css */
+.verb-tables {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.verb-table-container {
+  background: #f5f5f5;
+  border-radius: 14px;
+  padding: 12px 18px;
+  flex: 1;
+  min-width: 180px;
+}
+
+.verb-table-container h3 {
+  text-align: center;
+  margin-bottom: 12px;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.verb-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.verb-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+.verb-table td:first-child {
+  font-weight: bold;
+  color: #4facfe;
+}
+
+.verb-table tr:last-child td {
+  border-bottom: none;
+}
+
+.game-block {
+  margin-top: 25px;
+  border-top: 2px solid #e0e0e0;
+  padding-top: 20px;
+}
+
+.game-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: #2c3e50;
+  background: #f0f0f0;
+  display: inline-block;
+  padding: 5px 15px;
+  border-radius: 20px;
+}
+
+/* feedback visivo bottoni - compatibile con style.css */
+.correct-answer-btn {
+  background: linear-gradient(90deg, #2ecc71, #27ae60) !important;
+}
+
+.wrong-answer-btn {
+  background: linear-gradient(90deg, #ff6a6a, #e74c3c) !important;
+}
+
+/* stile per la traduzione inglese */
+.english-translation {
+  display: block;
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-top: 8px;
+  font-style: italic;
+  font-weight: normal;
+  text-align: center;
+}
+
+.question-container {
+  text-align: center;
+  margin: 20px 0;
+}
+</style>
+</head>
 <body>
 
 <a href="index.html" class="top-bar">
@@ -14,125 +100,454 @@
 </a>
 
 <div class="card">
-  <h2>Essere o Avere</h2>
+  <h2>📘 Essere o Avere</h2>
 
-  <p id="domanda"></p>
+  <!-- TABELLE VERBI -->
+  <div class="verb-tables">
+    <div class="verb-table-container">
+      <h3>📌 ESSERE</h3>
+      <table class="verb-table">
+        <tr><td>io</td><td><strong>sono</strong></td></tr>
+        <tr><td>tu</td><td><strong>sei</strong></td></tr>
+        <tr><td>lui/lei</td><td><strong>è</strong></td></tr>
+        <tr><td>noi</td><td><strong>siamo</strong></td></tr>
+        <tr><td>voi</td><td><strong>siete</strong></td></tr>
+        <tr><td>loro</td><td><strong>sono</strong></td></tr>
+      </table>
+    </div>
+    <div class="verb-table-container">
+      <h3>📌 AVERE</h3>
+      <table class="verb-table">
+        <tr><td>io</td><td><strong>ho</strong></td></tr>
+        <tr><td>tu</td><td><strong>hai</strong></td></tr>
+        <tr><td>lui/lei</td><td><strong>ha</strong></td></tr>
+        <tr><td>noi</td><td><strong>abbiamo</strong></td></tr>
+        <tr><td>voi</td><td><strong>avete</strong></td></tr>
+        <tr><td>loro</td><td><strong>hanno</strong></td></tr>
+      </table>
+    </div>
+  </div>
 
-  <div id="bottoni"></div>
+  <!-- GIOCO 1: SOLO ESSERE -->
+  <div class="game-block">
+    <div class="game-title">🎯 Gioco 1: Verbo ESSERE</div>
+    <div class="stats">
+      <span>📋 Domande: <span id="contatoreEssere">1</span>/<span id="totaleEssere">10</span></span>
+    </div>
+    <div id="domandaEssereContainer" class="question-container">
+      <p id="domandaEssere" style="font-size:18px; font-weight:bold; margin:0;"></p>
+      <span id="traduzioneEssere" class="english-translation"></span>
+    </div>
+    <div id="bottoniEssere"></div>
+    <button id="nextEssereBtn" class="next-btn" onclick="prossimaDomandaEssere()" disabled>▶ Avanti</button>
+  </div>
 
-  <button class="next-btn" onclick="nuovaDomanda()">Avanti</button>
+  <!-- GIOCO 2: SOLO AVERE -->
+  <div class="game-block">
+    <div class="game-title">🎯 Gioco 2: Verbo AVERE</div>
+    <div class="stats">
+      <span>📋 Domande: <span id="contatoreAvere">1</span>/<span id="totaleAvere">10</span></span>
+    </div>
+    <div id="domandaAvereContainer" class="question-container">
+      <p id="domandaAvere" style="font-size:18px; font-weight:bold; margin:0;"></p>
+      <span id="traduzioneAvere" class="english-translation"></span>
+    </div>
+    <div id="bottoniAvere"></div>
+    <button id="nextAvereBtn" class="next-btn" onclick="prossimaDomandaAvere()" disabled>▶ Avanti</button>
+  </div>
+
+  <!-- GIOCO 3: SCEGLI LA CONIUGAZIONE CORRETTA -->
+  <div class="game-block">
+    <div class="game-title">🎯 Gioco 3: Scegli la forma corretta</div>
+    <div class="stats">
+      <span>📋 Domande: <span id="contatoreMisto">1</span>/<span id="totaleMisto">20</span></span>
+    </div>
+    <div id="domandaMistaContainer" class="question-container">
+      <p id="domandaMista" style="font-size:18px; font-weight:bold; margin:0;"></p>
+      <span id="traduzioneMista" class="english-translation"></span>
+    </div>
+    <div id="bottoniMisti"></div>
+    <button id="nextMistoBtn" class="next-btn" onclick="prossimaDomandaMista()" disabled>▶ Avanti</button>
+  </div>
+
 </div>
 
 <script>
-
-// DATI
-const dati = [
-  {s:'Io', essere:'sono', avere:'ho'},
-  {s:'Tu', essere:'sei', avere:'hai'},
-  {s:'Lui', essere:'è', avere:'ha'},
-  {s:'Noi', essere:'siamo', avere:'abbiamo'},
-  {s:'Voi', essere:'siete', avere:'avete'},
-  {s:'Loro', essere:'sono', avere:'hanno'},
-    // senza pronomi
-{s:'Mio cugino', essere:'è', avere:'ha'},
-{s:'Marco', essere:'è', avere:'ha'},
-{s:'I miei genitori', essere:'sono', avere:'hanno'},
-{s:'I miei amici', essere:'sono', avere:'hanno'},
-{s:'La mia professoressa', essere:'è', avere:'ha'},
-{s:'tuo fratello', essere:'è', avere:'ha'},
-{s:'Le mie sorelle', essere:'sono', avere:'hanno'},
-{s:'Il cane', essere:'è', avere:'ha'},
-{s:'I bambini', essere:'sono', avere:'hanno'},
-{s:'Il ristorante', essere:'è', avere:'ha'},
-{s:'Mio padre', essere:'è', avere:'ha'},
-{s:'Mia madre', essere:'è', avere:'ha'},
-{s:'I miei nonni', essere:'sono', avere:'hanno'},
-{s:'Il tuo amico', essere:'è', avere:'ha'},
-{s:'Le mie amiche', essere:'sono', avere:'hanno'},
-{s:'Il bambino', essere:'è', avere:'ha'},
-{s:'Gli studenti', essere:'sono', avere:'hanno'},
-{s:'Il professore', essere:'è', avere:'ha'},
-{s:'La ragazza', essere:'è', avere:'ha'},
-{s:'I colleghi', essere:'sono', avere:'hanno'}
+// ========================
+// GIOCO 1: VERBO ESSERE (10 frasi con traduzione)
+// ========================
+const frasiEssere = [
+  { testo: "1. Io ___ molto stanco oggi.", corretto: "sono", traduzione: "I am very tired today." },
+  { testo: "2. Maria ___ una brava insegnante.", corretto: "è", traduzione: "Maria is a good teacher." },
+  { testo: "3. Noi ___ pronti per partire.", corretto: "siamo", traduzione: "We are ready to leave." },
+  { testo: "4. La pizza ___ calda e buona.", corretto: "è", traduzione: "The pizza is hot and good." },
+  { testo: "5. Tu ___ sicuro della tua decisione?", corretto: "sei", traduzione: "Are you sure about your decision?" },
+  { testo: "6. I miei amici ___ al cinema.", corretto: "sono", traduzione: "My friends are at the cinema." },
+  { testo: "7. Roma ___ la capitale d’Italia.", corretto: "è", traduzione: "Rome is the capital of Italy." },
+  { testo: "8. Voi ___ in ritardo questa mattina.", corretto: "siete", traduzione: "You guys are late this morning." },
+  { testo: "9. Il cane ___ molto affettuoso.", corretto: "è", traduzione: "The dog is very affectionate." },
+  { testo: "10. Le finestre ___ aperte.", corretto: "sono", traduzione: "The windows are open." }
 ];
 
-const tutte = ['sono','sei','è','siamo','siete','ho','hai','ha','abbiamo','avete','hanno'];
+const tutteEssere = ["sono", "sei", "è", "siamo", "siete", "sono"];
 
-let rispostaCorretta;
+let indiceEssere = 0;
+let risposteEssere = new Array(10).fill(null);
+let giocoEssereCompletato = false;
 
-// ✅ nuovo: traccia usati
-let usati = [];
+const domandaElEssere = document.getElementById("domandaEssere");
+const traduzioneElEssere = document.getElementById("traduzioneEssere");
+const bottoniDivEssere = document.getElementById("bottoniEssere");
+const nextBtnEssere = document.getElementById("nextEssereBtn");
+const contatoreEssereSpan = document.getElementById("contatoreEssere");
 
-// NUOVA DOMANDA
-function nuovaDomanda(){
+function aggiornaContatoreEssere() {
+  if (!giocoEssereCompletato && indiceEssere < frasiEssere.length) {
+    contatoreEssereSpan.innerText = indiceEssere + 1;
+  } else if (giocoEssereCompletato) {
+    contatoreEssereSpan.innerText = frasiEssere.length;
+  }
+}
 
-  // ✅ controllo fine gioco
-  if(usati.length === dati.length){
-    document.getElementById('domanda').innerText = "✅ Completato!";
-    document.getElementById('bottoni').innerHTML = "";
+function generaOpzioniEssere(corretto) {
+  let opzioni = [corretto];
+  while(opzioni.length < 4) {
+    let random = tutteEssere[Math.floor(Math.random() * tutteEssere.length)];
+    if(!opzioni.includes(random)) opzioni.push(random);
+  }
+  for(let i = opzioni.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [opzioni[i], opzioni[j]] = [opzioni[j], opzioni[i]];
+  }
+  return opzioni;
+}
+
+function mostraDomandaEssere() {
+  if(giocoEssereCompletato) return;
+  
+  if(indiceEssere >= frasiEssere.length) {
+    giocoEssereCompletato = true;
+    const corrette = risposteEssere.filter((r, idx) => r === frasiEssere[idx].corretto).length;
+    domandaElEssere.innerHTML = `✅ Gioco completato! Hai risposto correttamente a ${corrette} su ${frasiEssere.length} domande. 🎉`;
+    traduzioneElEssere.innerHTML = "";
+    bottoniDivEssere.innerHTML = "";
+    nextBtnEssere.disabled = true;
+    aggiornaContatoreEssere();
+    
+    const restartBtn = document.createElement("button");
+    restartBtn.innerText = "🔄 Ricomincia";
+    restartBtn.onclick = () => ricominciaGiocoEssere();
+    bottoniDivEssere.appendChild(restartBtn);
     return;
   }
-
-  // scegli non usato
-  let disponibili = dati.filter(x => !usati.includes(x));
-  let soggetto = disponibili[Math.floor(Math.random()*disponibili.length)];
-
-  usati.push(soggetto);
-
-  // verbo random
-  let tipo = Math.random() > 0.5 ? 'essere' : 'avere';
-
-  rispostaCorretta = soggetto[tipo];
-
-  document.getElementById('domanda').innerText =
-    soggetto.s + ' (' + tipo + ')';
-
-  // opzioni
-  let opzioni = [rispostaCorretta];
-
-  while(opzioni.length < 4){
-    let x = tutte[Math.floor(Math.random()*tutte.length)];
-    if(!opzioni.includes(x)) opzioni.push(x);
-  }
-
-  opzioni.sort(() => Math.random() - 0.5);
-
-  let html = '';
-
-  for(let i=0;i<opzioni.length;i++){
-    html += `<button onclick="controlla('${opzioni[i]}')">${opzioni[i]}</button>`;
-  }
-
-  document.getElementById('bottoni').innerHTML = html;
-}
-
-// CONTROLLO
-function controlla(val){
-
-  let bottoni = document.querySelectorAll('#bottoni button');
-
-  bottoni.forEach(btn => {
-
-    // bottone corretto → verde
-    if(btn.innerText === rispostaCorretta){
-      btn.classList.add('correct');
-    }
-
-    // bottone cliccato sbagliato → rosso
-    if(btn.innerText === val && val !== rispostaCorretta){
-      btn.classList.add('wrong');
-    }
-
-    btn.disabled = true;
+  
+  const domanda = frasiEssere[indiceEssere];
+  domandaElEssere.innerHTML = domanda.testo;
+  traduzioneElEssere.innerHTML = "📖 " + domanda.traduzione;
+  aggiornaContatoreEssere();
+  
+  const opzioni = generaOpzioniEssere(domanda.corretto);
+  bottoniDivEssere.innerHTML = "";
+  
+  opzioni.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.innerText = opt;
+    btn.onclick = () => rispondiEssere(btn, opt, domanda.corretto);
+    bottoniDivEssere.appendChild(btn);
   });
-
-  // abilita avanti
-  document.getElementById('nextBtn').disabled = false;
+  
+  nextBtnEssere.disabled = true;
 }
 
-// AVVIO
-nuovaDomanda();
+function rispondiEssere(btn, scelta, corretta) {
+  if(risposteEssere[indiceEssere] !== null) return;
+  
+  risposteEssere[indiceEssere] = scelta;
+  
+  const tuttiBtn = bottoniDivEssere.querySelectorAll("button");
+  tuttiBtn.forEach(b => {
+    b.disabled = true;
+    if(b.innerText === corretta) {
+      b.classList.add("correct-answer-btn");
+    }
+    if(b.innerText === scelta && scelta !== corretta) {
+      b.classList.add("wrong-answer-btn");
+    }
+  });
+  
+  nextBtnEssere.disabled = false;
+}
 
+function prossimaDomandaEssere() {
+  if(giocoEssereCompletato) return;
+  if(risposteEssere[indiceEssere] === null) return;
+  indiceEssere++;
+  mostraDomandaEssere();
+}
+
+function ricominciaGiocoEssere() {
+  indiceEssere = 0;
+  risposteEssere = new Array(10).fill(null);
+  giocoEssereCompletato = false;
+  mostraDomandaEssere();
+}
+
+// ========================
+// GIOCO 2: VERBO AVERE (10 frasi con traduzione)
+// ========================
+const frasiAvere = [
+  { testo: "1. Io ___ fame.", corretto: "ho", traduzione: "I am hungry." },
+  { testo: "2. Tu ___ tempo per aiutarmi?", corretto: "hai", traduzione: "Do you have time to help me?" },
+  { testo: "3. Marco ___ un cane molto vivace.", corretto: "ha", traduzione: "Marco has a very lively dog." },
+  { testo: "4. Noi ___ bisogno di una pausa.", corretto: "abbiamo", traduzione: "We need a break." },
+  { testo: "5. Lei ___ fretta questa mattina.", corretto: "ha", traduzione: "She is in a hurry this morning." },
+  { testo: "6. Voi ___ due fratelli.", corretto: "avete", traduzione: "You guys have two brothers." },
+  { testo: "7. I bambini ___ sonno.", corretto: "hanno", traduzione: "The children are sleepy." },
+  { testo: "8. Mia sorella ___ vent’anni.", corretto: "ha", traduzione: "My sister is twenty years old." },
+  { testo: "9. Loro ___ una bella casa al mare.", corretto: "hanno", traduzione: "They have a nice house by the sea." },
+  { testo: "10. Questa macchina ___ molti chilometri.", corretto: "ha", traduzione: "This car has many kilometers (on it)." }
+];
+
+const tutteAvere = ["ho", "hai", "ha", "abbiamo", "avete", "hanno"];
+
+let indiceAvere = 0;
+let risposteAvere = new Array(10).fill(null);
+let giocoAvereCompletato = false;
+
+const domandaElAvere = document.getElementById("domandaAvere");
+const traduzioneElAvere = document.getElementById("traduzioneAvere");
+const bottoniDivAvere = document.getElementById("bottoniAvere");
+const nextBtnAvere = document.getElementById("nextAvereBtn");
+const contatoreAvereSpan = document.getElementById("contatoreAvere");
+
+function aggiornaContatoreAvere() {
+  if (!giocoAvereCompletato && indiceAvere < frasiAvere.length) {
+    contatoreAvereSpan.innerText = indiceAvere + 1;
+  } else if (giocoAvereCompletato) {
+    contatoreAvereSpan.innerText = frasiAvere.length;
+  }
+}
+
+function generaOpzioniAvere(corretto) {
+  let opzioni = [corretto];
+  while(opzioni.length < 4) {
+    let random = tutteAvere[Math.floor(Math.random() * tutteAvere.length)];
+    if(!opzioni.includes(random)) opzioni.push(random);
+  }
+  for(let i = opzioni.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [opzioni[i], opzioni[j]] = [opzioni[j], opzioni[i]];
+  }
+  return opzioni;
+}
+
+function mostraDomandaAvere() {
+  if(giocoAvereCompletato) return;
+  
+  if(indiceAvere >= frasiAvere.length) {
+    giocoAvereCompletato = true;
+    const corrette = risposteAvere.filter((r, idx) => r === frasiAvere[idx].corretto).length;
+    domandaElAvere.innerHTML = `✅ Gioco completato! Hai risposto correttamente a ${corrette} su ${frasiAvere.length} domande. 🎉`;
+    traduzioneElAvere.innerHTML = "";
+    bottoniDivAvere.innerHTML = "";
+    nextBtnAvere.disabled = true;
+    aggiornaContatoreAvere();
+    
+    const restartBtn = document.createElement("button");
+    restartBtn.innerText = "🔄 Ricomincia";
+    restartBtn.onclick = () => ricominciaGiocoAvere();
+    bottoniDivAvere.appendChild(restartBtn);
+    return;
+  }
+  
+  const domanda = frasiAvere[indiceAvere];
+  domandaElAvere.innerHTML = domanda.testo;
+  traduzioneElAvere.innerHTML = "📖 " + domanda.traduzione;
+  aggiornaContatoreAvere();
+  
+  const opzioni = generaOpzioniAvere(domanda.corretto);
+  bottoniDivAvere.innerHTML = "";
+  
+  opzioni.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.innerText = opt;
+    btn.onclick = () => rispondiAvere(btn, opt, domanda.corretto);
+    bottoniDivAvere.appendChild(btn);
+  });
+  
+  nextBtnAvere.disabled = true;
+}
+
+function rispondiAvere(btn, scelta, corretta) {
+  if(risposteAvere[indiceAvere] !== null) return;
+  
+  risposteAvere[indiceAvere] = scelta;
+  
+  const tuttiBtn = bottoniDivAvere.querySelectorAll("button");
+  tuttiBtn.forEach(b => {
+    b.disabled = true;
+    if(b.innerText === corretta) {
+      b.classList.add("correct-answer-btn");
+    }
+    if(b.innerText === scelta && scelta !== corretta) {
+      b.classList.add("wrong-answer-btn");
+    }
+  });
+  
+  nextBtnAvere.disabled = false;
+}
+
+function prossimaDomandaAvere() {
+  if(giocoAvereCompletato) return;
+  if(risposteAvere[indiceAvere] === null) return;
+  indiceAvere++;
+  mostraDomandaAvere();
+}
+
+function ricominciaGiocoAvere() {
+  indiceAvere = 0;
+  risposteAvere = new Array(10).fill(null);
+  giocoAvereCompletato = false;
+  mostraDomandaAvere();
+}
+
+// ========================
+// GIOCO 3: 20 frasi con traduzione
+// ========================
+const frasiMiste = [
+  { testo: "1. Io _______ molto felice oggi.", corretto: "sono", traduzione: "I am very happy today." },
+  { testo: "2. Tu _______ un nuovo lavoro interessante.", corretto: "hai", traduzione: "You have an interesting new job." },
+  { testo: "3. Lui _______ molto alto per la sua età.", corretto: "è", traduzione: "He is very tall for his age." },
+  { testo: "4. Noi _______ fame dopo la lunga passeggiata.", corretto: "abbiamo", traduzione: "We are hungry after the long walk." },
+  { testo: "5. Voi _______ sempre gentili con tutti.", corretto: "siete", traduzione: "You guys are always kind to everyone." },
+  { testo: "6. Loro _______ due cani e un gatto.", corretto: "hanno", traduzione: "They have two dogs and a cat." },
+  { testo: "7. Io _______ fretta di finire questo progetto.", corretto: "ho", traduzione: "I am in a hurry to finish this project." },
+  { testo: "8. Tu _______ molto paziente con i bambini.", corretto: "sei", traduzione: "You are very patient with children." },
+  { testo: "9. Lei _______ un carattere molto forte.", corretto: "ha", traduzione: "She has a very strong personality." },
+  { testo: "10. Noi _______ stanchi dopo la riunione.", corretto: "siamo", traduzione: "We are tired after the meeting." },
+  { testo: "11. Voi _______ una bella casa vicino al mare.", corretto: "avete", traduzione: "You guys have a nice house near the sea." },
+  { testo: "12. Loro _______ molto rumorosi oggi.", corretto: "sono", traduzione: "They are very loud today." },
+  { testo: "13. Io _______ una domanda da farti.", corretto: "ho", traduzione: "I have a question to ask you." },
+  { testo: "14. Tu non _______ mai paura di niente.", corretto: "hai", traduzione: "You are never afraid of anything." },
+  { testo: "15. La mia macchina _______ un problema al motore.", corretto: "ha", traduzione: "My car has an engine problem." },
+  { testo: "16. Noi _______ fortunati ad avere buoni amici.", corretto: "siamo", traduzione: "We are lucky to have good friends." },
+  { testo: "17. Voi _______ sempre in ritardo!", corretto: "siete", traduzione: "You guys are always late!" },
+  { testo: "18. I ragazzi _______ una grande energia.", corretto: "hanno", traduzione: "The boys have a lot of energy." },
+  { testo: "19. Io _______ molto curioso di sapere come va.", corretto: "sono", traduzione: "I am very curious to know how it goes." },
+  { testo: "20. Tu _______ davvero bravo in quello che fai.", corretto: "sei", traduzione: "You are really good at what you do." }
+];
+
+const tutteConiugazioni = ["sono", "sei", "è", "siamo", "siete", "sono", "ho", "hai", "ha", "abbiamo", "avete", "hanno"];
+
+let indiceMisto = 0;
+let risposteMiste = new Array(20).fill(null);
+let giocoMistoCompletato = false;
+
+const domandaElMista = document.getElementById("domandaMista");
+const traduzioneElMista = document.getElementById("traduzioneMista");
+const bottoniDivMisti = document.getElementById("bottoniMisti");
+const nextBtnMisto = document.getElementById("nextMistoBtn");
+const contatoreMistoSpan = document.getElementById("contatoreMisto");
+
+function aggiornaContatoreMisto() {
+  if (!giocoMistoCompletato && indiceMisto < frasiMiste.length) {
+    contatoreMistoSpan.innerText = indiceMisto + 1;
+  } else if (giocoMistoCompletato) {
+    contatoreMistoSpan.innerText = frasiMiste.length;
+  }
+}
+
+function generaOpzioniMiste(corretto) {
+  let opzioni = [corretto];
+  while(opzioni.length < 4) {
+    let random = tutteConiugazioni[Math.floor(Math.random() * tutteConiugazioni.length)];
+    if(!opzioni.includes(random)) opzioni.push(random);
+  }
+  for(let i = opzioni.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [opzioni[i], opzioni[j]] = [opzioni[j], opzioni[i]];
+  }
+  return opzioni;
+}
+
+function mostraDomandaMista() {
+  if(giocoMistoCompletato) return;
+  
+  if(indiceMisto >= frasiMiste.length) {
+    giocoMistoCompletato = true;
+    const corrette = risposteMiste.filter((r, idx) => r === frasiMiste[idx].corretto).length;
+    domandaElMista.innerHTML = `✅ Gioco completato! Hai risposto correttamente a ${corrette} su ${frasiMiste.length} domande. 🎉`;
+    traduzioneElMista.innerHTML = "";
+    bottoniDivMisti.innerHTML = "";
+    nextBtnMisto.disabled = true;
+    aggiornaContatoreMisto();
+    
+    const restartBtn = document.createElement("button");
+    restartBtn.innerText = "🔄 Ricomincia";
+    restartBtn.onclick = () => ricominciaGiocoMisto();
+    bottoniDivMisti.appendChild(restartBtn);
+    return;
+  }
+  
+  const domanda = frasiMiste[indiceMisto];
+  domandaElMista.innerHTML = domanda.testo;
+  traduzioneElMista.innerHTML = "📖 " + domanda.traduzione;
+  aggiornaContatoreMisto();
+  
+  const opzioni = generaOpzioniMiste(domanda.corretto);
+  bottoniDivMisti.innerHTML = "";
+  
+  opzioni.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.innerText = opt;
+    btn.onclick = () => rispondiMisto(btn, opt, domanda.corretto);
+    bottoniDivMisti.appendChild(btn);
+  });
+  
+  nextBtnMisto.disabled = true;
+}
+
+function rispondiMisto(btn, scelta, corretta) {
+  if(risposteMiste[indiceMisto] !== null) return;
+  
+  risposteMiste[indiceMisto] = scelta;
+  
+  const tuttiBtn = bottoniDivMisti.querySelectorAll("button");
+  tuttiBtn.forEach(b => {
+    b.disabled = true;
+    if(b.innerText === corretta) {
+      b.classList.add("correct-answer-btn");
+    }
+    if(b.innerText === scelta && scelta !== corretta) {
+      b.classList.add("wrong-answer-btn");
+    }
+  });
+  
+  nextBtnMisto.disabled = false;
+}
+
+function prossimaDomandaMista() {
+  if(giocoMistoCompletato) return;
+  if(risposteMiste[indiceMisto] === null) return;
+  indiceMisto++;
+  mostraDomandaMista();
+}
+
+function ricominciaGiocoMisto() {
+  indiceMisto = 0;
+  risposteMiste = new Array(20).fill(null);
+  giocoMistoCompletato = false;
+  mostraDomandaMista();
+}
+
+// Inizializza i totali e avvia i giochi
+document.getElementById("totaleEssere").innerText = frasiEssere.length;
+document.getElementById("totaleAvere").innerText = frasiAvere.length;
+document.getElementById("totaleMisto").innerText = frasiMiste.length;
+
+mostraDomandaEssere();
+mostraDomandaAvere();
+mostraDomandaMista();
 </script>
 
 </body>
