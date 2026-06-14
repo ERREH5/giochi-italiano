@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>Indicazioni stradali - Città di Bellavista</title>
+<link rel="stylesheet" href="style.css">
+
+<style>
+.city-map {
+  background: #e8f0e8;
+  padding: 8px;
+  border-radius: 12px;
+  margin: 10px 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.map-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(45px, 55px));
+  grid-template-rows: repeat(7, minmax(45px, 55px));
+  gap: 2px;
+  justify-content: center;
+  background: #ccc;
+  border: 2px solid #999;
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  .map-grid {
+    grid-template-columns: repeat(7, minmax(40px, 48px));
+    grid-template-rows: repeat(7, minmax(40px, 48px));
+  }
+  .map-icon { font-size: 18px !important; }
+  .map-label { font-size: 7px !important; }
+  .freccia { font-size: 14px !important; }
+}
+
+@media (max-width: 380px) {
+  .map-grid {
+    grid-template-columns: repeat(7, minmax(35px, 42px));
+    grid-template-rows: repeat(7, minmax(35px, 42px));
+  }
+  .map-icon { font-size: 16px !important; }
+  .map-label { font-size: 6px !important; }
+  .freccia { font-size: 12px !important; }
+}
+
+.map-cell {
+  background: #d4e6d4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: bold;
+  padding: 2px;
+  position: relative;
+}
+
+.map-cell.strada { background: #f5e6c8; }
+.map-cell.edificio { background: #c8e6c8; border: 1px solid #4caf50; }
+.map-cell.incrocio { background: #ffe0b3; }
+
+.map-icon { font-size: 20px; }
+.map-label { font-size: 8px; margin-top: 2px; color: #333; max-width: 50px; word-wrap: break-word; }
+
+.freccia {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  font-size: 16px;
+  background: rgba(255,255,255,0.7);
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 8px;
+  background: #f0f0f0;
+  border-radius: 10px;
+  font-size: 10px;
+  justify-content: center;
+}
+
+.legend-item { display: flex; align-items: center; gap: 4px; }
+.legend-color { width: 14px; height: 14px; border-radius: 3px; }
+
+.stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: #555;
+  background: #f0f0f0;
+  padding: 6px 10px;
+  border-radius: 10px;
+}
+
+.card {
+  max-width: 100%;
+  padding: 15px;
+  margin: 10px auto;
+}
+
+button {
+  font-size: 14px;
+  padding: 12px;
+}
+
+.feedback {
+  margin-top: 12px;
+  padding: 8px;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: bold;
+  display: none;
+  font-size: 13px;
+}
+
+.feedback-correct { background: #2ecc71; color: white; }
+.feedback-wrong { background: #e74c3c; color: white; }
+
+.traduzione {
+  margin-top: 5px;
+  font-size: 11px;
+  font-weight: normal;
+  font-style: italic;
+  color: #f0f0f0;
+}
+
+#domanda { font-size: 16px; margin: 10px 0; }
+h2 { font-size: 20px; margin: 0 0 5px 0; }
+
+/* ====================== */
+/* VOCABOLARI - MOBILE FIRST */
+/* ====================== */
+.vocab-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.vocabolario {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.vocab-header {
+  background: linear-gradient(90deg, #4facfe, #00c6ff);
+  padding: 10px 15px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+
+.vocab-header h3 {
+  margin: 0;
+  font-size: 15px;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toggle-vocab {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  font-size: 16px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.toggle-vocab:hover {
+  background: rgba(255,255,255,0.3);
+  transform: scale(1.05);
+}
+
+.vocab-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  background: white;
+}
+
+.vocab-content.open {
+  max-height: 500px;
+}
+
+.vocabolario-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.vocabolario-table th,
+.vocabolario-table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.vocabolario-table th {
+  background: #f5f5f5;
+  color: #4facfe;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.vocabolario-table tr:last-child td {
+  border-bottom: none;
+}
+
+.vocabolario-table td:first-child {
+  font-weight: bold;
+  color: #2c3e50;
+  width: 45%;
+}
+
+.vocabolario-table td:last-child {
+  color: #666;
+  font-style: italic;
+}
+
+.vocabolario-table td:first-child .emoji {
+  font-size: 14px;
+  margin-right: 6px;
+}
+
+@media (max-width: 480px) {
+  .vocab-header h3 {
+    font-size: 13px;
+  }
+  .vocabolario-table th,
+  .vocabolario-table td {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<a href="index.html" class="top-bar">
+  🎮 Mini Giochi Italiano
+</a>
+
+<div class="card">
+  <h2>🗺️ Città di Bellavista</h2>
+  <p style="text-align:center; font-size:13px; color:#666;">Impara le indicazioni stradali</p>
+
+  <!-- ====================== -->
+  <!-- VOCABOLARI MOBILE-FIRST (CHIUSI DI DEFAULT) -->
+  <!-- ====================== -->
+  <div class="vocab-container">
+    <!-- VOCABOLARIO INDICAZIONI -->
+    <div class="vocabolario">
+      <div class="vocab-header" onclick="toggleVocabolario('vocabIndicazioni', 'btnIndicazioni')">
+        <h3>🗺️ Vocabolario indicazioni stradali</h3>
+        <button class="toggle-vocab" id="btnIndicazioni">▶</button>
+      </div>
+      <div id="vocabIndicazioni" class="vocab-content">
+        <table class="vocabolario-table">
+          <thead>
+            <tr><th>Italiano</th><th>English</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Vai dritto</td><td>Go straight</td></tr>
+            <tr><td>Gira a sinistra</td><td>Turn left</td></tr>
+            <tr><td>Gira a destra</td><td>Turn right</td></tr>
+            <tr><td>Fino al primo incrocio</td><td>To the first intersection</td></tr>
+            <tr><td>Fino al secondo incrocio</td><td>To the second intersection</td></tr>
+            <tr><td>Alla prima traversa</td><td>At the first cross street</td></tr>
+            <tr><td>Alla seconda traversa</td><td>At the second cross street</td></tr>
+            <tr><td>Fino in fondo</td><td>All the way / To the end</td></tr>
+            <tr><td>Poi</td><td>Then</td></tr>
+            <tr><td>Incrocio</td><td>Intersection</td></tr>
+            <tr><td>Traversa</td><td>Cross street</td></tr>
+            <tr><td>Semaforo</td><td>Traffic light</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- VOCABOLARIO EDIFICI -->
+    <div class="vocabolario">
+      <div class="vocab-header" onclick="toggleVocabolario('vocabEdifici', 'btnEdifici')">
+        <h3>🏢 Vocabolario edifici della città</h3>
+        <button class="toggle-vocab" id="btnEdifici">▶</button>
+      </div>
+      <div id="vocabEdifici" class="vocab-content">
+        <table class="vocabolario-table">
+          <thead>
+            <tr><th>Italiano</th><th>English</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>🚉 Stazione</td><td>Train station</td></tr>
+            <tr><td>🏥 Ospedale</td><td>Hospital</td></tr>
+            <tr><td>📚 Scuola</td><td>School</td></tr>
+            <tr><td>🏦 Banca</td><td>Bank</td></tr>
+            <tr><td>🛒 Supermercato</td><td>Supermarket</td></tr>
+            <tr><td>💊 Farmacia</td><td>Pharmacy</td></tr>
+            <tr><td>🏛️ Museo</td><td>Museum</td></tr>
+            <tr><td>📖 Biblioteca</td><td>Library</td></tr>
+            <tr><td>🎭 Teatro</td><td>Theater</td></tr>
+            <tr><td>🏢 Municipio</td><td>Town hall / City hall</td></tr>
+            <tr><td>⛪ Chiesa</td><td>Church</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <span>📋 Domanda: <span id="contatore">1</span>/<span id="totale"></span></span>
+    <span>📍 <span id="posizioneLabel">🚉 Stazione</span></span>
+  </div>
+
+  <div class="city-map" id="cityMap"></div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-color" style="background:#c8e6c8;"></div> Edificio</div>
+    <div class="legend-item"><div class="legend-color" style="background:#f5e6c8;"></div> Strada</div>
+    <div class="legend-item"><div class="legend-color" style="background:#ffe0b3;"></div> Incrocio</div>
+    <div class="legend-item"><div class="legend-color" style="background:#ffeb3b;"></div> ⭐ Posizione</div>
+    <div class="legend-item"><div class="legend-color" style="background:transparent;"></div> 🧭 Direzione</div>
+  </div>
+
+  <div id="domandaContainer">
+    <p id="domanda" style="font-weight:bold; text-align:center;"></p>
+  </div>
+
+  <div id="bottoni"></div>
+
+  <div id="feedback" class="feedback"></div>
+
+  <button id="nextBtn" class="next-btn" onclick="prossimaDomanda()" disabled>▶ Avanti</button>
+</div>
+
+<script>
+
+// ======================
+// FUNZIONE PER MOSTRARE/NASCONDERE I VOCABOLARI
+// ======================
+function toggleVocabolario(contentId, btnId) {
+  const content = document.getElementById(contentId);
+  const btn = document.getElementById(btnId);
+  if (content.classList.contains('open')) {
+    content.classList.remove('open');
+    btn.textContent = '▶';
+  } else {
+    content.classList.add('open');
+    btn.textContent = '▼';
+  }
+}
+
+// ======================
+// MAPPA
+// ======================
+
+const edifici = {
+  stazione: { nome: "Stazione", icona: "🚉", riga: 0, col: 3 },
+  ospedale: { nome: "Ospedale", icona: "🏥", riga: 1, col: 5 },
+  scuola: { nome: "Scuola", icona: "📚", riga: 2, col: 0 },
+  banca: { nome: "Banca", icona: "🏦", riga: 2, col: 6 },
+  supermercato: { nome: "Supermercato", icona: "🛒", riga: 3, col: 2 },
+  farmacia: { nome: "Farmacia", icona: "💊", riga: 3, col: 4 },
+  museo: { nome: "Museo", icona: "🏛️", riga: 4, col: 0 },
+  biblioteca: { nome: "Biblioteca", icona: "📖", riga: 4, col: 6 },
+  teatro: { nome: "Teatro", icona: "🎭", riga: 5, col: 1 },
+  municipio: { nome: "Municipio", icona: "🏢", riga: 5, col: 5 },
+  chiesa: { nome: "Chiesa", icona: "⛪", riga: 6, col: 3 }
+};
+
+const tipiCelle = {
+  0: { 0: "strada", 1: "strada", 2: "strada", 3: "edificio", 4: "strada", 5: "strada", 6: "strada" },
+  1: { 0: "strada", 1: "strada", 2: "strada", 3: "strada", 4: "strada", 5: "edificio", 6: "strada" },
+  2: { 0: "edificio", 1: "strada", 2: "incrocio", 3: "incrocio", 4: "strada", 5: "strada", 6: "edificio" },
+  3: { 0: "strada", 1: "strada", 2: "edificio", 3: "incrocio", 4: "edificio", 5: "strada", 6: "strada" },
+  4: { 0: "edificio", 1: "incrocio", 2: "strada", 3: "incrocio", 4: "strada", 5: "strada", 6: "edificio" },
+  5: { 0: "strada", 1: "edificio", 2: "strada", 3: "strada", 4: "strada", 5: "edificio", 6: "strada" },
+  6: { 0: "strada", 1: "strada", 2: "incrocio", 3: "edificio", 4: "strada", 5: "strada", 6: "strada" }
+};
+
+// Direzioni iniziali
+const direzioniIniziali = {
+  stazione: "↓",
+  ospedale: "↓",
+  scuola: "→",
+  banca: "←",
+  supermercato: "↓",
+  farmacia: "↑",
+  museo: "→",
+  biblioteca: "←",
+  teatro: "↑",
+  municipio: "↓",
+  chiesa: "↑"
+};
+
+const frecce = {
+  "↑": "⬆️",
+  "→": "➡️",
+  "↓": "⬇️",
+  "←": "⬅️"
+};
+
+// ======================
+// 5 DOMANDE CON TRADUZIONE
+// ======================
+
+const percorsi = [
+  { 
+    partenza: "stazione", 
+    destinazione: "supermercato", 
+    risposta: "Vai dritto, fino al secondo incrocio, poi gira a destra",
+    traduzione: "Go straight, to the second intersection, then turn right"
+  },
+  { 
+    partenza: "stazione", 
+    destinazione: "farmacia", 
+    risposta: "Vai dritto fino al secondo incrocio, poi gira a sinistra",
+    traduzione: "Go straight to the second intersection, then turn left"
+  },
+  { 
+    partenza: "scuola", 
+    destinazione: "supermercato", 
+    risposta: "Vai dritto, alla prima traversa gira a destra",
+    traduzione: "Go straight, at the first cross street turn right"
+  },
+  { 
+    partenza: "supermercato", 
+    destinazione: "chiesa", 
+    risposta: "Vai dritto fino in fondo, poi gira a sinistra",
+    traduzione: "Go straight all the way, then turn left"
+  },
+  { 
+    partenza: "museo", 
+    destinazione: "teatro", 
+    risposta: "Vai dritto fino alla prima traversa, poi gira a destra",
+    traduzione: "Go straight to the first cross street, then turn right"
+  }
+];
+
+// ======================
+// VARIABILI DI GIOCO
+// ======================
+
+let domandeOrdinate = [];
+let domandaIndex = 0;
+let domandeTotali = 5;
+let rispostaSelezionata = false;
+let rispostaCorretta = "";
+let traduzioneCorretta = "";
+let domandaCorrente = null;
+let giocoCompletato = false;
+
+function mescolaArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function ottieniNomeEdificio(id) {
+  let edificio = edifici[id];
+  return edificio ? `${edificio.icona} ${edificio.nome}` : id;
+}
+
+function disegnaMappa(posizioneAttualeId = "stazione") {
+  let html = '<div class="map-grid">';
+  
+  for (let r = 0; r < 7; r++) {
+    for (let c = 0; c < 7; c++) {
+      let tipo = tipiCelle[r]?.[c] || "strada";
+      let classe = tipo;
+      let contenuto = "";
+      
+      let edificioTrovato = null;
+      for (let [key, val] of Object.entries(edifici)) {
+        if (val.riga === r && val.col === c) {
+          edificioTrovato = key;
+          break;
+        }
+      }
+      
+      if (edificioTrovato) {
+        classe = "edificio";
+        let edificio = edifici[edificioTrovato];
+        contenuto = `<div class="map-icon">${edificio.icona}</div>
+                     <div class="map-label">${edificio.nome}</div>`;
+      } else if (tipo === "incrocio") {
+        contenuto = `<div class="map-icon" style="font-size:16px;">➕</div>
+                     <div class="map-label">incrocio</div>`;
+      } else {
+        contenuto = `<div class="map-icon" style="font-size:14px;">🛣️</div>
+                     <div class="map-label"></div>`;
+      }
+      
+      let posizioneEvidenziata = "";
+      let frecciaHtml = "";
+      if (posizioneAttualeId && edifici[posizioneAttualeId] && 
+          edifici[posizioneAttualeId].riga === r && edifici[posizioneAttualeId].col === c) {
+        posizioneEvidenziata = ' style="background:#ffeb3b; border:2px solid #ff9800;"';
+        let direzione = direzioniIniziali[posizioneAttualeId] || "↓";
+        frecciaHtml = `<div class="freccia">${frecce[direzione]}</div>`;
+      }
+      
+      html += `<div class="map-cell ${classe}"${posizioneEvidenziata}>${contenuto}${frecciaHtml}</div>`;
+    }
+  }
+  
+  html += '</div>';
+  document.getElementById('cityMap').innerHTML = html;
+}
+
+function aggiornaContatore() {
+  document.getElementById("contatore").innerText = domandaIndex + 1;
+  document.getElementById("totale").innerText = domandeTotali;
+}
+
+function mostraFineGioco() {
+  if (giocoCompletato) return;
+  giocoCompletato = true;
+  
+  document.getElementById('domanda').innerHTML = "🎉 COMPLETATO! Hai imparato tutte le indicazioni! 🎉";
+  document.getElementById('bottoni').innerHTML = "";
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('feedback').style.display = "none";
+  
+  let ricominciaBtn = document.createElement("button");
+  ricominciaBtn.innerText = "🔄 Ricomincia gioco";
+  ricominciaBtn.style.marginTop = "15px";
+  ricominciaBtn.style.width = "100%";
+  ricominciaBtn.onclick = () => inizializzaGioco();
+  
+  let containerBottoni = document.getElementById('bottoni');
+  let oldBtn = containerBottoni.querySelector(".ricomincia-btn");
+  if (oldBtn) oldBtn.remove();
+  ricominciaBtn.classList.add("ricomincia-btn");
+  containerBottoni.appendChild(ricominciaBtn);
+}
+
+function caricaDomanda() {
+  if (domandaIndex >= domandeTotali) {
+    mostraFineGioco();
+    return;
+  }
+  
+  rispostaSelezionata = false;
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('feedback').style.display = "none";
+  
+  domandaCorrente = domandeOrdinate[domandaIndex];
+  rispostaCorretta = domandaCorrente.risposta;
+  traduzioneCorretta = domandaCorrente.traduzione;
+  
+  let testoDomanda = `Come arrivi da ${ottieniNomeEdificio(domandaCorrente.partenza)} a ${ottieniNomeEdificio(domandaCorrente.destinazione)}?`;
+  document.getElementById('domanda').innerHTML = testoDomanda;
+  
+  let posizionePartenza = domandaCorrente.partenza;
+  if (posizionePartenza && edifici[posizionePartenza]) {
+    document.getElementById('posizioneLabel').innerHTML = ottieniNomeEdificio(posizionePartenza);
+    disegnaMappa(posizionePartenza);
+  } else {
+    document.getElementById('posizioneLabel').innerHTML = "🚉 Stazione";
+    disegnaMappa("stazione");
+  }
+  
+  let tutteRispostePossibili = [
+    "Vai dritto, fino in fondo, poi gira a destra all'ultima traversa",
+    "Vai dritto fino al secondo incrocio, poi gira a sinistra",
+    "Vai dritto, alla seconda traversa gira a destra",
+    "Vai dritto fino al primo incrocio, gira a destra, poi vai dritto fino alla chiesa",
+    "Vai dritto fino alla prima traversa, poi gira a destra",
+    "Vai dritto fino al primo incrocio, poi gira a sinistra",
+    "Vai dritto fino al primo incrocio, poi gira a destra",
+    "Gira a sinistra al primo incrocio, poi vai dritto"
+  ];
+  
+  let opzioni = [rispostaCorretta];
+  while (opzioni.length < 4) {
+    let r = tutteRispostePossibili[Math.floor(Math.random() * tutteRispostePossibili.length)];
+    if (!opzioni.includes(r)) opzioni.push(r);
+  }
+  opzioni = mescolaArray(opzioni);
+  
+  let html = '';
+  for (let o of opzioni) {
+    html += `<button onclick="controllaRisposta('${o.replace(/'/g, "\\'")}')">${o}</button>`;
+  }
+  document.getElementById('bottoni').innerHTML = html;
+}
+
+function controllaRisposta(val) {
+  if (rispostaSelezionata) return;
+  rispostaSelezionata = true;
+  
+  let isCorretto = (val === rispostaCorretta);
+  let feedbackDiv = document.getElementById('feedback');
+  feedbackDiv.style.display = "block";
+  
+  let bottoni = document.querySelectorAll('#bottoni button');
+  bottoni.forEach(btn => {
+    if (btn.innerText === rispostaCorretta) btn.classList.add('correct');
+    if (btn.innerText === val && !isCorretto) btn.classList.add('wrong');
+    btn.disabled = true;
+  });
+  
+  if (isCorretto) {
+    feedbackDiv.innerHTML = `✅ Corretto! Ottime indicazioni! ✅<div class="traduzione">🇬🇧 ${traduzioneCorretta}</div>`;
+    feedbackDiv.className = "feedback feedback-correct";
+  } else {
+    feedbackDiv.innerHTML = `❌ Sbagliato! Risposta corretta:<br>"${rispostaCorretta}" ❌`;
+    feedbackDiv.className = "feedback feedback-wrong";
+  }
+  
+  document.getElementById('nextBtn').disabled = false;
+}
+
+function prossimaDomanda() {
+  if (giocoCompletato) return;
+  if (!rispostaSelezionata) return;
+  
+  domandaIndex++;
+  aggiornaContatore();
+  
+  if (domandaIndex >= domandeTotali) {
+    mostraFineGioco();
+  } else {
+    caricaDomanda();
+  }
+}
+
+function inizializzaGioco() {
+  giocoCompletato = false;
+  domandaIndex = 0;
+  domandeOrdinate = mescolaArray([...percorsi]);
+  rispostaSelezionata = false;
+  
+  aggiornaContatore();
+  disegnaMappa("stazione");
+  caricaDomanda();
+}
+
+inizializzaGioco();
+
+</script>
+</body>
+</html>
