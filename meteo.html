@@ -111,7 +111,7 @@
   <div id="bottoni1"></div>
 
   <div class="button-group">
-    <button id="nextBtn1" class="next-btn" onclick="nuovaDomanda1()" disabled>Avanti</button>
+    <button id="nextBtn1" class="next-btn" onclick="prossimaDomanda1()" disabled>Avanti</button>
     <button id="resetBtn1" class="reset-btn hidden" onclick="resetGioco1()">🔄 Ricomincia</button>
   </div>
 
@@ -135,7 +135,7 @@
   <div id="bottoni3"></div>
 
   <div class="button-group">
-    <button id="nextBtn3" class="next-btn" onclick="nuovaDomanda3()" disabled>Avanti</button>
+    <button id="nextBtn3" class="next-btn" onclick="prossimaDomanda3()" disabled>Avanti</button>
     <button id="resetBtn3" class="reset-btn hidden" onclick="resetGioco3()">🔄 Ricomincia</button>
   </div>
 
@@ -159,7 +159,7 @@
   <p id="res"></p>
 
   <div class="button-group">
-    <button class="next-btn" onclick="nuovaDomanda2()">Avanti</button>
+    <button class="next-btn" onclick="prossimaDomanda2()">Avanti</button>
     <button id="resetBtn2" class="reset-btn hidden" onclick="resetGioco2()">🔄 Ricomincia</button>
   </div>
 
@@ -167,17 +167,20 @@
 
 <script>
 
-// DATI METEOROLOGICI
-const parole = [
-{word:'È soleggiato', img:'images/meteo/sole.jpg'},
-{word:'È nuvoloso', img:'images/meteo/nuvoloso.jpg'},
-{word:'Piove', img:'images/meteo/pioggia.jpg'},
-{word:'Sta piovendo', img:'images/meteo/pioggia.jpg'},
-{word:'Grandina', img:'images/meteo/grandine.jpg'},
-{word:'Nevica', img:'images/meteo/neve.jpg'},
-{word:'Tira vento', img:'images/meteo/vento.jpg'},
-{word:'C\'è nebbia', img:'images/meteo/nebbia.jpg'},
-{word:'C\'è temporale', img:'images/meteo/temporale.jpg'}
+// ======================
+// DATI METEOROLOGICI con raggruppamenti per sinonimi
+// ======================
+
+// Gruppi di sinonimi (stessa immagine, parole intercambiabili)
+const sinonimiMeteo = [
+  { parole: ['È soleggiato'], img: 'images/meteo/sole.jpg' },
+  { parole: ['È nuvoloso'], img: 'images/meteo/nuvoloso.jpg' },
+  { parole: ['Piove', 'Sta piovendo'], img: 'images/meteo/pioggia.jpg' },
+  { parole: ['Grandina'], img: 'images/meteo/grandine.jpg' },
+  { parole: ['Nevica'], img: 'images/meteo/neve.jpg' },
+  { parole: ['Tira vento'], img: 'images/meteo/vento.jpg' },
+  { parole: ['C\'è nebbia'], img: 'images/meteo/nebbia.jpg' },
+  { parole: ['C\'è temporale'], img: 'images/meteo/temporale.jpg' }
 ];
 
 // DATI TEMPERATURE con traduzione inglese
@@ -190,55 +193,79 @@ const temperature = [
 ];
 
 // ======================
+// UTILITY: Mescola array
+// ======================
+function mescolaArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// ======================
 // ✅ GIOCO 1 (FACILE - METEO)
 // ======================
 
 let usati1 = [];
-let rispostaCorretta1;
+let gruppoCorrente1 = null;
+let rispostaCorretta1 = [];
 
 function resetGioco1(){
   usati1 = [];
   document.getElementById('resetBtn1').classList.add('hidden');
+  aggiornaContatore1();
   nuovaDomanda1();
 }
 
 function aggiornaContatore1(){
   let completati = usati1.length;
-  let totali = parole.length;
+  let totali = sinonimiMeteo.length;
   document.getElementById('counter1').innerText = `${completati} / ${totali}`;
 }
 
 function nuovaDomanda1(){
-
   document.getElementById('nextBtn1').disabled = true;
   aggiornaContatore1();
 
-  if(usati1.length === parole.length){
-    document.getElementById('domanda1').innerHTML = "🎉 Completato!";
+  if(usati1.length === sinonimiMeteo.length){
+    document.getElementById('domanda1').innerHTML = "🎉 Completato! Hai finito tutte le parole! 🎉";
     document.getElementById('bottoni1').innerHTML = "";
     document.getElementById('resetBtn1').classList.remove('hidden');
     return;
   }
 
-  let disponibili = parole.filter(p => !usati1.includes(p));
-  let curr = disponibili[Math.floor(Math.random()*disponibili.length)];
-
-  usati1.push(curr);
+  let disponibili = sinonimiMeteo.filter((_, idx) => !usati1.includes(idx));
+  let idxDisponibile = Math.floor(Math.random() * disponibili.length);
+  let gruppo = disponibili[idxDisponibile];
+  
+  // Trova l'indice originale del gruppo
+  let gruppoIndex = sinonimiMeteo.findIndex(g => g === gruppo);
+  usati1.push(gruppoIndex);
   aggiornaContatore1();
 
-  rispostaCorretta1 = curr.word;
+  gruppoCorrente1 = gruppo;
+  rispostaCorretta1 = gruppo.parole;
 
-  document.getElementById('img1').src = curr.img;
+  document.getElementById('img1').src = gruppo.img;
   document.getElementById('domanda1').innerText = "Che tempo fa?";
 
-  let opzioni = [rispostaCorretta1];
-
+  // Crea opzioni: tutte le parole da tutti i gruppi
+  let tutteParole = [];
+  for(let g of sinonimiMeteo){
+    for(let p of g.parole){
+      if(!tutteParole.includes(p)) tutteParole.push(p);
+    }
+  }
+  
+  let opzioni = [...rispostaCorretta1];
+  
   while(opzioni.length < 4){
-    let r = parole[Math.floor(Math.random()*parole.length)].word;
+    let r = tutteParole[Math.floor(Math.random() * tutteParole.length)];
     if(!opzioni.includes(r)) opzioni.push(r);
   }
 
-  opzioni.sort(() => Math.random() - 0.5);
+  opzioni = mescolaArray(opzioni);
 
   let html = '';
   for(let o of opzioni){
@@ -249,23 +276,28 @@ function nuovaDomanda1(){
 }
 
 function check1(val){
-
   let bottoni = document.querySelectorAll('#bottoni1 button');
+  let isCorretto = rispostaCorretta1.includes(val);
 
   bottoni.forEach(btn => {
-
-    if(btn.innerText === rispostaCorretta1){
+    if(rispostaCorretta1.includes(btn.innerText)){
       btn.classList.add('correct');
     }
-
-    if(btn.innerText === val && val !== rispostaCorretta1){
+    if(btn.innerText === val && !isCorretto){
       btn.classList.add('wrong');
     }
-
     btn.disabled = true;
   });
 
   document.getElementById('nextBtn1').disabled = false;
+}
+
+function prossimaDomanda1(){
+  if(usati1.length === sinonimiMeteo.length){
+    nuovaDomanda1();
+    return;
+  }
+  nuovaDomanda1();
 }
 
 
@@ -274,51 +306,57 @@ function check1(val){
 // ======================
 
 let usati2 = [];
-let parolaCorrente;
+let gruppoCorrente2 = null;
+let parolaCorrente2 = "";
 let guessed = [];
 
 function resetGioco2(){
   usati2 = [];
+  guessed = [];
   document.getElementById('resetBtn2').classList.add('hidden');
+  aggiornaContatore2();
   nuovaDomanda2();
 }
 
 function aggiornaContatore2(){
   let completati = usati2.length;
-  let totali = parole.length;
+  let totali = sinonimiMeteo.length;
   document.getElementById('counter2').innerText = `${completati} / ${totali}`;
 }
 
 function nuovaDomanda2(){
-
-  document.getElementById('res').innerText = "";
+  document.getElementById('res').innerHTML = "";
   aggiornaContatore2();
 
-  if(usati2.length === parole.length){
-    document.getElementById('res').innerHTML = "🎉 Completato!";
+  if(usati2.length === sinonimiMeteo.length){
+    document.getElementById('res').innerHTML = "🎉 Completato! Hai finito tutte le parole! 🎉";
     document.getElementById('letters').innerHTML = "";
     document.getElementById('word').innerText = "";
     document.getElementById('resetBtn2').classList.remove('hidden');
     return;
   }
 
-  let disponibili = parole.filter(p => !usati2.includes(p));
-  let curr = disponibili[Math.floor(Math.random()*disponibili.length)];
-
-  usati2.push(curr);
+  let disponibili = sinonimiMeteo.filter((_, idx) => !usati2.includes(idx));
+  let idxDisponibile = Math.floor(Math.random() * disponibili.length);
+  let gruppo = disponibili[idxDisponibile];
+  
+  let gruppoIndex = sinonimiMeteo.findIndex(g => g === gruppo);
+  usati2.push(gruppoIndex);
   aggiornaContatore2();
 
-  parolaCorrente = curr.word;
+  gruppoCorrente2 = gruppo;
+  // Scegli una parola casuale dal gruppo (per il gioco di spelling)
+  parolaCorrente2 = gruppo.parole[Math.floor(Math.random() * gruppo.parole.length)];
   guessed = [];
 
-  document.getElementById('img2').src = curr.img;
+  document.getElementById('img2').src = gruppo.img;
 
   disegnaParola();
   creaLettere();
 }
 
 function disegnaParola(){
-  let display = parolaCorrente.split('').map(l => {
+  let display = parolaCorrente2.split('').map(l => {
     if(l === ' ' || l === '\'' || l === 'È' || l === 'é' || l === 'à' || l === 'è' || l === 'ì' || l === 'ò' || l === 'ù') return l;
     return guessed.includes(l.toLowerCase()) ? l : '_';
   }).join(' ');
@@ -327,7 +365,6 @@ function disegnaParola(){
 }
 
 function creaLettere(){
-
   let righe = [
     "qwertyuiop",
     "asdfghjkl",
@@ -337,13 +374,10 @@ function creaLettere(){
   let html = '';
 
   for(let riga of righe){
-
     html += '<div class="keyboard">';
-
     for(let l of riga){
       html += `<button onclick="scegli('${l}')">${l}</button>`;
     }
-
     html += '</div>';
   }
 
@@ -351,7 +385,6 @@ function creaLettere(){
 }
 
 function scegli(l){
-
   if(guessed.includes(l)) return;
 
   guessed.push(l);
@@ -360,7 +393,7 @@ function scegli(l){
 
   let letteraTrovata = false;
   
-  let parolaLower = parolaCorrente.toLowerCase();
+  let parolaLower = parolaCorrente2.toLowerCase();
   let letteraAccenti = {
     'e': ['e','è','é'],
     'a': ['a','à'],
@@ -399,6 +432,14 @@ function scegli(l){
   }
 }
 
+function prossimaDomanda2(){
+  if(usati2.length === sinonimiMeteo.length){
+    nuovaDomanda2();
+    return;
+  }
+  nuovaDomanda2();
+}
+
 
 // ======================
 // 🌡️ GIOCO 3 (TEMPERATURE)
@@ -411,6 +452,7 @@ let englishCorrente3;
 function resetGioco3(){
   usati3 = [];
   document.getElementById('resetBtn3').classList.add('hidden');
+  aggiornaContatore3();
   nuovaDomanda3();
 }
 
@@ -421,22 +463,21 @@ function aggiornaContatore3(){
 }
 
 function nuovaDomanda3(){
-
   document.getElementById('nextBtn3').disabled = true;
   aggiornaContatore3();
 
   if(usati3.length === temperature.length){
-    document.getElementById('domanda3').innerHTML = "🎉 Completato!";
+    document.getElementById('domanda3').innerHTML = "🎉 Completato! Hai finito tutte le temperature! 🎉";
     document.getElementById('bottoni3').innerHTML = "";
     document.getElementById('engHint3').innerHTML = "";
     document.getElementById('resetBtn3').classList.remove('hidden');
     return;
   }
 
-  let disponibili = temperature.filter(t => !usati3.includes(t));
+  let disponibili = temperature.filter((_, idx) => !usati3.includes(idx));
   let curr = disponibili[Math.floor(Math.random()*disponibili.length)];
-
-  usati3.push(curr);
+  let currIndex = temperature.findIndex(t => t === curr);
+  usati3.push(currIndex);
   aggiornaContatore3();
 
   rispostaCorretta3 = curr.word;
@@ -453,7 +494,7 @@ function nuovaDomanda3(){
     if(!opzioni.includes(r)) opzioni.push(r);
   }
 
-  opzioni.sort(() => Math.random() - 0.5);
+  opzioni = mescolaArray(opzioni);
 
   let html = '';
   for(let o of opzioni){
@@ -464,37 +505,37 @@ function nuovaDomanda3(){
 }
 
 function check3(val){
-
   let bottoni = document.querySelectorAll('#bottoni3 button');
 
   bottoni.forEach(btn => {
-
     if(btn.innerText === rispostaCorretta3){
       btn.classList.add('correct');
     }
-
     if(btn.innerText === val && val !== rispostaCorretta3){
       btn.classList.add('wrong');
     }
-
     btn.disabled = true;
   });
 
   document.getElementById('nextBtn3').disabled = false;
 }
 
+function prossimaDomanda3(){
+  if(usati3.length === temperature.length){
+    nuovaDomanda3();
+    return;
+  }
+  nuovaDomanda3();
+}
+
 
 // ✅ tastiera fisica (solo per gioco 2)
 document.addEventListener('keydown', function(e){
-
   let l = e.key.toLowerCase();
-
   if(l.match(/^[a-z]$/)){
     scegli(l);
   }
-
 });
-
 
 // AVVIO
 nuovaDomanda1();
