@@ -6,6 +6,72 @@
 <title>Verbi Regolari</title>
 
 <link rel="stylesheet" href="style.css">
+
+<style>
+/* stili aggiuntivi per tabelle - mantenendo lo stile originale */
+.verb-tables {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.verb-table-container {
+  background: #f5f5f5;
+  border-radius: 14px;
+  padding: 12px 18px;
+  flex: 1;
+  min-width: 170px;
+}
+
+.verb-table-container h3 {
+  text-align: center;
+  margin-bottom: 12px;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.verb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.verb-table td {
+  padding: 5px 6px;
+  border-bottom: 1px solid #ddd;
+}
+
+.verb-table td:first-child {
+  font-weight: bold;
+  color: #4facfe;
+}
+
+.verb-table tr:last-child td {
+  border-bottom: none;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  font-size: 14px;
+  color: #555;
+  background: #f0f0f0;
+  padding: 8px 12px;
+  border-radius: 10px;
+}
+
+/* feedback visivo */
+.correct {
+  background: linear-gradient(90deg, #2ecc71, #27ae60) !important;
+}
+
+.wrong {
+  background: linear-gradient(90deg, #ff6a6a, #e74c3c) !important;
+}
+</style>
 </head>
 
 <body>
@@ -17,112 +83,292 @@
 
 <div class="card">
 
-  <h2>ARE • ERE • IRE</h2>
+  <h2>📗 ARE • ERE • IRE</h2>
+  <p style="text-align:center; font-size:14px; color:#666;">Coniuga il verbo regolare</p>
 
-  <p id="domanda"></p>
+  <!-- TABELLE DEI VERBI ESEMPLARI -->
+  <div class="verb-tables">
+    <div class="verb-table-container">
+      <h3>📌 ARE · PARLARE</h3>
+      <table class="verb-table">
+        <tr><td>io</td><td><strong>parlo</strong></td></tr>
+        <tr><td>tu</td><td><strong>parli</strong></td></tr>
+        <tr><td>lui/lei</td><td><strong>parla</strong></td></tr>
+        <tr><td>noi</td><td><strong>parliamo</strong></td></tr>
+        <tr><td>voi</td><td><strong>parlate</strong></td></tr>
+        <tr><td>loro</td><td><strong>parlano</strong></td></tr>
+      </table>
+    </div>
+    <div class="verb-table-container">
+      <h3>📌 ERE · CREDERE</h3>
+      <table class="verb-table">
+        <tr><td>io</td><td><strong>credo</strong></td></tr>
+        <tr><td>tu</td><td><strong>credi</strong></td></tr>
+        <tr><td>lui/lei</td><td><strong>crede</strong></td></tr>
+        <tr><td>noi</td><td><strong>crediamo</strong></td></tr>
+        <tr><td>voi</td><td><strong>credete</strong></td></tr>
+        <tr><td>loro</td><td><strong>credono</strong></td></tr>
+      </table>
+    </div>
+    <div class="verb-table-container">
+      <h3>📌 IRE · SENTIRE</h3>
+      <table class="verb-table">
+        <tr><td>io</td><td><strong>sento</strong></td></tr>
+        <tr><td>tu</td><td><strong>senti</strong></td></tr>
+        <tr><td>lui/lei</td><td><strong>sente</strong></td></tr>
+        <tr><td>noi</td><td><strong>sentiamo</strong></td></tr>
+        <tr><td>voi</td><td><strong>sentite</strong></td></tr>
+        <tr><td>loro</td><td><strong>sentono</strong></td></tr>
+      </table>
+    </div>
+    <div class="verb-table-container">
+      <h3>📌 IRE (tipo -isco) · FINIRE</h3>
+      <table class="verb-table">
+        <tr><td>io</td><td><strong>finisco</strong></td></tr>
+        <tr><td>tu</td><td><strong>finisci</strong></td></tr>
+        <tr><td>lui/lei</td><td><strong>finisce</strong></td></tr>
+        <tr><td>noi</td><td><strong>finiamo</strong></td></tr>
+        <tr><td>voi</td><td><strong>finite</strong></td></tr>
+        <tr><td>loro</td><td><strong>finiscono</strong></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="stats">
+    <span>📋 Domande: <span id="contatore">1</span>/<span id="totale"></span></span>
+  </div>
+
+  <p id="domanda" style="font-size:18px; font-weight:bold; text-align:center; margin:20px 0;"></p>
 
   <div id="bottoni"></div>
 
-  <button id="nextBtn" class="next-btn" onclick="nuovaDomanda()" disabled>Avanti</button>
+  <button id="nextBtn" class="next-btn" onclick="prossimaDomanda()" disabled>▶ Avanti</button>
 
 </div>
 
 <script>
 
-// DATI
+// ========================
+// VERBI REGOLARI (20 verbi - ARE/ERE/IRE)
+// ========================
 const verbs = [
-{inf:'mangiare', forms:['mangio','mangi','mangia','mangiamo','mangiate','mangiano']},
-{inf:'credere', forms:['credo','credi','crede','crediamo','credete','credono']},
-{inf:'dormire', forms:['dormo','dormi','dorme','dormiamo','dormite','dormono']},
-{inf:'parlare', forms:['parlo','parli','parla','parliamo','parlate','parlano']},
-{inf:'studiare', forms:['studio','studi','studia','studiamo','studiate','studiano']},
-{inf:'lavorare', forms:['lavoro','lavori','lavora','lavoriamo','lavorate','lavorano']},
-{inf:'abitare', forms:['abito','abiti','abita','abitiamo','abitate','abitano']},
-{inf:'leggere', forms:['leggo','leggi','legge','leggiamo','leggete','leggono']},
-{inf:'scrivere', forms:['scrivo','scrivi','scrive','scriviamo','scrivete','scrivono']},
-{inf:'prendere', forms:['prendo','prendi','prende','prendiamo','prendete','prendono']},
-{inf:'vivere', forms:['vivo','vivi','vive','viviamo','vivete','vivono']},
-{inf:'partire', forms:['parto','parti','parte','partiamo','partite','partono']},
-{inf:'finire', forms:['finisco','finisci','finisce','finiamo','finite','finiscono']}
+  {inf:'mangiare', forms:['mangio','mangi','mangia','mangiamo','mangiate','mangiano']},
+  {inf:'credere', forms:['credo','credi','crede','crediamo','credete','credono']},
+  {inf:'dormire', forms:['dormo','dormi','dorme','dormiamo','dormite','dormono']},
+  {inf:'parlare', forms:['parlo','parli','parla','parliamo','parlate','parlano']},
+  {inf:'studiare', forms:['studio','studi','studia','studiamo','studiate','studiano']},
+  {inf:'lavorare', forms:['lavoro','lavori','lavora','lavoriamo','lavorate','lavorano']},
+  {inf:'abitare', forms:['abito','abiti','abita','abitiamo','abitate','abitano']},
+  {inf:'leggere', forms:['leggo','leggi','legge','leggiamo','leggete','leggono']},
+  {inf:'scrivere', forms:['scrivo','scrivi','scrive','scriviamo','scrivete','scrivono']},
+  {inf:'prendere', forms:['prendo','prendi','prende','prendiamo','prendete','prendono']},
+  {inf:'vivere', forms:['vivo','vivi','vive','viviamo','vivete','vivono']},
+  {inf:'partire', forms:['parto','parti','parte','partiamo','partite','partono']},
+  {inf:'finire', forms:['finisco','finisci','finisce','finiamo','finite','finiscono']},
+  // + nuovi verbi regolari per arrivare a 20
+  {inf:'guardare', forms:['guardo','guardi','guarda','guardiamo','guardate','guardano']},
+  {inf:'ricevere', forms:['ricevo','ricevi','riceve','riceviamo','ricevete','ricevono']},
+  {inf:'aprire', forms:['apro','apri','apre','apriamo','aprite','aprono']},
+  {inf:'camminare', forms:['cammino','cammini','cammina','camminiamo','camminate','camminano']},
+  {inf:'vendere', forms:['vendo','vendi','vende','vendiamo','vendete','vendono']},
+  {inf:'sentire', forms:['sento','senti','sente','sentiamo','sentite','sentono']},
+  {inf:'capire', forms:['capisco','capisci','capisce','capiamo','capite','capiscono']}
 ];
 
 const subjects = ['Io','Tu','Lui/Lei','Noi','Voi','Loro'];
 
 let rispostaCorretta;
-let usati = [];
+let usatiIndici = [];     // tiene traccia degli indici dei verbi già usati
+let giocoCompletato = false;
+
+let domandaIndex = 0;
+let domandeTotali = verbs.length;  // 20
+
+function aggiornaContatore() {
+  if (!giocoCompletato && domandaIndex < domandeTotali) {
+    document.getElementById("contatore").innerText = domandaIndex + 1;
+  } else if (giocoCompletato) {
+    document.getElementById("contatore").innerText = domandeTotali;
+  }
+  document.getElementById("totale").innerText = domandeTotali;
+}
+
+// Mostra messaggio fine gioco con bottone ricomincia
+function mostraFineGioco() {
+  giocoCompletato = true;
+  document.getElementById('domanda').innerHTML = "✅ Gioco completato! Hai coniugato tutti i 20 verbi! 🎉";
+  document.getElementById('bottoni').innerHTML = "";
+  document.getElementById('nextBtn').disabled = true;
+  
+  // Rimuovi eventuale bottone ricomincia precedente
+  let containerBottoni = document.getElementById('bottoni');
+  let oldBtn = containerBottoni.querySelector(".ricomincia-btn");
+  if (oldBtn) oldBtn.remove();
+  
+  // Crea bottone ricomincia
+  let ricominciaBtn = document.createElement("button");
+  ricominciaBtn.innerText = "🔄 Ricomincia";
+  ricominciaBtn.style.marginTop = "15px";
+  ricominciaBtn.classList.add("ricomincia-btn");
+  ricominciaBtn.onclick = function() {
+    inizializzaGioco();
+  };
+  containerBottoni.appendChild(ricominciaBtn);
+}
+
+// Genera opzioni (4 opzioni: corretta + 3 distrattori dallo stesso verbo)
+function generaOpzioni(verbo, corretta) {
+  // Prendo tutte le forme del verbo e mescolo
+  let tutteForme = [...verbo.forms];
+  let opzioni = [corretta];
+  
+  // Aggiungo distrattori unici dalle altre forme dello stesso verbo
+  while(opzioni.length < 4 && tutteForme.length > 0) {
+    let randomForm = tutteForme[Math.floor(Math.random() * tutteForme.length)];
+    if(!opzioni.includes(randomForm)) {
+      opzioni.push(randomForm);
+    }
+    // Se per caso tutteForme ha solo la corretta e non bastano, esco
+    if(opzioni.length === tutteForme.length) break;
+  }
+  
+  // Se ancora non ho 4 opzioni (caso raro con verbi che hanno forme ripetute? no, sono univoche)
+  // ma per sicurezza aggiungo da altri verbi se necessario
+  if(opzioni.length < 4) {
+    const altriVerbi = verbs.filter(v => v.inf !== verbo.inf);
+    while(opzioni.length < 4) {
+      let altro = altriVerbi[Math.floor(Math.random() * altriVerbi.length)];
+      let formaAltro = altro.forms[Math.floor(Math.random() * 6)];
+      if(!opzioni.includes(formaAltro)) {
+        opzioni.push(formaAltro);
+      }
+    }
+  }
+  
+  // Mescolo le opzioni
+  for(let i = opzioni.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [opzioni[i], opzioni[j]] = [opzioni[j], opzioni[i]];
+  }
+  
+  return opzioni;
+}
 
 // NUOVA DOMANDA
 function nuovaDomanda(){
-
+  if(giocoCompletato) return;
+  
   document.getElementById('nextBtn').disabled = true;
-
-  // controllo fine
-  if(usati.length === verbs.length){
-    document.getElementById('domanda').innerText = "✅ Completato!";
-    document.getElementById('bottoni').innerHTML = "";
+  
+  // Controllo fine gioco: se abbiamo usato tutti i verbi
+  if(usatiIndici.length === domandeTotali){
+    mostraFineGioco();
     return;
   }
-
-  // scegli verbo non usato
-  let disponibili = verbs.filter(v => !usati.includes(v));
-  let verbo = disponibili[Math.floor(Math.random()*disponibili.length)];
-
-  usati.push(verbo);
-
-  // scegli persona
-  let i = Math.floor(Math.random()*6);
-
-  rispostaCorretta = verbo.forms[i];
-
-  document.getElementById('domanda').innerText =
-    subjects[i] + " (" + verbo.inf + ")";
-
-  // opzioni
-  let opzioni = [...verbo.forms];
-
-  opzioni.sort(() => Math.random() - 0.5);
-  opzioni = opzioni.slice(0,4);
-
-  if(!opzioni.includes(rispostaCorretta)){
-    opzioni[0] = rispostaCorretta;
+  
+  // Scegli un indice di verbo non ancora usato
+  let disponibiliIndici = [];
+  for(let i = 0; i < verbs.length; i++) {
+    if(!usatiIndici.includes(i)) {
+      disponibiliIndici.push(i);
+    }
   }
-
-  opzioni.sort(() => Math.random() - 0.5);
-
+  
+  let indiceScelto = disponibiliIndici[Math.floor(Math.random() * disponibiliIndici.length)];
+  let verbo = verbs[indiceScelto];
+  usatiIndici.push(indiceScelto);
+  
+  // Scegli persona casuale (0-5)
+  let personaIndex = Math.floor(Math.random() * 6);
+  rispostaCorretta = verbo.forms[personaIndex];
+  
+  // Mostra domanda
+  document.getElementById('domanda').innerHTML = subjects[personaIndex] + ' <span style="color:#6a82fb;">(' + verbo.inf + ')</span>';
+  
+  // Genera opzioni
+  let opzioni = generaOpzioni(verbo, rispostaCorretta);
+  
+  // Crea bottoni
   let html = '';
-
   for(let o of opzioni){
-    html += `<button onclick="controlla('${o}')">${o}</button>`;
+    html += `<button onclick="controlla('${o.replace(/'/g, "\\'")}')">${o}</button>`;
   }
-
   document.getElementById('bottoni').innerHTML = html;
+  
+  // Aggiorna contatore
+  aggiornaContatore();
 }
 
-// CONTROLLO
+// CONTROLLO RISPOSTA
 function controlla(val){
-
+  // Se già risposto o gioco completato, evita doppi click
+  if(giocoCompletato) return;
+  
   let bottoni = document.querySelectorAll('#bottoni button');
-
+  let giaRisposto = false;
+  
+  // Controlla se qualche bottone ha già la classe correct/wrong (già risposto)
   bottoni.forEach(btn => {
-
-    // corretta → verde
+    if(btn.classList.contains('correct') || btn.classList.contains('wrong')) {
+      giaRisposto = true;
+    }
+  });
+  
+  if(giaRisposto) return;
+  
+  bottoni.forEach(btn => {
     if(btn.innerText === rispostaCorretta){
       btn.classList.add('correct');
     }
-
-    // sbagliata → rossa
     if(btn.innerText === val && val !== rispostaCorretta){
       btn.classList.add('wrong');
     }
-
     btn.disabled = true;
   });
-
+  
   document.getElementById('nextBtn').disabled = false;
 }
 
+// PROSSIMA DOMANDA
+function prossimaDomanda(){
+  if(giocoCompletato) return;
+  
+  // Controlla se abbiamo già risposto alla domanda corrente
+  let bottoni = document.querySelectorAll('#bottoni button');
+  let risposto = false;
+  bottoni.forEach(btn => {
+    if(btn.disabled === true) risposto = true;
+  });
+  
+  if(!risposto) return;  // non si può andare avanti senza risposta
+  
+  domandaIndex++;
+  
+  // Se abbiamo finito tutte le domande, mostra fine gioco
+  if(domandaIndex >= domandeTotali) {
+    // Forziamo la visualizzazione del completamento
+    if(usatiIndici.length === domandeTotali) {
+      mostraFineGioco();
+    } else {
+      // caso strano: ricarica nuova domanda
+      nuovaDomanda();
+    }
+  } else {
+    nuovaDomanda();
+  }
+}
+
+// RIAVVIA IL GIOCO
+function inizializzaGioco(){
+  giocoCompletato = false;
+  domandaIndex = 0;
+  usatiIndici = [];
+  aggiornaContatore();
+  nuovaDomanda();
+}
+
 // AVVIO
-nuovaDomanda();
+inizializzaGioco();
 
 </script>
 
