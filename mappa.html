@@ -7,6 +7,45 @@
 <link rel="stylesheet" href="style.css">
 
 <style>
+/* ====================== */
+/* LIMITI MASSIMI PER PC - SOLO STRUTTURA, NESSUN CAMBIO COLORE */
+/* ====================== */
+body {
+  background: #e0e0e0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px;
+}
+
+.container-principale {
+  max-width: 650px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Card principale con larghezza massima */
+.card {
+  max-width: 650px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 15px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+/* Top bar con limiti */
+.top-bar {
+  max-width: 650px;
+  width: 100%;
+  margin: 0 auto 15px auto;
+  display: block;
+  box-sizing: border-box;
+}
+
 .city-map {
   background: #e8f0e8;
   padding: 8px;
@@ -25,8 +64,33 @@
   background: #ccc;
   border: 2px solid #999;
   width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
 }
 
+/* Dimensioni per PC - Mappa più compatta */
+@media (min-width: 769px) {
+  .map-grid {
+    grid-template-columns: repeat(7, 50px);
+    grid-template-rows: repeat(7, 50px);
+    max-width: 364px;
+  }
+}
+
+/* Tablet */
+@media (min-width: 481px) and (max-width: 768px) {
+  .map-grid {
+    grid-template-columns: repeat(7, 50px);
+    grid-template-rows: repeat(7, 50px);
+    max-width: 364px;
+  }
+  
+  .card {
+    max-width: 550px;
+  }
+}
+
+/* Mobile */
 @media (max-width: 480px) {
   .map-grid {
     grid-template-columns: repeat(7, minmax(40px, 48px));
@@ -115,6 +179,31 @@
 button {
   font-size: 14px;
   padding: 12px;
+}
+
+/* ====================== */
+/* MODIFICA PRINCIPALE: BOTTONI CON LARGHEZZA LIMITATA SU PC */
+/* ====================== */
+#bottoni {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  max-width: 100%;
+}
+
+#bottoni button {
+  flex: 1 1 auto;
+  min-width: 180px;
+  max-width: 280px;
+}
+
+/* Su PC, bottoni più compatti */
+@media (min-width: 769px) {
+  #bottoni button {
+    min-width: 200px;
+    max-width: 240px;
+  }
 }
 
 .feedback {
@@ -258,105 +347,113 @@ h2 { font-size: 20px; margin: 0 0 5px 0; }
     font-size: 11px;
   }
 }
+
+/* Bottone Avanti con larghezza piena ma limitata nel contenitore */
+.next-btn {
+  width: 100%;
+  margin-top: 15px;
+}
 </style>
 </head>
 
 <body>
 
-<a href="index.html" class="top-bar">
-  🎮 Mini Giochi Italiano
-</a>
+<div class="container-principale">
+  <a href="index.html" class="top-bar">
+    🎮 Mini Giochi Italiano
+  </a>
 
-<div class="card">
-  <h2>🗺️ Città di Bellavista</h2>
-  <p style="text-align:center; font-size:13px; color:#666;">Impara le indicazioni stradali</p>
+  <div class="card">
+    <h2>🗺️ Città di Bellavista</h2>
+    <p style="text-align:center; font-size:13px; color:#666;">Impara le indicazioni stradali</p>
 
-  <!-- ====================== -->
-  <!-- VOCABOLARI MOBILE-FIRST (CHIUSI DI DEFAULT) -->
-  <!-- ====================== -->
-  <div class="vocab-container">
-    <!-- VOCABOLARIO INDICAZIONI -->
-    <div class="vocabolario">
-      <div class="vocab-header" onclick="toggleVocabolario('vocabIndicazioni', 'btnIndicazioni')">
-        <h3>🗺️ Vocabolario indicazioni stradali</h3>
-        <button class="toggle-vocab" id="btnIndicazioni">▶</button>
+    <!-- ====================== -->
+    <!-- VOCABOLARI MOBILE-FIRST (CHIUSI DI DEFAULT) -->
+    <!-- ====================== -->
+    <div class="vocab-container">
+      <!-- VOCABOLARIO INDICAZIONI -->
+      <div class="vocabolario">
+        <div class="vocab-header" onclick="toggleVocabolario('vocabIndicazioni', 'btnIndicazioni')">
+          <h3>🗺️ Vocabolario indicazioni stradali</h3>
+          <button class="toggle-vocab" id="btnIndicazioni">▶</button>
+        </div>
+        <div id="vocabIndicazioni" class="vocab-content">
+          <table class="vocabolario-table">
+            <thead>
+              <tr><th>Italiano</th><th>English</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Vai dritto</td><td>Go straight</td></tr>
+              <tr><td>Gira a sinistra</td><td>Turn left</td></tr>
+              <tr><td>Gira a destra</td><td>Turn right</td></tr>
+              <tr><td>Fino al primo incrocio</td><td>To the first intersection</td></tr>
+              <tr><td>Fino al secondo incrocio</td><td>To the second intersection</td></tr>
+              <tr><td>Alla prima traversa</td><td>At the first cross street</td></tr>
+              <tr><td>Alla seconda traversa</td><td>At the second cross street</td></tr>
+              <tr><td>Fino in fondo</td><td>All the way / To the end</td></tr>
+              <tr><td>Poi</td><td>Then</td></tr>
+              <tr><td>Incrocio</td><td>Intersection</td></tr>
+              <tr><td>Traversa</td><td>Cross street</td></tr>
+              <tr><td>Semaforo</td><td>Traffic light</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-      <div id="vocabIndicazioni" class="vocab-content">
-        <table class="vocabolario-table">
-          <thead>
-            <tr><th>Italiano</th><th>English</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Vai dritto</td><td>Go straight</td></tr>
-            <tr><td>Gira a sinistra</td><td>Turn left</td></tr>
-            <tr><td>Gira a destra</td><td>Turn right</td></tr>
-            <tr><td>Fino al primo incrocio</td><td>To the first intersection</td></tr>
-            <tr><td>Fino al secondo incrocio</td><td>To the second intersection</td></tr>
-            <tr><td>Alla prima traversa</td><td>At the first cross street</td></tr>
-            <tr><td>Alla seconda traversa</td><td>At the second cross street</td></tr>
-            <tr><td>Fino in fondo</td><td>All the way / To the end</td></tr>
-            <tr><td>Poi</td><td>Then</td></tr>
-            <tr><td>Incrocio</td><td>Intersection</td></tr>
-            <tr><td>Traversa</td><td>Cross street</td></tr>
-            <tr><td>Semaforo</td><td>Traffic light</td></tr>
-          </tbody>
-        </table>
+
+      <!-- VOCABOLARIO EDIFICI -->
+      <div class="vocabolario">
+        <div class="vocab-header" onclick="toggleVocabolario('vocabEdifici', 'btnEdifici')">
+          <h3>🏢 Vocabolario edifici della città</h3>
+          <button class="toggle-vocab" id="btnEdifici">▶</button>
+        </div>
+        <div id="vocabEdifici" class="vocab-content">
+          <table class="vocabolario-table">
+            <thead>
+              <tr><th>Italiano</th><th>English</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>🚉 Stazione</td><td>Train station</td></tr>
+              <tr><td>🏥 Ospedale</td><td>Hospital</td></tr>
+              <tr><td>📚 Scuola</td><td>School</td></tr>
+              <tr><td>🏦 Banca</td><td>Bank</td></tr>
+              <tr><td>🛒 Supermercato</td><td>Supermarket</td></tr>
+              <tr><td>💊 Farmacia</td><td>Pharmacy</td></tr>
+              <tr><td>🏛️ Museo</td><td>Museum</td></tr>
+              <tr><td>📖 Biblioteca</td><td>Library</td></tr>
+              <tr><td>🎭 Teatro</td><td>Theater</td></tr>
+              <tr><td>🏢 Municipio</td><td>Town hall / City hall</td></tr>
+              <tr><td>⛪ Chiesa</td><td>Church</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <!-- VOCABOLARIO EDIFICI -->
-    <div class="vocabolario">
-      <div class="vocab-header" onclick="toggleVocabolario('vocabEdifici', 'btnEdifici')">
-        <h3>🏢 Vocabolario edifici della città</h3>
-        <button class="toggle-vocab" id="btnEdifici">▶</button>
-      </div>
-      <div id="vocabEdifici" class="vocab-content">
-        <table class="vocabolario-table">
-          <thead>
-            <tr><th>Italiano</th><th>English</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>🚉 Stazione</td><td>Train station</td></tr>
-            <tr><td>🏥 Ospedale</td><td>Hospital</td></tr>
-            <tr><td>📚 Scuola</td><td>School</td></tr>
-            <tr><td>🏦 Banca</td><td>Bank</td></tr>
-            <tr><td>🛒 Supermercato</td><td>Supermarket</td></tr>
-            <tr><td>💊 Farmacia</td><td>Pharmacy</td></tr>
-            <tr><td>🏛️ Museo</td><td>Museum</td></tr>
-            <tr><td>📖 Biblioteca</td><td>Library</td></tr>
-            <tr><td>🎭 Teatro</td><td>Theater</td></tr>
-            <tr><td>🏢 Municipio</td><td>Town hall / City hall</td></tr>
-            <tr><td>⛪ Chiesa</td><td>Church</td></tr>
-          </tbody>
-        </table>
-      </div>
+    <div class="stats">
+      <span>📋 Domanda: <span id="contatore">1</span>/<span id="totale"></span></span>
+      <span>📍 <span id="posizioneLabel">🚉 Stazione</span></span>
     </div>
+
+    <div class="city-map" id="cityMap"></div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-color" style="background:#c8e6c8;"></div> Edificio</div>
+      <div class="legend-item"><div class="legend-color" style="background:#f5e6c8;"></div> Strada</div>
+      <div class="legend-item"><div class="legend-color" style="background:#ffe0b3;"></div> Incrocio</div>
+      <div class="legend-item"><div class="legend-color" style="background:#ffeb3b;"></div> ⭐ Posizione</div>
+      <div class="legend-item"><div class="legend-color" style="background:transparent;"></div> 🧭 Direzione</div>
+    </div>
+
+    <div id="domandaContainer">
+      <p id="domanda" style="font-weight:bold; text-align:center;"></p>
+    </div>
+
+    <div id="bottoni"></div>
+
+    <div id="feedback" class="feedback"></div>
+
+    <button id="nextBtn" class="next-btn" onclick="prossimaDomanda()" disabled>▶ Avanti</button>
   </div>
-
-  <div class="stats">
-    <span>📋 Domanda: <span id="contatore">1</span>/<span id="totale"></span></span>
-    <span>📍 <span id="posizioneLabel">🚉 Stazione</span></span>
-  </div>
-
-  <div class="city-map" id="cityMap"></div>
-
-  <div class="legend">
-    <div class="legend-item"><div class="legend-color" style="background:#c8e6c8;"></div> Edificio</div>
-    <div class="legend-item"><div class="legend-color" style="background:#f5e6c8;"></div> Strada</div>
-    <div class="legend-item"><div class="legend-color" style="background:#ffe0b3;"></div> Incrocio</div>
-    <div class="legend-item"><div class="legend-color" style="background:#ffeb3b;"></div> ⭐ Posizione</div>
-    <div class="legend-item"><div class="legend-color" style="background:transparent;"></div> 🧭 Direzione</div>
-  </div>
-
-  <div id="domandaContainer">
-    <p id="domanda" style="font-weight:bold; text-align:center;"></p>
-  </div>
-
-  <div id="bottoni"></div>
-
-  <div id="feedback" class="feedback"></div>
-
-  <button id="nextBtn" class="next-btn" onclick="prossimaDomanda()" disabled>▶ Avanti</button>
 </div>
 
 <script>
