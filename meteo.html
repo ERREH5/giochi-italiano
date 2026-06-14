@@ -25,8 +25,20 @@
 }
 
 .word {
-  font-size:22px;
-  letter-spacing:5px;
+  font-size: 22px;
+  letter-spacing: 3px;
+  text-align: center;
+  word-break: keep-all;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  margin: 15px 0;
+}
+
+.word-segment {
+  display: inline-block;
+  letter-spacing: 5px;
 }
 
 .keyboard {
@@ -239,7 +251,6 @@ function nuovaDomanda1(){
   let idxDisponibile = Math.floor(Math.random() * disponibili.length);
   let gruppo = disponibili[idxDisponibile];
   
-  // Trova l'indice originale del gruppo
   let gruppoIndex = sinonimiMeteo.findIndex(g => g === gruppo);
   usati1.push(gruppoIndex);
   aggiornaContatore1();
@@ -250,7 +261,6 @@ function nuovaDomanda1(){
   document.getElementById('img1').src = gruppo.img;
   document.getElementById('domanda1').innerText = "Che tempo fa?";
 
-  // Crea opzioni: tutte le parole da tutti i gruppi
   let tutteParole = [];
   for(let g of sinonimiMeteo){
     for(let p of g.parole){
@@ -302,12 +312,13 @@ function prossimaDomanda1(){
 
 
 // ======================
-// 🔥 GIOCO 2 (DIFFICILE - METEO)
+// 🔥 GIOCO 2 (DIFFICILE - METEO) - CON PAROLE SEPARATE
 // ======================
 
 let usati2 = [];
 let gruppoCorrente2 = null;
 let parolaCorrente2 = "";
+let paroleSeparate = [];
 let guessed = [];
 
 function resetGioco2(){
@@ -331,7 +342,7 @@ function nuovaDomanda2(){
   if(usati2.length === sinonimiMeteo.length){
     document.getElementById('res').innerHTML = "🎉 Completato! Hai finito tutte le parole! 🎉";
     document.getElementById('letters').innerHTML = "";
-    document.getElementById('word').innerText = "";
+    document.getElementById('word').innerHTML = "";
     document.getElementById('resetBtn2').classList.remove('hidden');
     return;
   }
@@ -345,26 +356,44 @@ function nuovaDomanda2(){
   aggiornaContatore2();
 
   gruppoCorrente2 = gruppo;
-  // Scegli una parola casuale dal gruppo (per il gioco di spelling)
+  // Scegli una parola casuale dal gruppo
   parolaCorrente2 = gruppo.parole[Math.floor(Math.random() * gruppo.parole.length)];
+  
+  // Separa la frase in singole parole (rispettando apostrofi e spazi)
+  paroleSeparate = parolaCorrente2.split(' ');
   guessed = [];
 
   document.getElementById('img2').src = gruppo.img;
 
-  disegnaParola();
-  creaLettere();
+  disegnaParoleSeparate();
+  creaLettere2();
 }
 
-function disegnaParola(){
-  let display = parolaCorrente2.split('').map(l => {
-    if(l === ' ' || l === '\'' || l === 'È' || l === 'é' || l === 'à' || l === 'è' || l === 'ì' || l === 'ò' || l === 'ù') return l;
-    return guessed.includes(l.toLowerCase()) ? l : '_';
-  }).join(' ');
+function disegnaParoleSeparate(){
+  let container = document.getElementById('word');
+  container.innerHTML = '';
   
-  document.getElementById('word').innerText = display;
+  for(let parola of paroleSeparate){
+    let parolaDiv = document.createElement('div');
+    parolaDiv.className = 'word-segment';
+    
+    let display = '';
+    for(let l of parola){
+      if(l === '\'' || l === 'È' || l === 'é' || l === 'à' || l === 'è' || l === 'ì' || l === 'ò' || l === 'ù'){
+        display += l;
+      } else if(guessed.includes(l.toLowerCase())){
+        display += l;
+      } else {
+        display += '_';
+      }
+    }
+    
+    parolaDiv.innerText = display;
+    container.appendChild(parolaDiv);
+  }
 }
 
-function creaLettere(){
+function creaLettere2(){
   let righe = [
     "qwertyuiop",
     "asdfghjkl",
@@ -376,7 +405,7 @@ function creaLettere(){
   for(let riga of righe){
     html += '<div class="keyboard">';
     for(let l of riga){
-      html += `<button onclick="scegli('${l}')">${l}</button>`;
+      html += `<button onclick="scegli2('${l}')">${l}</button>`;
     }
     html += '</div>';
   }
@@ -384,15 +413,15 @@ function creaLettere(){
   document.getElementById('letters').innerHTML = html;
 }
 
-function scegli(l){
+function scegli2(l){
   if(guessed.includes(l)) return;
 
   guessed.push(l);
 
   let bottoni = document.querySelectorAll('#letters button');
 
+  // Controlla se la lettera è presente in UNA QUALSIASI parola
   let letteraTrovata = false;
-  
   let parolaLower = parolaCorrente2.toLowerCase();
   let letteraAccenti = {
     'e': ['e','è','é'],
@@ -423,10 +452,20 @@ function scegli(l){
     }
   });
 
-  disegnaParola();
+  disegnaParoleSeparate();
 
-  let wordDisplay = document.getElementById('word').innerText;
-  if(!wordDisplay.includes('_')){
+  // Controlla se tutte le lettere sono state indovinate
+  let completato = true;
+  let paroleDisplay = document.querySelectorAll('#word .word-segment');
+  
+  for(let parolaDiv of paroleDisplay){
+    if(parolaDiv.innerText.includes('_')){
+      completato = false;
+      break;
+    }
+  }
+  
+  if(completato){
     document.getElementById('res').innerHTML = "🎉 Bravo! Premi Avanti";
     document.getElementById('letters').innerHTML = "";
   }
@@ -533,7 +572,7 @@ function prossimaDomanda3(){
 document.addEventListener('keydown', function(e){
   let l = e.key.toLowerCase();
   if(l.match(/^[a-z]$/)){
-    scegli(l);
+    scegli2(l);
   }
 });
 
