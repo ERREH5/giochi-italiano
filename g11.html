@@ -3,109 +3,352 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mi piace</title>
-
+<title>Mi piace - presente, imperfetto, passato prossimo</title>
 <link rel="stylesheet" href="style.css">
+<style>
+/* piccolo extra per allineare i contatori */
+.stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #555;
+  background: #f0f0f0;
+  padding: 6px 10px;
+  border-radius: 10px;
+}
+</style>
 </head>
-
 <body>
 
 <a href="index.html" class="top-bar">
   🎮 Mini Giochi Italiano
 </a>
 
+<!-- ========== GIOCO 1: presente ========== -->
 <div class="card">
+  <h2>💛 Mi piace / Mi piacciono (presente)</h2>
+  <div class="stats">
+    <span>📋 Frase: <span id="contatore1">1</span>/<span id="totale1"></span></span>
+  </div>
+  <p id="domanda1"></p>
+  <div id="bottoni1"></div>
+  <button id="nextBtn1" class="next-btn" onclick="prossimaDomanda1()" disabled>Avanti</button>
+</div>
 
-  <h2>💛 Mi piace / Mi piacciono</h2>
+<!-- ========== GIOCO 2: imperfetto ========== -->
+<div class="card">
+  <h2>💛 Mi piaceva / Mi piacevano (imperfetto)</h2>
+  <div class="stats">
+    <span>📋 Frase: <span id="contatore2">1</span>/<span id="totale2"></span></span>
+  </div>
+  <p id="domanda2"></p>
+  <div id="bottoni2"></div>
+  <button id="nextBtn2" class="next-btn" onclick="prossimaDomanda2()" disabled>Avanti</button>
+</div>
 
-  <p id="domanda"></p>
-
-  <div id="bottoni"></div>
-
-  <button id="nextBtn" class="next-btn" onclick="nuovaDomanda()" disabled>Avanti</button>
-
+<!-- ========== GIOCO 3: passato prossimo ========== -->
+<div class="card">
+  <h2>💛 Mi è piaciuto/a / Mi sono piaciuti/e (passato prossimo)</h2>
+  <div class="stats">
+    <span>📋 Frase: <span id="contatore3">1</span>/<span id="totale3"></span></span>
+  </div>
+  <p id="domanda3"></p>
+  <div id="bottoni3"></div>
+  <button id="nextBtn3" class="next-btn" onclick="prossimaDomanda3()" disabled>Avanti</button>
 </div>
 
 <script>
-
-// DATI
-const dati = [
-{text:"______ il gelato al cioccolato.", correct:"mi piace"},
-{text:"______ i cani.", correct:"mi piacciono"},
-{text:"______ leggere libri.", correct:"mi piace"},
-{text:"______ le serie TV.", correct:"mi piacciono"},
-{text:"______ la pizza.", correct:"mi piace"},
-{text:"______ andare al mare.", correct:"mi piace"},
-{text:"______ le persone gentili.", correct:"mi piacciono"},
-{text:"______ il calcio.", correct:"mi piace"},
-{text:"______ le vacanze estive.", correct:"mi piacciono"},
-{text:"______ la musica classica.", correct:"mi piace"},
-{text:"______ i film d’azione.", correct:"mi piacciono"},
-{text:"______ studiare italiano.", correct:"mi piace"}
+// ============================================================
+// GIOCO 1 (presente) – con contatore e bottone ricomincia
+// ============================================================
+const dati1 = [
+  {text:"______ il gelato al cioccolato.", correct:"mi piace"},
+  {text:"______ i cani.", correct:"mi piacciono"},
+  {text:"______ leggere libri.", correct:"mi piace"},
+  {text:"______ le serie TV.", correct:"mi piacciono"},
+  {text:"______ la pizza.", correct:"mi piace"},
+  {text:"______ andare al mare.", correct:"mi piace"},
+  {text:"______ le persone gentili.", correct:"mi piacciono"},
+  {text:"______ il calcio.", correct:"mi piace"},
+  {text:"______ le vacanze estive.", correct:"mi piacciono"},
+  {text:"______ la musica classica.", correct:"mi piace"},
+  {text:"______ i film d’azione.", correct:"mi piacciono"},
+  {text:"______ studiare italiano.", correct:"mi piace"}
 ];
+let usati1 = [];
+let rispostaCorretta1;
+let domandaIndex1 = 0;
+let domandeTotali1 = dati1.length;
+let giocoCompletato1 = false;
 
-let usati = [];
-let rispostaCorretta;
+function aggiornaContatore1() {
+  document.getElementById("contatore1").innerText = domandaIndex1 + 1;
+  document.getElementById("totale1").innerText = domandeTotali1;
+}
 
-// NUOVA DOMANDA
-function nuovaDomanda(){
+function mostraFineGioco1() {
+  if (giocoCompletato1) return;
+  giocoCompletato1 = true;
+  document.getElementById('domanda1').innerHTML = "✅ Completato! ✅";
+  document.getElementById('bottoni1').innerHTML = "";
+  document.getElementById('nextBtn1').disabled = true;
 
-  document.getElementById('nextBtn').disabled = true;
+  let ricominciaBtn = document.createElement("button");
+  ricominciaBtn.innerText = "🔄 Ricomincia gioco 1";
+  ricominciaBtn.style.marginTop = "15px";
+  ricominciaBtn.style.width = "100%";
+  ricominciaBtn.onclick = () => inizializzaGioco1();
+  let container = document.getElementById('bottoni1');
+  let old = container.querySelector(".ricomincia-btn1");
+  if (old) old.remove();
+  ricominciaBtn.classList.add("ricomincia-btn1");
+  container.appendChild(ricominciaBtn);
+}
 
-  if(usati.length === dati.length){
-    document.getElementById('domanda').innerText = "✅ Completato!";
-    document.getElementById('bottoni').innerHTML = "";
+function nuovaDomanda1() {
+  if (usati1.length === domandeTotali1) {
+    mostraFineGioco1();
     return;
   }
-
-  let disponibili = dati.filter(x => !usati.includes(x));
-  let curr = disponibili[Math.floor(Math.random()*disponibili.length)];
-
-  usati.push(curr);
-
-  rispostaCorretta = curr.correct;
-
-  document.getElementById('domanda').innerText = curr.text;
-
+  let disponibili = dati1.filter(x => !usati1.includes(x));
+  let curr = disponibili[Math.floor(Math.random() * disponibili.length)];
+  usati1.push(curr);
+  rispostaCorretta1 = curr.correct;
+  document.getElementById('domanda1').innerHTML = curr.text;
   let opzioni = ["mi piace", "mi piacciono"];
-
   opzioni.sort(() => Math.random() - 0.5);
-
   let html = '';
-
-  for(let o of opzioni){
-    html += `<button onclick="controlla('${o}')">${o}</button>`;
+  for (let o of opzioni) {
+    html += `<button onclick="controlla1('${o}')">${o}</button>`;
   }
-
-  document.getElementById('bottoni').innerHTML = html;
+  document.getElementById('bottoni1').innerHTML = html;
+  document.getElementById('nextBtn1').disabled = true;
 }
 
-// CONTROLLO
-function controlla(val){
-
-  let bottoni = document.querySelectorAll('#bottoni button');
-
+function controlla1(val) {
+  let bottoni = document.querySelectorAll('#bottoni1 button');
   bottoni.forEach(btn => {
-
-    if(btn.innerText === rispostaCorretta){
-      btn.classList.add('correct');
-    }
-
-    if(btn.innerText === val && val !== rispostaCorretta){
-      btn.classList.add('wrong');
-    }
-
+    if (btn.innerText === rispostaCorretta1) btn.classList.add('correct');
+    if (btn.innerText === val && val !== rispostaCorretta1) btn.classList.add('wrong');
     btn.disabled = true;
   });
-
-  document.getElementById('nextBtn').disabled = false;
+  document.getElementById('nextBtn1').disabled = false;
 }
 
-// AVVIO
-nuovaDomanda();
+function prossimaDomanda1() {
+  if (giocoCompletato1) return;
+  if (usati1.length === domandeTotali1) {
+    mostraFineGioco1();
+    return;
+  }
+  domandaIndex1++;
+  aggiornaContatore1();
+  nuovaDomanda1();
+}
 
+function inizializzaGioco1() {
+  giocoCompletato1 = false;
+  domandaIndex1 = 0;
+  usati1 = [];
+  aggiornaContatore1();
+  nuovaDomanda1();
+}
+
+// ============================================================
+// GIOCO 2 (imperfetto) – con contatore e bottone ricomincia
+// ============================================================
+const dati2 = [
+  {text:"Da piccolo ______ il gelato al cioccolato.", correct:"mi piaceva"},
+  {text:"Da bambino ______ i cani.", correct:"mi piacevano"},
+  {text:"A scuola ______ leggere libri.", correct:"mi piaceva"},
+  {text:"Da ragazzo ______ le serie TV.", correct:"mi piacevano"},
+  {text:"Quando ero in Italia ______ la pizza.", correct:"mi piaceva"},
+  {text:"Da giovane ______ andare al mare.", correct:"mi piaceva"},
+  {text:"Un tempo ______ le persone gentili.", correct:"mi piacevano"},
+  {text:"Da piccolo ______ il calcio.", correct:"mi piaceva"},
+  {text:"Prima ______ le vacanze estive.", correct:"mi piacevano"},
+  {text:"Quando studiavo ______ la musica classica.", correct:"mi piaceva"}
+];
+let usati2 = [];
+let rispostaCorretta2;
+let domandaIndex2 = 0;
+let domandeTotali2 = dati2.length;
+let giocoCompletato2 = false;
+
+function aggiornaContatore2() {
+  document.getElementById("contatore2").innerText = domandaIndex2 + 1;
+  document.getElementById("totale2").innerText = domandeTotali2;
+}
+
+function mostraFineGioco2() {
+  if (giocoCompletato2) return;
+  giocoCompletato2 = true;
+  document.getElementById('domanda2').innerHTML = "✅ Completato! ✅";
+  document.getElementById('bottoni2').innerHTML = "";
+  document.getElementById('nextBtn2').disabled = true;
+
+  let ricominciaBtn = document.createElement("button");
+  ricominciaBtn.innerText = "🔄 Ricomincia gioco 2";
+  ricominciaBtn.style.marginTop = "15px";
+  ricominciaBtn.style.width = "100%";
+  ricominciaBtn.onclick = () => inizializzaGioco2();
+  let container = document.getElementById('bottoni2');
+  let old = container.querySelector(".ricomincia-btn2");
+  if (old) old.remove();
+  ricominciaBtn.classList.add("ricomincia-btn2");
+  container.appendChild(ricominciaBtn);
+}
+
+function nuovaDomanda2() {
+  if (usati2.length === domandeTotali2) {
+    mostraFineGioco2();
+    return;
+  }
+  let disponibili = dati2.filter(x => !usati2.includes(x));
+  let curr = disponibili[Math.floor(Math.random() * disponibili.length)];
+  usati2.push(curr);
+  rispostaCorretta2 = curr.correct;
+  document.getElementById('domanda2').innerHTML = curr.text;
+  let opzioni = ["mi piaceva", "mi piacevano"];
+  opzioni.sort(() => Math.random() - 0.5);
+  let html = '';
+  for (let o of opzioni) {
+    html += `<button onclick="controlla2('${o}')">${o}</button>`;
+  }
+  document.getElementById('bottoni2').innerHTML = html;
+  document.getElementById('nextBtn2').disabled = true;
+}
+
+function controlla2(val) {
+  let bottoni = document.querySelectorAll('#bottoni2 button');
+  bottoni.forEach(btn => {
+    if (btn.innerText === rispostaCorretta2) btn.classList.add('correct');
+    if (btn.innerText === val && val !== rispostaCorretta2) btn.classList.add('wrong');
+    btn.disabled = true;
+  });
+  document.getElementById('nextBtn2').disabled = false;
+}
+
+function prossimaDomanda2() {
+  if (giocoCompletato2) return;
+  if (usati2.length === domandeTotali2) {
+    mostraFineGioco2();
+    return;
+  }
+  domandaIndex2++;
+  aggiornaContatore2();
+  nuovaDomanda2();
+}
+
+function inizializzaGioco2() {
+  giocoCompletato2 = false;
+  domandaIndex2 = 0;
+  usati2 = [];
+  aggiornaContatore2();
+  nuovaDomanda2();
+}
+
+// ============================================================
+// GIOCO 3 (passato prossimo) – con contatore e bottone ricomincia
+// ============================================================
+const dati3 = [
+  {text:"Il film ______ molto.", correct:"mi è piaciuto"},
+  {text:"La canzone ______ molto.", correct:"mi è piaciuta"},
+  {text:"I libri ______ molto.", correct:"mi sono piaciuti"},
+  {text:"Le vacanze ______ molto.", correct:"mi sono piaciute"},
+  {text:"La pizza ______ molto.", correct:"mi è piaciuta"},
+  {text:"Il concerto ______ davvero.", correct:"mi è piaciuto"},
+  {text:"Le persone ______ tutte simpatiche.", correct:"mi sono piaciute"},
+  {text:"Gli animali ______ molto.", correct:"mi sono piaciuti"},
+  {text:"La festa ______ un sacco.", correct:"mi è piaciuta"},
+  {text:"I regali ______ tantissimo.", correct:"mi sono piaciuti"}
+];
+let usati3 = [];
+let rispostaCorretta3;
+let domandaIndex3 = 0;
+let domandeTotali3 = dati3.length;
+let giocoCompletato3 = false;
+
+function aggiornaContatore3() {
+  document.getElementById("contatore3").innerText = domandaIndex3 + 1;
+  document.getElementById("totale3").innerText = domandeTotali3;
+}
+
+function mostraFineGioco3() {
+  if (giocoCompletato3) return;
+  giocoCompletato3 = true;
+  document.getElementById('domanda3').innerHTML = "✅ Completato! ✅";
+  document.getElementById('bottoni3').innerHTML = "";
+  document.getElementById('nextBtn3').disabled = true;
+
+  let ricominciaBtn = document.createElement("button");
+  ricominciaBtn.innerText = "🔄 Ricomincia gioco 3";
+  ricominciaBtn.style.marginTop = "15px";
+  ricominciaBtn.style.width = "100%";
+  ricominciaBtn.onclick = () => inizializzaGioco3();
+  let container = document.getElementById('bottoni3');
+  let old = container.querySelector(".ricomincia-btn3");
+  if (old) old.remove();
+  ricominciaBtn.classList.add("ricomincia-btn3");
+  container.appendChild(ricominciaBtn);
+}
+
+function nuovaDomanda3() {
+  if (usati3.length === domandeTotali3) {
+    mostraFineGioco3();
+    return;
+  }
+  let disponibili = dati3.filter(x => !usati3.includes(x));
+  let curr = disponibili[Math.floor(Math.random() * disponibili.length)];
+  usati3.push(curr);
+  rispostaCorretta3 = curr.correct;
+  document.getElementById('domanda3').innerHTML = curr.text;
+  let opzioni = ["mi è piaciuto", "mi è piaciuta", "mi sono piaciuti", "mi sono piaciute"];
+  opzioni.sort(() => Math.random() - 0.5);
+  let html = '';
+  for (let o of opzioni) {
+    html += `<button onclick="controlla3('${o}')">${o}</button>`;
+  }
+  document.getElementById('bottoni3').innerHTML = html;
+  document.getElementById('nextBtn3').disabled = true;
+}
+
+function controlla3(val) {
+  let bottoni = document.querySelectorAll('#bottoni3 button');
+  bottoni.forEach(btn => {
+    if (btn.innerText === rispostaCorretta3) btn.classList.add('correct');
+    if (btn.innerText === val && val !== rispostaCorretta3) btn.classList.add('wrong');
+    btn.disabled = true;
+  });
+  document.getElementById('nextBtn3').disabled = false;
+}
+
+function prossimaDomanda3() {
+  if (giocoCompletato3) return;
+  if (usati3.length === domandeTotali3) {
+    mostraFineGioco3();
+    return;
+  }
+  domandaIndex3++;
+  aggiornaContatore3();
+  nuovaDomanda3();
+}
+
+function inizializzaGioco3() {
+  giocoCompletato3 = false;
+  domandaIndex3 = 0;
+  usati3 = [];
+  aggiornaContatore3();
+  nuovaDomanda3();
+}
+
+// ============================================================
+// AVVIO DI TUTTI E TRE I GIOCHI
+// ============================================================
+inizializzaGioco1();
+inizializzaGioco2();
+inizializzaGioco3();
 </script>
-
 </body>
 </html>
-``
