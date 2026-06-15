@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verbi al presente</title>
+<link rel="stylesheet" href="style.css">
+<style>
+/* stili identici al gioco “difficile” del meteo */
+.word {
+  font-size: 22px;
+  letter-spacing: 5px;
+  text-align: center;
+  word-break: keep-all;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  margin: 15px 0;
+}
+.word-segment {
+  display: inline-block;
+  letter-spacing: 5px;
+}
+.keyboard {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 5px;
+  margin-top: 10px;
+}
+.keyboard button {
+  padding: 8px;
+  font-size: 14px;
+}
+.reset-btn {
+  background: #ff9800;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 15px;
+  transition: all 0.2s;
+}
+.reset-btn:hover {
+  background: #e68900;
+}
+.button-group {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+  flex-wrap: wrap;
+}
+.hidden {
+  display: none;
+}
+.counter {
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  margin-top: 10px;
+  margin-bottom: 5px;
+}
+.frase-testo {
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-align: center;
+  margin: 15px 0 5px 0;
+  background: #f0f0f0;
+  padding: 10px;
+  border-radius: 12px;
+}
+.traduzione {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #555;
+  font-style: italic;
+  margin-bottom: 10px;
+}
+.hangman-figure {
+  font-family: monospace;
+  font-size: 1rem;
+  white-space: pre;
+  background: #fafafa;
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 12px;
+  margin: 10px auto;
+  text-align: left;
+}
+</style>
+</head>
+<body>
+
+<a href="index.html" class="top-bar">
+  🎮 Mini Giochi Italiano
+</a>
+
+<div class="card">
+  <h2>📖 Coniuga al presente!</h2>
+  <p style="text-align:center;">Completa la frase scrivendo il verbo giusto.</p>
+
+  <div id="counterInfo" class="counter"></div>
+  <div id="fraseCompleta" class="frase-testo"></div>
+  <div id="traduzioneFrase" class="traduzione"></div>
+
+  <div style="text-align:center;">
+    <div id="hangmanFigure" class="hangman-figure"></div>
+  </div>
+
+  <div id="word" class="word"></div>
+  <div id="letters"></div>
+  <p id="res"></p>
+
+  <div class="button-group">
+    <button id="nextBtn" class="next-btn" disabled>Avanti</button>
+    <button id="resetBtn" class="reset-btn hidden" onclick="resetGame()">🔄 Ricomincia gioco</button>
+  </div>
+  <div id="continueGroup" class="button-group hidden">
+    <button id="continueBtn" class="next-btn">▶ Continua (prossimo blocco)</button>
+    <button id="abortBtn" class="reset-btn">❌ Ferma qui</button>
+  </div>
+</div>
+
+<script>
+// ====================== DATI CON TRADUZIONE ======================
+const tutteFrasi = [
+  { testo: "Ogni mattina io __________ (fare) una lunga passeggiata al parco.", risposta: "faccio", traduzione: "Every morning I take a long walk in the park." },
+  { testo: "Tu __________ (portare) sempre nuove idee interessanti.", risposta: "porti", traduzione: "You always bring interesting new ideas." },
+  { testo: "Marta __________ (parlare) molto bene sia inglese che francese.", risposta: "parla", traduzione: "Marta speaks both English and French very well." },
+  { testo: "Noi __________ (passare) spesso tempo con i nostri amici il venerdì sera.", risposta: "passiamo", traduzione: "We often spend time with our friends on Friday evenings." },
+  { testo: "Voi __________ (andare) al lavoro in bicicletta?", risposta: "andate", traduzione: "Do you go to work by bicycle?" },
+  { testo: "I vicini __________ (mettere) musica ad alto volume ogni weekend.", risposta: "mettono", traduzione: "The neighbors play loud music every weekend." },
+  { testo: "Io __________ (portare) sempre un quaderno per prendere appunti.", risposta: "porto", traduzione: "I always bring a notebook to take notes." },
+  { testo: "Tu __________ (parlare) troppo quando sei nervoso.", risposta: "parli", traduzione: "You talk too much when you are nervous." },
+  { testo: "Paolo __________ (prestare) volentieri i suoi libri agli amici.", risposta: "presta", traduzione: "Paolo gladly lends his books to friends." },
+  { testo: "Noi non __________ (capire) mai ciò che dicono.", risposta: "capiamo", traduzione: "We never understand what they say." },
+  { testo: "Voi __________ (guardare) la televisione tutte le sere?", risposta: "guardate", traduzione: "Do you watch television every evening?" },
+  { testo: "I ragazzi __________ (stancarsi) molto quando fanno sport.", risposta: "si stancano", traduzione: "The boys get very tired when they play sports." },
+  { testo: "Io __________ (dare) volentieri un aiuto se serve.", risposta: "do", traduzione: "I gladly give help if needed." },
+  { testo: "Tu __________ (fare) sempre tutto all’ultimo minuto!", risposta: "fai", traduzione: "You always do everything at the last minute!" },
+  { testo: "Chiara __________ (andare) spesso al mercato per comprare frutta fresca.", risposta: "va", traduzione: "Chiara often goes to the market to buy fresh fruit." },
+  { testo: "Noi __________ (mangiare) il pranzo insieme quasi tutti i giorni.", risposta: "mangiamo", traduzione: "We eat lunch together almost every day." },
+  { testo: "Voi __________ (andare) ancora a teatro il sabato sera?", risposta: "andate", traduzione: "Do you still go to the theater on Saturday evenings?" },
+  { testo: "Gli animali __________ (riconoscere) istintivamente chi si prende cura di loro.", risposta: "riconoscono", traduzione: "Animals instinctively recognize those who take care of them." },
+  { testo: "Io __________ (dormire) poco quando fa caldo.", risposta: "dormo", traduzione: "I sleep little when it's hot." },
+  { testo: "Tu __________ (dire) sempre la verità quando ti chiedo qualcosa?", risposta: "dici", traduzione: "Do you always tell the truth when I ask you something?" },
+  { testo: "La mia famiglia __________ (fare) vacanze in montagna ogni estate.", risposta: "fa", traduzione: "My family takes vacations in the mountains every summer." },
+  { testo: "Noi __________ (leggere) con attenzione le istruzioni prima di iniziare.", risposta: "leggiamo", traduzione: "We carefully read the instructions before starting." },
+  { testo: "Voi non __________ (trovare) mai abbastanza tempo per voi stessi.", risposta: "trovate", traduzione: "You never find enough time for yourselves." },
+  { testo: "I bambini __________ (diventare) felici appena vedono la neve.", risposta: "diventano", traduzione: "Children become happy as soon as they see snow." },
+  { testo: "Io __________ (provare) spesso nuove ricette da provare.", risposta: "provo", traduzione: "I often try new recipes to cook." },
+  { testo: "Tu __________ (passare) troppo tempo davanti al computer.", risposta: "passi", traduzione: "You spend too much time in front of the computer." },
+  { testo: "Il professore __________ (spiegare) chiaramente il contenuto della lezione.", risposta: "spiega", traduzione: "The professor clearly explains the content of the lesson." },
+  { testo: "Noi __________ (fare) ogni anno un regalo speciale ai nostri genitori.", risposta: "facciamo", traduzione: "We give a special gift to our parents every year." },
+  { testo: "Voi __________ (arrivare) sempre in ritardo agli appuntamenti?", risposta: "arrivate", traduzione: "Do you always arrive late for appointments?" },
+  { testo: "Gli amici __________ (organizzare) spesso sorprese inaspettate.", risposta: "organizzano", traduzione: "Friends often organize unexpected surprises." },
+  { testo: "Io __________ (pensare) di organizzare una festa per il tuo compleanno.", risposta: "penso", traduzione: "I am thinking of organizing a party for your birthday." },
+  { testo: "Tu __________ (migliorare) davvero molto quando ti impegni.", risposta: "migliori", traduzione: "You really improve a lot when you commit yourself." },
+  { testo: "Maria e Luca __________ (camminare) insieme ogni mattina per andare a scuola.", risposta: "camminano", traduzione: "Maria and Luca walk together every morning to go to school." },
+  { testo: "Noi __________ (credere) che tutto andrà per il meglio.", risposta: "crediamo", traduzione: "We believe that everything will be fine." },
+  { testo: "Voi __________ (leggere) spesso libri di avventura?", risposta: "leggete", traduzione: "Do you often read adventure books?" },
+  { testo: "Gli uccelli __________ (cantare) melodie diverse a seconda della stagione.", risposta: "cantano", traduzione: "Birds sing different melodies depending on the season." },
+  { testo: "Io __________ (concentrarsi) facilmente quando studio in silenzio.", risposta: "mi concentro", traduzione: "I concentrate easily when I study in silence." },
+  { testo: "Tu __________ (valere) più di quanto credi.", risposta: "vali", traduzione: "You are worth more than you think." },
+  { testo: "Le piante __________ (avere) molta acqua quando fa molto caldo.", risposta: "hanno", traduzione: "Plants need a lot of water when it is very hot." },
+  { testo: "Noi __________ (accettare) volentieri nuove sfide professionali.", risposta: "accettiamo", traduzione: "We gladly accept new professional challenges." }
+];
+
+const BATCH_SIZE = 10;
+const totalBatches = Math.ceil(tutteFrasi.length / BATCH_SIZE);
+
+let currentBatch = 0;
+let frasiBatch = [];
+let currentIndex = 0;
+let parolaCorrente = "";
+let paroleSeparate = [];
+let guessed = [];
+let errori = 0;
+let gameOver = false;
+let giocoCompletato = false;
+
+let totaleCorrette = 0;
+let totaleSbagliate = 0;
+
+// Elementi DOM
+const counterInfo = document.getElementById("counterInfo");
+const fraseCompletaDiv = document.getElementById("fraseCompleta");
+const traduzioneDiv = document.getElementById("traduzioneFrase");
+const hangmanFigure = document.getElementById("hangmanFigure");
+const wordDiv = document.getElementById("word");
+const lettersDiv = document.getElementById("letters");
+const resDiv = document.getElementById("res");
+const nextBtn = document.getElementById("nextBtn");
+const resetBtn = document.getElementById("resetBtn");
+const continueGroup = document.getElementById("continueGroup");
+const continueBtn = document.getElementById("continueBtn");
+const abortBtn = document.getElementById("abortBtn");
+
+const hangmanStates = [
+  "  +---+\n  |   |\n      |\n      |\n      |\n      |\n=========",
+  "  +---+\n  |   |\n  O   |\n      |\n      |\n      |\n=========",
+  "  +---+\n  |   |\n  O   |\n  |   |\n      |\n      |\n=========",
+  "  +---+\n  |   |\n  O   |\n /|   |\n      |\n      |\n=========",
+  "  +---+\n  |   |\n  O   |\n /|\\  |\n      |\n      |\n=========",
+  "  +---+\n  |   |\n  O   |\n /|\\  |\n /    |\n      |\n=========",
+  "  +---+\n  |   |\n  O   |\n /|\\  |\n / \\  |\n      |\n========="
+];
+
+function aggiornaContatore() {
+  const totaleInBatch = frasiBatch.length;
+  counterInfo.innerText = `📋 Frase ${currentIndex+1} / ${totaleInBatch} (blocco ${currentBatch+1} di ${totalBatches}) 
+✅ Corrette: ${totaleCorrette} | ❌ Sbagliate: ${totaleSbagliate}`;
+}
+
+function disegnaImpiccato() {
+  hangmanFigure.innerText = hangmanStates[errori];
+}
+
+function disegnaParola() {
+  wordDiv.innerHTML = "";
+  for (let parola of paroleSeparate) {
+    let segmentDiv = document.createElement("div");
+    segmentDiv.className = "word-segment";
+    let display = "";
+    for (let ch of parola) {
+      if (ch === "'" || ch === '-' || ch === ' ') {
+        display += ch;
+      } else {
+        let lowerCh = ch.toLowerCase();
+        let found = false;
+        for (let g of guessed) {
+          if (g.toLowerCase() === lowerCh) {
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          for (let g of guessed) {
+            let gNorm = g.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            let chNorm = lowerCh.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            if (gNorm === chNorm) {
+              found = true;
+              break;
+            }
+          }
+        }
+        display += found ? ch : "_";
+      }
+    }
+    segmentDiv.innerText = display;
+    wordDiv.appendChild(segmentDiv);
+  }
+}
+
+function creaTastiera() {
+  const righe = ["qwertyuiop", "asdfghjkl", "zxcvbnm"];
+  let html = "";
+  for (let riga of righe) {
+    html += '<div class="keyboard">';
+    for (let lettera of riga) {
+      html += `<button onclick="scegliLettere('${lettera}')">${lettera}</button>`;
+    }
+    html += '</div>';
+  }
+  const accentate = ['à', 'è', 'é', 'ì', 'ò', 'ù'];
+  html += '<div class="keyboard">';
+  for (let acc of accentate) {
+    html += `<button onclick="scegliLettere('${acc}')">${acc}</button>`;
+  }
+  html += '</div>';
+  lettersDiv.innerHTML = html;
+}
+
+function abilitaTastiera(enable) {
+  const btns = lettersDiv.querySelectorAll("button");
+  btns.forEach(btn => {
+    if (enable && !gameOver && !giocoCompletato) {
+      btn.disabled = false;
+    } else {
+      btn.disabled = true;
+    }
+  });
+}
+
+function resetGameState() {
+  gameOver = false;
+  errori = 0;
+  guessed = [];
+  disegnaImpiccato();
+  abilitaTastiera(true);
+  resDiv.innerText = "";
+  nextBtn.disabled = true;
+}
+
+function controllaVittoria() {
+  let completato = true;
+  const segments = wordDiv.querySelectorAll(".word-segment");
+  for (let seg of segments) {
+    if (seg.innerText.includes("_")) {
+      completato = false;
+      break;
+    }
+  }
+  if (completato) {
+    gameOver = true;
+    abilitaTastiera(false);
+    resDiv.innerHTML = "🎉 BRAVO! PAROLA COMPLETA! Premi Avanti per continuare. 🎉";
+    resDiv.style.color = "#000000";
+    nextBtn.disabled = false;
+    totaleCorrette++;
+    aggiornaContatore();
+    return true;
+  }
+  return false;
+}
+
+function scegliLettere(lettera) {
+  if (gameOver || giocoCompletato) return;
+  if (guessed.includes(lettera)) return;
+  guessed.push(lettera);
+
+  let letteraTrovata = false;
+  let parolaIntera = paroleSeparate.join(" ");
+  let parolaLower = parolaIntera.toLowerCase();
+  let letteraNorm = lettera.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const accentiMap = {
+    'a': ['a','à'],
+    'e': ['e','è','é'],
+    'i': ['i','ì'],
+    'o': ['o','ò'],
+    'u': ['u','ù']
+  };
+  let caratteriDaCercare = [lettera];
+  if (accentiMap[letteraNorm]) {
+    caratteriDaCercare = accentiMap[letteraNorm];
+  }
+  for (let cerca of caratteriDaCercare) {
+    if (parolaLower.includes(cerca)) {
+      letteraTrovata = true;
+      break;
+    }
+  }
+
+  const btns = lettersDiv.querySelectorAll("button");
+  btns.forEach(btn => {
+    if (btn.innerText === lettera) {
+      btn.disabled = true;
+      if (letteraTrovata) {
+        btn.classList.add("correct");
+      } else {
+        btn.classList.add("wrong");
+      }
+    }
+  });
+
+  if (!letteraTrovata) {
+    errori++;
+    disegnaImpiccato();
+    if (errori >= 6) {
+      gameOver = true;
+      abilitaTastiera(false);
+      resDiv.innerHTML = `❌ HAI PERSO! La parola corretta era: "${parolaIntera}". Premi Avanti per passare alla prossima frase. ❌`;
+      resDiv.style.color = "#e74c3c";
+      nextBtn.disabled = false;
+      totaleSbagliate++;
+      aggiornaContatore();
+      return;
+    }
+  }
+
+  disegnaParola();
+  controllaVittoria();
+}
+
+function caricaFrase(indice) {
+  if (indice >= frasiBatch.length) {
+    fineBatch();
+    return;
+  }
+  resetGameState();
+  const frase = frasiBatch[indice];
+  fraseCompletaDiv.innerText = frase.testo.replace("__________", "___________");
+  traduzioneDiv.innerText = frase.traduzione;
+  parolaCorrente = frase.risposta;
+  paroleSeparate = parolaCorrente.split(' ');
+  disegnaParola();
+  aggiornaContatore();
+
+  const btns = lettersDiv.querySelectorAll("button");
+  btns.forEach(btn => {
+    btn.disabled = false;
+    btn.classList.remove("correct", "wrong");
+  });
+  abilitaTastiera(true);
+}
+
+function prossimaFrase() {
+  if (!gameOver) {
+    resDiv.innerHTML = "Completa la parola o sbaglia prima di andare avanti!";
+    resDiv.style.color = "#000000";
+    return;
+  }
+  if (currentIndex + 1 < frasiBatch.length) {
+    currentIndex++;
+    caricaFrase(currentIndex);
+  } else {
+    fineBatch();
+  }
+}
+
+function fineBatch() {
+  gameOver = true;
+  giocoCompletato = true;
+  abilitaTastiera(false);
+  nextBtn.disabled = true;
+  const prossimoBatch = currentBatch + 1;
+  if (prossimoBatch < totalBatches) {
+    continueGroup.classList.remove("hidden");
+    resDiv.innerHTML = `🏆 Hai completato il blocco ${currentBatch+1} di ${totalBatches}! 🏆<br>Vuoi continuare con le prossime 10 frasi?`;
+    resDiv.style.color = "#000000";
+  } else {
+    let percentuale = Math.round((totaleCorrette / (totaleCorrette + totaleSbagliate)) * 100);
+    resDiv.innerHTML = `🎉 COMPLIMENTI! Hai completato tutte e 40 le frasi! 🎉<br>
+                        ✅ Corrette: ${totaleCorrette} &nbsp;|&nbsp; ❌ Sbagliate: ${totaleSbagliate}<br>
+                        🎯 Percentuale successo: ${percentuale}%`;
+    resDiv.style.color = "#000000";
+    resetBtn.classList.remove("hidden");
+    continueGroup.classList.add("hidden");
+  }
+}
+
+function continuaBatch() {
+  currentBatch++;
+  const start = currentBatch * BATCH_SIZE;
+  const end = Math.min(start + BATCH_SIZE, tutteFrasi.length);
+  frasiBatch = tutteFrasi.slice(start, end);
+  currentIndex = 0;
+  giocoCompletato = false;
+  continueGroup.classList.add("hidden");
+  resetBtn.classList.add("hidden");
+  caricaFrase(0);
+}
+
+function resetGame() {
+  currentBatch = 0;
+  const start = 0;
+  const end = Math.min(BATCH_SIZE, tutteFrasi.length);
+  frasiBatch = tutteFrasi.slice(start, end);
+  currentIndex = 0;
+  giocoCompletato = false;
+  totaleCorrette = 0;
+  totaleSbagliate = 0;
+  resetBtn.classList.add("hidden");
+  continueGroup.classList.add("hidden");
+  caricaFrase(0);
+}
+
+function handlePhysicalKey(e) {
+  if (gameOver || giocoCompletato) return;
+  let key = e.key;
+  if (key.length === 1) {
+    const allowed = /^[a-zA-Zàèéìòù]$/;
+    if (allowed.test(key)) {
+      e.preventDefault();
+      scegliLettere(key.toLowerCase());
+    }
+  }
+}
+document.addEventListener("keydown", handlePhysicalKey);
+
+function init() {
+  creaTastiera();
+  resetGame();
+  nextBtn.onclick = prossimaFrase;
+  continueBtn.onclick = continuaBatch;
+  abortBtn.onclick = () => {
+    continueGroup.classList.add("hidden");
+    resetBtn.classList.remove("hidden");
+    resDiv.innerHTML = "Gioco interrotto. Puoi ricominciare con 'Ricomincia gioco'.";
+    resDiv.style.color = "#000000";
+  };
+  resetBtn.onclick = resetGame;
+}
+
+init();
+</script>
+</body>
+</html>
