@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connettivi</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* ===== STILI COERENTI CON GLI ALTRI GIOCHI ===== */
+
+    /* Contenitore principale con larghezza limitata */
+    body {
+      background: #e0e0e0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container-principale {
+      max-width: 650px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .card {
+      max-width: 650px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 15px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .top-bar {
+      max-width: 650px;
+      width: 100%;
+      margin: 0 auto 15px auto;
+      display: block;
+      box-sizing: border-box;
+    }
+
+    /* TABELLE ESPANDIBILI - COLORI COME NEL GIOCO INDICAZIONI */
+    .tables-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .table-card {
+      background: white;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+    }
+
+    .table-header {
+      padding: 10px 14px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      /* Gradiente blu come nei vocabolari */
+      background: linear-gradient(90deg, #4facfe, #00c6ff);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+      color: white;
+    }
+    .table-header:hover {
+      filter: brightness(0.95);
+    }
+    .table-header .badge {
+      background: rgba(255,255,255,0.25);
+      color: white;
+      font-size: 0.6rem;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 30px;
+      margin-left: 8px;
+    }
+    .table-header .arrow {
+      font-size: 1rem;
+      transition: transform 0.25s ease;
+      color: white;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .table-card.open .arrow {
+      transform: rotate(90deg);
+    }
+
+    .table-body {
+      display: none;
+      padding: 0 2px 10px 2px;
+      overflow-x: auto;
+    }
+    .table-card.open .table-body {
+      display: block;
+    }
+
+    .table-body table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.7rem;
+      background: white;
+      border-radius: 8px;
+    }
+    .table-body th {
+      text-align: left;
+      padding: 4px 6px;
+      font-weight: 600;
+      color: #1e3c72;
+      border-bottom: 1px solid #dce3ef;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2px;
+    }
+    .table-body td {
+      padding: 3px 6px;
+      border-bottom: 1px solid #edf2f9;
+      vertical-align: top;
+      font-size: 0.7rem;
+      line-height: 1.3;
+    }
+    .table-body tr:last-child td {
+      border-bottom: none;
+    }
+
+    .it-conn { font-weight: 600; color: #0b2a4a; }
+    .en-trans { color: #2a5298; font-style: italic; }
+    .example-it { color: #1e3c72; font-size: 0.7rem; }
+    .example-en { color: #4a5b6e; font-size: 0.65rem; font-style: italic; }
+
+    /* STATS */
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 13px;
+      color: #555;
+      background: #f0f0f0;
+      padding: 6px 10px;
+      border-radius: 10px;
+    }
+
+    /* AREA ESERCIZI */
+    .question-box {
+      background: #fafcff;
+      border-radius: 18px;
+      padding: 16px 18px;
+      margin-bottom: 16px;
+      border-left: 5px solid #4facfe;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .question-box .italian {
+      font-size: 1.1rem;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    .question-box .italian .blank {
+      background: #eef4ff;
+      padding: 0 6px;
+      border-radius: 6px;
+      font-weight: 700;
+      color: #1e3c72;
+    }
+
+    .question-box .english {
+      color: #4a5b6e;
+      font-style: italic;
+      font-size: 0.9rem;
+      border-bottom: 1px dashed #dce3ef;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+    }
+    .question-box .english .en-word {
+      font-weight: 600;
+      color: #2a5298;
+      font-style: normal;
+    }
+
+    /* BOTTONI OPZIONI - COME NEL GIOCO INDICAZIONI STRADALI */
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+    .options button {
+      flex: 1 1 auto;
+      min-width: 160px;
+      max-width: 240px;
+      background: linear-gradient(90deg, #4facfe, #00c6ff);
+      color: white;
+      border: none;
+      border-radius: 40px;
+      padding: 10px 18px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    }
+    .options button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      filter: brightness(0.95);
+    }
+    .options button:disabled {
+      opacity: 0.8;
+      cursor: default;
+      transform: none;
+    }
+    .options button.correct {
+      background: linear-gradient(90deg, #2ecc71, #27ae60) !important;
+      color: white !important;
+    }
+    .options button.wrong {
+      background: linear-gradient(90deg, #ff6a6a, #e74c3c) !important;
+      color: white !important;
+    }
+
+    /* Pulsanti azione */
+    .action-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 8px;
+    }
+    .action-row .next-btn {
+      flex: 1;
+      min-width: 120px;
+    }
+    .reset-btn {
+      background: #ff9800;
+      color: white;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    }
+    .reset-btn:hover {
+      background: #e68900;
+      transform: translateY(-2px);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 700px) {
+      .card { padding: 16px; }
+      .question-box .italian { font-size: 1rem; }
+      .options button {
+        flex: 1 1 100%;
+        min-width: 100%;
+        max-width: 100%;
+        text-align: center;
+        padding: 12px;
+      }
+      .table-body table { font-size: 0.65rem; }
+      .table-body td, .table-body th { padding: 3px 4px; }
+      .example-it, .example-en { font-size: 0.6rem; }
+    }
+
+    @media (max-width: 480px) {
+      .stats { font-size: 11px; flex-wrap: wrap; gap: 4px; }
+      .action-row .next-btn { min-width: 100%; }
+      .reset-btn { width: 100%; text-align: center; }
+      .table-body table { font-size: 0.6rem; }
+      .table-body td, .table-body th { padding: 2px 3px; }
+      .it-conn { font-size: 0.65rem; }
+      .en-trans { font-size: 0.6rem; }
+    }
+
+    @media (max-width: 380px) {
+      .table-body table { font-size: 0.55rem; }
+      .table-header { font-size: 0.8rem; padding: 8px 10px; }
+      .table-header .badge { font-size: 0.5rem; padding: 1px 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container-principale">
+  <a href="index.html" class="top-bar">
+    🎮 Mini Giochi Italiano
+  </a>
+
+  <div class="card">
+    <h2 style="text-align: center; margin-top: 0;">🔗 Connettivi</h2>
+    <p style="text-align:center; font-size:13px; color:#666; margin-bottom:15px;">
+      Parole per collegare le idee – con traduzione ed esempi
+    </p>
+
+    <!-- ===== TABELLE RIASSUNTIVE (espandibili) ===== -->
+    <div class="tables-grid" id="tablesContainer"></div>
+
+    <!-- ===== ESERCIZI ===== -->
+    <div style="border-top: 2px dashed #dce3ef; padding-top: 16px; margin-top: 10px;">
+      <div class="stats">
+        <span>📋 Domanda: <span id="contatore">1</span>/<span id="totale"></span></span>
+        <span id="punteggio">✅ 0 corrette</span>
+      </div>
+
+      <div id="quizContainer">
+        <div class="question-box" id="questionBox">
+          <div class="italian" id="italianSentence"></div>
+          <div class="english" id="englishTranslation"></div>
+          <div class="options" id="optionsContainer"></div>
+        </div>
+        <div class="action-row">
+          <button class="next-btn" id="nextBtn" disabled>▶ Avanti</button>
+          <button class="reset-btn" id="resetBtn">🔄 Ricomincia</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ================================================================
+  // 1. DATI: TUTTI I CONNETTIVI PER CATEGORIA
+  // ================================================================
+  const categories = [
+    {
+      name: '➕ Aggiunta e unione',
+      badge: 11,
+      rows: [
+        ['e', 'and', 'Marco e Lucia sono arrivati.', 'Marco and Lucia have arrived.'],
+        ['anche', 'also, too', 'Vengo anch\'io al cinema.', 'I\'m coming to the cinema too.'],
+        ['pure', 'also, even', 'Pure tu sei qui?', 'Are you here too?'],
+        ['né… né…', 'neither… nor…', 'Non ho né soldi né tempo.', 'I have neither money nor time.'],
+        ['neppure / nemmeno', 'not even, neither', 'Non lo sapevo, neppure io.', 'I didn\'t know that, not even me.'],
+        ['non solo… ma anche…', 'not only… but also…', 'Non solo studia, ma anche lavora.', 'Not only does he study, but he also works.'],
+        ['inoltre', 'furthermore, moreover', 'Inoltre, vorrei aggiungere un dettaglio.', 'Furthermore, I\'d like to add a detail.'],
+        ['per di più', 'what\'s more', 'È in ritardo, per di più senza scuse.', 'He\'s late, what\'s more without any excuse.'],
+        ['in aggiunta', 'in addition', 'In aggiunta al danno, la beffa.', 'In addition to the damage, the insult.'],
+        ['oltre a ciò', 'besides that', 'Oltre a ciò, dobbiamo considerare il costo.', 'Besides that, we must consider the cost.'],
+        ['altresì', 'likewise, also (formal)', 'Si richiede altresì la firma.', 'The signature is likewise required.']
+      ]
+    },
+    {
+      name: '🔢 Enumerazione e sequenza',
+      badge: 10,
+      rows: [
+        ['prima di tutto', 'first of all', 'Prima di tutto, salutiamo tutti.', 'First of all, let\'s greet everyone.'],
+        ['in primo luogo', 'in the first place', 'In primo luogo, voglio ringraziarvi.', 'In the first place, I want to thank you.'],
+        ['in secondo luogo', 'secondly', 'In secondo luogo, analizziamo i dati.', 'Secondly, let\'s analyse the data.'],
+        ['innanzitutto', 'first and foremost', 'Innanzitutto, presentiamoci.', 'First and foremost, let\'s introduce ourselves.'],
+        ['anzitutto', 'firstly', 'Anzitutto, chiariamo un punto.', 'Firstly, let\'s clarify a point.'],
+        ['poi', 'then, afterwards', 'Poi, passiamo al secondo argomento.', 'Then, let\'s move to the second topic.'],
+        ['in seguito', 'later, subsequently', 'In seguito, esamineremo le proposte.', 'Subsequently, we\'ll examine the proposals.'],
+        ['successivamente', 'afterwards', 'Successivamente, si è dimesso.', 'Afterwards, he resigned.'],
+        ['infine', 'finally', 'Infine, concludiamo con un riassunto.', 'Finally, let\'s conclude with a summary.'],
+        ['per concludere', 'to conclude', 'Per concludere, ringrazio tutti.', 'To conclude, I thank everyone.']
+      ]
+    },
+    {
+      name: '⚖️ Contrapposizione e opposizione',
+      badge: 9,
+      rows: [
+        ['ma', 'but', 'Volevo venire, ma sono malato.', 'I wanted to come, but I\'m ill.'],
+        ['però', 'however, but', 'È bravo, però è pigro.', 'He\'s good, however he\'s lazy.'],
+        ['invece', 'instead, whereas', 'Io vado, invece lui resta.', 'I go, whereas he stays.'],
+        ['mentre', 'while, whereas', 'Tu lavori, mentre io riposo.', 'You work, while I rest.'],
+        ['al contrario', 'on the contrary', 'Al contrario, io la penso diversamente.', 'On the contrary, I think differently.'],
+        ['d\'altra parte', 'on the other hand', 'D\'altra parte, ha anche ragione.', 'On the other hand, he\'s also right.'],
+        ['dall\'altro canto', 'on the other side', 'Dall\'altro canto, non possiamo ignorarlo.', 'On the other side, we cannot ignore it.'],
+        ['da un lato… dall\'altro…', 'on one hand… on the other…', 'Da un lato mi piace, dall\'altro è costoso.', 'On one hand I like it, on the other it\'s expensive.'],
+        ['viceversa', 'vice versa', 'Io amo il caldo, viceversa lui il freddo.', 'I love heat, vice versa he loves cold.']
+      ]
+    },
+    {
+      name: '🌧️ Concessione (nonostante)',
+      badge: 14,
+      rows: [
+        ['nonostante', 'despite, although', 'Nonostante la pioggia, siamo usciti.', 'Despite the rain, we went out.'],
+        ['sebbene', 'although, even though', 'Sebbene sia tardi, resto.', 'Although it\'s late, I stay.'],
+        ['benché', 'although', 'Benché giovane, è molto saggio.', 'Although young, he is very wise.'],
+        ['anche se', 'even if', 'Anche se piove, partiamo.', 'Even if it rains, we leave.'],
+        ['per quanto', 'however much, although', 'Per quanto sia stanco, continuo.', 'However tired I am, I continue.'],
+        ['quantunque', 'although (archaic)', 'Quantunque sia difficile, ci provo.', 'Although it\'s hard, I\'ll try.'],
+        ['malgrado', 'despite, in spite of', 'Malgrado tutto, ce l\'abbiamo fatta.', 'In spite of everything, we made it.'],
+        ['malgrado ciò', 'nevertheless', 'Malgrado ciò, non si arrende.', 'Nevertheless, he doesn\'t give up.'],
+        ['ciononostante', 'nevertheless, nonetheless', 'È stanco, ciononostante lavora.', 'He\'s tired, nevertheless he works.'],
+        ['tuttavia', 'however, yet', 'È tardi, tuttavia dobbiamo finire.', 'It\'s late, yet we must finish.'],
+        ['eppure', 'yet, and yet', 'Ho studiato, eppure ho preso 4.', 'I studied, yet I got a 4.'],
+        ['pure', 'even, yet', 'Pure se fosse vero, non mi importa.', 'Even if it were true, I don\'t care.'],
+        ['nondimeno', 'nevertheless (formal)', 'È difficile, nondimeno possibile.', 'It\'s hard, nevertheless possible.'],
+        ['a dispetto di', 'in spite of', 'A dispetto delle critiche, continua.', 'In spite of the criticism, he continues.']
+      ]
+    },
+    {
+      name: '✏️ Correzione e riformulazione',
+      badge: 9,
+      rows: [
+        ['anzi', 'rather, on the contrary', 'Non è tardi, anzi, è prestissimo.', 'It\'s not late, rather it\'s very early.'],
+        ['anzi che', 'instead of (archaic)', 'Anzi che aiutare, ha ostacolato.', 'Instead of helping, he hindered.'],
+        ['in realtà', 'in reality, actually', 'In realtà, le cose stanno diversamente.', 'In reality, things are different.'],
+        ['piuttosto', 'rather, instead', 'Piuttosto che uscire, resto a casa.', 'Rather than go out, I stay home.'],
+        ['cioè', 'that is, i.e.', 'Vado a Roma, cioè alla stazione.', 'I\'m going to Rome, that is to the station.'],
+        ['ossia', 'that is, or rather', 'La decima, ossia il 10%.', 'The tithe, that is 10%.'],
+        ['ovvero', 'or rather, that is', 'Puoi chiamarmi, ovvero scrivermi.', 'You can call me, or rather write to me.'],
+        ['vale a dire', 'namely, that is', 'Vado via, vale a dire mi licenzio.', 'I\'m leaving, that is I resign.'],
+        ['in altre parole', 'in other words', 'In altre parole, hai mentito.', 'In other words, you lied.']
+      ]
+    },
+    {
+      name: '⏳ Tempo',
+      badge: 17,
+      rows: [
+        ['prima', 'before', 'Prima devi studiare, poi giocare.', 'First you must study, then play.'],
+        ['prima che', 'before (conjunction)', 'Vieni prima che faccia buio.', 'Come before it gets dark.'],
+        ['precedentemente', 'previously', 'Come precedentemente detto.', 'As previously said.'],
+        ['in precedenza', 'previously', 'In precedenza, non lo sapevo.', 'Previously, I didn\'t know.'],
+        ['una volta', 'once (when)', 'Una volta arrivato, chiamami.', 'Once you arrive, call me.'],
+        ['quando', 'when', 'Quando arrivi, avvisami.', 'When you arrive, tell me.'],
+        ['mentre', 'while', 'Mentre mangiavo, ha telefonato.', 'While I was eating, he called.'],
+        ['nel frattempo', 'meanwhile', 'Nel frattempo, io preparo la cena.', 'Meanwhile, I prepare dinner.'],
+        ['intanto', 'meanwhile, in the meantime', 'Intanto, tu riposati.', 'In the meantime, you rest.'],
+        ['contemporaneamente', 'simultaneously', 'Succedono contemporaneamente.', 'They happen simultaneously.'],
+        ['ora / adesso', 'now', 'Ora devo andare.', 'Now I have to go.'],
+        ['dopo', 'after, afterwards', 'Dopo ti chiamo.', 'Afterwards I\'ll call you.'],
+        ['dopo che', 'after (conjunction)', 'Dopo che hai mangiato, usciamo.', 'After you\'ve eaten, we\'ll go out.'],
+        ['in seguito', 'later, afterwards', 'In seguito, si è pentito.', 'Afterwards, he regretted it.'],
+        ['successivamente', 'subsequently', 'Successivamente, è arrivato.', 'Subsequently, he arrived.'],
+        ['alla fine', 'in the end, finally', 'Alla fine, ce l\'abbiamo fatta.', 'In the end, we made it.'],
+        ['più tardi', 'later', 'Più tardi ti spiego tutto.', 'I\'ll explain everything later.']
+      ]
+    },
+    {
+      name: '📍 Spazio',
+      badge: 11,
+      rows: [
+        ['dove', 'where', 'La casa dove abito.', 'The house where I live.'],
+        ['lì / là', 'there', 'Mettilo lì.', 'Put it there.'],
+        ['sopra', 'above, on top', 'Il libro è sopra il tavolo.', 'The book is on the table.'],
+        ['sotto', 'under, below', 'Sotto il ponte.', 'Under the bridge.'],
+        ['davanti', 'in front of', 'Davanti alla chiesa.', 'In front of the church.'],
+        ['dietro', 'behind', 'Dietro la porta.', 'Behind the door.'],
+        ['accanto', 'next to', 'Accanto a te.', 'Next to you.'],
+        ['all\'interno', 'inside', 'All\'interno della scatola.', 'Inside the box.'],
+        ['all\'esterno', 'outside', 'All\'esterno dell\'edificio.', 'Outside the building.'],
+        ['a destra / a sinistra', 'on the right / left', 'Gira a destra.', 'Turn right.'],
+        ['verso', 'towards', 'Verso casa.', 'Towards home.']
+      ]
+    },
+    {
+      name: '🔍 Causa',
+      badge: 12,
+      rows: [
+        ['perché', 'because', 'Non esco perché piove.', 'I don\'t go out because it rains.'],
+        ['poiché', 'since, because', 'Poiché è tardi, andiamo.', 'Since it\'s late, let\'s go.'],
+        ['siccome', 'since, as', 'Siccome ho fame, mangio.', 'Since I\'m hungry, I eat.'],
+        ['dato che', 'given that', 'Dato che sei qui, aiutami.', 'Given that you\'re here, help me.'],
+        ['visto che', 'seeing that', 'Visto che hai finito, esci.', 'Seeing that you\'ve finished, go out.'],
+        ['dal momento che', 'since, given that', 'Dal momento che insisti, resto.', 'Since you insist, I\'ll stay.'],
+        ['giacché', 'since (formal)', 'Giacché lo chiedi, ti rispondo.', 'Since you ask, I\'ll answer.'],
+        ['a causa di', 'because of, due to', 'A causa del traffico, sono in ritardo.', 'Because of the traffic, I\'m late.'],
+        ['grazie a', 'thanks to', 'Grazie a te, ho capito.', 'Thanks to you, I understood.'],
+        ['per', 'for, because of', 'È morto per la fame.', 'He died of hunger.'],
+        ['dovuto a', 'due to (with noun)', 'Il ritardo è dovuto al traffico.', 'The delay is due to the traffic.'],
+        ['dovuto al fatto che', 'due to the fact that', 'Il ritardo è dovuto al fatto che c\'era traffico.', 'The delay is due to the fact that there was traffic.']
+      ]
+    },
+    {
+      name: '💥 Effetto e conseguenza',
+      badge: 10,
+      rows: [
+        ['perciò', 'therefore', 'Piove, perciò prendo l\'ombrello.', 'It\'s raining, therefore I take the umbrella.'],
+        ['quindi', 'so, therefore', 'Ho fame, quindi mangio.', 'I\'m hungry, so I eat.'],
+        ['dunque', 'therefore, thus', 'Sei stanco, dunque riposati.', 'You\'re tired, thus rest.'],
+        ['pertanto', 'therefore (formal)', 'È colpevole, pertanto va punito.', 'He\'s guilty, therefore he must be punished.'],
+        ['di conseguenza', 'consequently', 'Ha piovuto, di conseguenza è allagato.', 'It rained, consequently it\'s flooded.'],
+        ['ne deriva che', 'it follows that', 'Ne deriva che abbiamo vinto.', 'It follows that we won.'],
+        ['così che', 'so that', 'Parla forte, così che tutti sentano.', 'Speak loud so that everyone hears.'],
+        ['tanto che', 'so much that', 'Ha mangiato tanto che si è addormentato.', 'He ate so much that he fell asleep.'],
+        ['per questo motivo', 'for this reason', 'Per questo motivo, sono qui.', 'For this reason, I\'m here.'],
+        ['è per questo che', 'that\'s why', 'È per questo che ho chiamato.', 'That\'s why I called.']
+      ]
+    },
+    {
+      name: '🎯 Scopo e finalità',
+      badge: 6,
+      rows: [
+        ['affinché', 'so that, in order that', 'Studio affinché tu sia orgoglioso.', 'I study so that you are proud.'],
+        ['perché (con congiuntivo)', 'so that (with subjunctive)', 'Ti aiuto perché tu possa riuscire.', 'I help you so that you can succeed.'],
+        ['allo scopo di', 'in order to', 'L\'ho chiamato allo scopo di avvisarlo.', 'I called him in order to warn him.'],
+        ['con l\'intento di', 'with the intention of', 'Sono venuto con l\'intento di aiutarti.', 'I came with the intention of helping you.'],
+        ['per', 'to, in order to', 'Sono qui per parlarti.', 'I\'m here to talk to you.'],
+        ['onde', 'in order to (formal)', 'Onde evitare equivoci.', 'In order to avoid misunderstandings.']
+      ]
+    },
+    {
+      name: '📖 Spiegazione ed esempio',
+      badge: 9,
+      rows: [
+        ['infatti', 'indeed, in fact', 'È bravo, infatti ha preso 10.', 'He\'s good, indeed he got 10.'],
+        ['cioè', 'that is, i.e.', 'Vado a Milano, cioè in Lombardia.', 'I\'m going to Milan, that is in Lombardy.'],
+        ['ossia', 'or rather, i.e.', 'La giacca, ossia il capo che indosso.', 'The jacket, i.e. the garment I\'m wearing.'],
+        ['ovvero', 'or rather, that is', 'Oggi, ovvero il 15 maggio.', 'Today, that is May 15th.'],
+        ['vale a dire', 'namely', 'Ha vinto, vale a dire è il migliore.', 'He won, namely he\'s the best.'],
+        ['in altre parole', 'in other words', 'In altre parole, hai mentito.', 'In other words, you lied.'],
+        ['ad esempio', 'for example', 'Ad esempio, il cane è fedele.', 'For example, the dog is loyal.'],
+        ['per esempio', 'for instance', 'Per esempio, potresti studiare.', 'For instance, you could study.'],
+        ['in particolare', 'in particular', 'In particolare, mi piace il cinema.', 'In particular, I like cinema.']
+      ]
+    },
+    {
+      name: '🏁 Conclusione e deduzione',
+      badge: 10,
+      rows: [
+        ['quindi', 'therefore, so', 'Quindi, hai ragione.', 'Therefore, you\'re right.'],
+        ['dunque', 'thus', 'Dunque, andiamo.', 'Thus, let\'s go.'],
+        ['pertanto', 'consequently', 'Pertanto, ti licenzio.', 'Consequently, I fire you.'],
+        ['perciò', 'therefore', 'Perciò, ho deciso di partire.', 'Therefore, I decided to leave.'],
+        ['in conclusione', 'in conclusion', 'In conclusione, è stato un bel viaggio.', 'In conclusion, it was a nice trip.'],
+        ['in definitiva', 'in the final analysis', 'In definitiva, hai vinto tu.', 'In the end, you won.'],
+        ['insomma', 'in short, all in all', 'Insomma, ce l\'abbiamo fatta.', 'All in all, we made it.'],
+        ['in sintesi', 'in brief', 'In sintesi, il progetto è fallito.', 'In brief, the project failed.'],
+        ['in breve', 'in short', 'In breve, non vengo.', 'In short, I\'m not coming.'],
+        ['appunto', 'exactly, just', 'Appunto, è quello che dicevo.', 'Exactly, that\'s what I was saying.']
+      ]
+    },
+    {
+      name: '❓ Condizione e ipotesi',
+      badge: 7,
+      rows: [
+        ['se', 'if', 'Se piove, resto a casa.', 'If it rains, I stay home.'],
+        ['qualora', 'if, in case', 'Qualora arrivassi, chiamami.', 'If you arrive, call me.'],
+        ['purché', 'provided that', 'Vengo, purché tu mi aspetti.', 'I\'ll come, provided that you wait for me.'],
+        ['a patto che', 'on condition that', 'Ti aiuto, a patto che tu studi.', 'I\'ll help you on condition that you study.'],
+        ['nel caso in cui', 'in case', 'Nel caso in cui piova, porta l\'ombrello.', 'In case it rains, bring an umbrella.'],
+        ['nell\'ipotesi che', 'in the hypothesis that', 'Nell\'ipotesi che vinca, festeggeremo.', 'In the hypothesis that he wins, we\'ll celebrate.'],
+        ['ammettendo che', 'assuming that', 'Ammettendo che sia vero, cosa fai?', 'Assuming that it\'s true, what do you do?']
+      ]
+    },
+    {
+      name: '🔀 Alternativa e scelta',
+      badge: 3,
+      rows: [
+        ['o / oppure', 'or', 'Vieni o resti?', 'Are you coming or staying?'],
+        ['altrimenti', 'otherwise', 'Sbrigati, altrimenti facciamo tardi.', 'Hurry up, otherwise we\'ll be late.'],
+        ['se no', 'otherwise, or else', 'Studia, se no non passi.', 'Study, otherwise you won\'t pass.']
+      ]
+    },
+    {
+      name: '📌 Introduzione di un tema',
+      badge: 5,
+      rows: [
+        ['circa', 'about, concerning', 'Circa il progetto, nessuna novità.', 'About the project, no news.'],
+        ['riguardo a', 'regarding', 'Riguardo a te, non so cosa dire.', 'Regarding you, I don\'t know what to say.'],
+        ['per quanto riguarda', 'as for, concerning', 'Per quanto riguarda il prezzo, è alto.', 'As for the price, it\'s high.'],
+        ['in merito a', 'in regard to', 'In merito alla tua richiesta…', 'In regard to your request…'],
+        ['quanto a', 'as for', 'Quanto a me, sono d\'accordo.', 'As for me, I agree.']
+      ]
+    },
+    {
+      name: '🛠️ Modalità e strumento',
+      badge: 4,
+      rows: [
+        ['come', 'as, like', 'Fai come vuoi.', 'Do as you like.'],
+        ['secondo', 'according to', 'Secondo me, hai torto.', 'According to me, you\'re wrong.'],
+        ['mediante', 'by means of', 'Lo farò mediante questo strumento.', 'I\'ll do it by means of this tool.'],
+        ['tramite', 'through, via', 'Ti contatto tramite email.', 'I\'ll contact you via email.']
+      ]
+    },
+    {
+      name: '🔁 Avversativi misti (uso colloquiale)',
+      badge: 3,
+      rows: [
+        ['comunque', 'anyway, however', 'Comunque vada, ti sosterrò.', 'Anyway it goes, I\'ll support you.'],
+        ['però', 'but, however', 'È bravo, però è antipatico.', 'He\'s good, but he\'s unpleasant.'],
+        ['tuttavia', 'however, nevertheless', 'Tuttavia, devo ammettere che hai ragione.', 'However, I must admit you\'re right.']
+      ]
+    }
+  ];
+
+  // ================================================================
+  // 2. COSTRUISCI LE TABELLE ESPANDIBILI
+  // ================================================================
+  const container = document.getElementById('tablesContainer');
+
+  categories.forEach(cat => {
+    const card = document.createElement('div');
+    card.className = 'table-card';
+
+    const header = document.createElement('div');
+    header.className = 'table-header';
+    header.innerHTML = `
+      <span>${cat.name} <span class="badge">${cat.badge}</span></span>
+      <span class="arrow">▶</span>
+    `;
+    header.addEventListener('click', () => {
+      card.classList.toggle('open');
+    });
+
+    const body = document.createElement('div');
+    body.className = 'table-body';
+
+    const table = document.createElement('table');
+    const thead = document.createElement('thead');
+    thead.innerHTML = `<tr><th>Italiano</th><th>English</th><th>Esempio</th><th>Example</th></tr>`;
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    cat.rows.forEach(row => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="it-conn">${row[0]}</td>
+        <td class="en-trans">${row[1]}</td>
+        <td class="example-it">${row[2]}</td>
+        <td class="example-en">${row[3]}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    body.appendChild(table);
+    card.appendChild(header);
+    card.appendChild(body);
+    container.appendChild(card);
+  });
+
+  // ================================================================
+  // 3. ESERCIZI (8 domande)
+  // ================================================================
+  const quizData = [
+    {
+      italian: 'Piove, ______ prendo l\'ombrello.',
+      english: 'It\'s raining, <span class="en-word">therefore</span> I take the umbrella.',
+      correct: 'perciò',
+      options: ['perché', 'perciò', 'sebbene', 'anzi']
+    },
+    {
+      italian: '______ la pioggia, siamo usciti.',
+      english: '<span class="en-word">Despite</span> the rain, we went out.',
+      correct: 'nonostante',
+      options: ['perché', 'quindi', 'nonostante', 'cioè']
+    },
+    {
+      italian: 'È in ritardo, ______ senza scuse.',
+      english: 'He\'s late, <span class="en-word">moreover</span> without any excuse.',
+      correct: 'inoltre',
+      options: ['però', 'inoltre', 'sebbene', 'oppure']
+    },
+    {
+      italian: '______ sei qui, aiutami.',
+      english: '<span class="en-word">Given that</span> you\'re here, help me.',
+      correct: 'dato che',
+      options: ['dato che', 'tuttavia', 'mentre', 'così che']
+    },
+    {
+      italian: 'Non è tardi, ______ è prestissimo.',
+      english: 'It\'s not late, <span class="en-word">rather</span> it\'s very early.',
+      correct: 'anzi',
+      options: ['perciò', 'anzi', 'malgrado', 'dunque']
+    },
+    {
+      italian: 'Studio ______ tu sia orgoglioso.',
+      english: 'I study <span class="en-word">so that</span> you are proud.',
+      correct: 'affinché',
+      options: ['perché', 'affinché', 'poiché', 'siccome']
+    },
+    {
+      italian: 'Io vado, ______ lui resta.',
+      english: 'I go, <span class="en-word">whereas</span> he stays.',
+      correct: 'invece',
+      options: ['invece', 'anche', 'cioè', 'dopo']
+    },
+    {
+      italian: 'È tardi, ______ dobbiamo finire.',
+      english: 'It\'s late, <span class="en-word">however</span> we must finish.',
+      correct: 'tuttavia',
+      options: ['perciò', 'tuttavia', 'oppure', 'perché']
+    }
+  ];
+
+  let currentIndex = 0;
+  let score = 0;
+  let answered = false;
+
+  const totalSpan = document.getElementById('totale');
+  const counterSpan = document.getElementById('contatore');
+  const scoreSpan = document.getElementById('punteggio');
+  const italianEl = document.getElementById('italianSentence');
+  const englishEl = document.getElementById('englishTranslation');
+  const optionsContainer = document.getElementById('optionsContainer');
+  const nextBtn = document.getElementById('nextBtn');
+  const resetBtn = document.getElementById('resetBtn');
+
+  function renderQuestion(index) {
+    const q = quizData[index];
+    if (!q) {
+      italianEl.innerHTML = '🎉 Hai completato tutti gli esercizi!';
+      englishEl.innerHTML = 'Well done! You\'ve finished all the exercises.';
+      optionsContainer.innerHTML = '';
+      nextBtn.disabled = true;
+      counterSpan.textContent = quizData.length;
+      return;
+    }
+
+    // Frase italiana con blank evidenziato
+    const parts = q.italian.split('______');
+    italianEl.innerHTML = `${parts[0]}<span class="blank">______</span>${parts[1] || ''}`;
+
+    // Traduzione inglese
+    englishEl.innerHTML = `🇬🇧 ${q.english}`;
+
+    // Pulisco e ricreo i bottoni
+    optionsContainer.innerHTML = '';
+    q.options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.textContent = opt;
+      btn.dataset.value = opt;
+      btn.addEventListener('click', () => handleOptionClick(btn, q.correct));
+      optionsContainer.appendChild(btn);
+    });
+
+    answered = false;
+    nextBtn.disabled = true;
+    counterSpan.textContent = index + 1;
+  }
+
+  function handleOptionClick(btn, correct) {
+    if (answered) return;
+    const allBtns = optionsContainer.querySelectorAll('button');
+    const value = btn.dataset.value;
+
+    allBtns.forEach(b => b.disabled = true);
+
+    if (value === correct) {
+      btn.classList.add('correct');
+      score++;
+    } else {
+      btn.classList.add('wrong');
+      allBtns.forEach(b => {
+        if (b.dataset.value === correct) b.classList.add('correct');
+      });
+    }
+
+    answered = true;
+    nextBtn.disabled = false;
+    scoreSpan.textContent = `✅ ${score} corrette`;
+  }
+
+  function nextQuestion() {
+    if (!answered) return;
+    currentIndex++;
+    if (currentIndex < quizData.length) {
+      renderQuestion(currentIndex);
+    } else {
+      renderQuestion(currentIndex);
+      scoreSpan.textContent = `✅ ${score} corrette su ${quizData.length}`;
+    }
+  }
+
+  function resetGame() {
+    currentIndex = 0;
+    score = 0;
+    answered = false;
+    scoreSpan.textContent = '✅ 0 corrette';
+    renderQuestion(0);
+    nextBtn.disabled = true;
+  }
+
+  // Eventi
+  nextBtn.addEventListener('click', nextQuestion);
+  resetBtn.addEventListener('click', resetGame);
+
+  // Avvia
+  totalSpan.textContent = quizData.length;
+  resetGame();
+</script>
+
+</body>
+</html>
