@@ -6,7 +6,7 @@
 <title>Mini Giochi Italiano</title>
 <link rel="stylesheet" href="style.css">
 <style>
-  /* Stili aggiuntivi per l'effetto accordion - mantiene lo stile originale */
+  /* Stili originali per l'accordion principale */
   .section-toggle {
     background: linear-gradient(90deg, #2c3e50, #34495e);
     color: white;
@@ -76,8 +76,60 @@
     transform: scale(0.98);
   }
   
-  /* Leggera separazione visiva */
-  .section-title-original {
+  /* Stili per le sottocategorie (accordion annidato) */
+  .sub-toggle {
+    background: linear-gradient(90deg, #3a4a5a, #4a5a6a);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 0.95rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 6px;
+    margin-top: 4px;
+  }
+  
+  .sub-toggle:hover {
+    filter: brightness(0.95);
+    transform: translateX(3px);
+  }
+  
+  .sub-toggle:active {
+    transform: scale(0.98);
+  }
+  
+  .sub-toggle .toggle-icon {
+    font-size: 1rem;
+  }
+  
+  .sub-toggle.active .toggle-icon {
+    transform: rotate(90deg);
+  }
+  
+  .sub-games {
+    display: none;
+    padding-left: 15px;  /* indentazione rispetto al sottotitolo */
+    margin-bottom: 8px;
+  }
+  
+  .sub-games.show {
+    display: block;
+  }
+  
+  .sub-games .game-btn {
+    background: linear-gradient(90deg, #6ab0fe, #4facfe);
+    padding-left: 35px;  /* ulteriore indentazione per i giochi dentro la sottocategoria */
+    font-size: 0.9rem;
+    margin: 4px 0;
+  }
+  
+  .legenda-separatore {
     font-size: 0.85rem;
     color: #888;
     margin-top: 10px;
@@ -127,7 +179,7 @@
 
     <!-- Sezione FRASI -->
     <button class="section-toggle" data-group="frasi">
-      <span>💬 FRASI</span>
+      <span>💬 Articoli, Pronomi e Preposizioni</span>
       <span class="toggle-icon">▶</span>
     </button>
     <div class="games-group" data-group="frasi">
@@ -136,31 +188,49 @@
       <button class="game-btn" onclick="go('g17.html')">⚡️ Preposizioni articolate</button>
     </div>
 
-    <!-- Sezione VERBI -->
+    <!-- Sezione VERBI (con sottocategorie) -->
     <button class="section-toggle" data-group="verbi">
       <span>🔤 VERBI</span>
       <span class="toggle-icon">▶</span>
     </button>
     <div class="games-group" data-group="verbi">
-      <button class="game-btn" onclick="go('g1.html')">📘 Verbo Essere e Avere</button>
-      <button class="game-btn" onclick="go('g2.html')">📗 Verbi Regolari</button>
-      <button class="game-btn" onclick="go('verbi_riflessivi.html')">🪞 Verbi Riflessivi</button>
-      <button class="game-btn" onclick="go('presente_progressivo.html')">➡️ Presente Progressivo</button>
-      <button class="game-btn" onclick="go('g5.html')">⚡ Verbi Irregolari</button>
-      <button class="game-btn" onclick="go('verbi_presente.html')">📖 Verbi Presente</button>
-      <button class="game-btn" onclick="go('g9.html')">✏️ Participio Passato Irregolare</button>
-      <button class="game-btn" onclick="go('g10.html')">⚖️ Passato Prossimo con Essere o Avere</button>
-      <button class="game-btn" onclick="go('verbi_riflessivi_passato.html')">⏳ Passato Prossimo Verbi Riflessivi</button>
-      <button class="game-btn" onclick="go('g16.html')">⏳ Imperfetto</button>
-      <button class="game-btn" onclick="go('imperfetto_passato_prossimo.html')">📖 Imperfetto o Passato Prossimo?</button>
-      <button class="game-btn" onclick="go('g11.html')">💛 Verbo Piacere</button>
-    </div>
 
-  </div>
-</div>
+      <!-- Sottocategoria: Verbi Presente -->
+      <button class="sub-toggle" data-group="verbi-presente">
+        <span>📗 Verbi Presente</span>
+        <span class="toggle-icon">▶</span>
+      </button>
+      <div class="sub-games" data-group="verbi-presente">
+        <button class="game-btn" onclick="go('g1.html')">📘 Verbo Essere e Avere</button>
+        <button class="game-btn" onclick="go('g2.html')">📗 Verbi Regolari</button>
+        <button class="game-btn" onclick="go('verbi_riflessivi.html')">🪞 Verbi Riflessivi</button>
+        <button class="game-btn" onclick="go('presente_progressivo.html')">➡️ Presente Progressivo</button>
+        <button class="game-btn" onclick="go('g5.html')">⚡ Verbi Presente Irregolari</button>
+        <button class="game-btn" onclick="go('verbi_presente.html')">📖 Verbi Presente (difficile)</button>
+        <button class="game-btn" onclick="go('g11.html')">💛 Verbo Piacere</button>
+      </div>
+
+      <!-- Sottocategoria: Verbi Passato -->
+      <button class="sub-toggle" data-group="verbi-passato">
+        <span>📕 Verbi Passato</span>
+        <span class="toggle-icon">▶</span>
+      </button>
+      <div class="sub-games" data-group="verbi-passato">
+        <button class="game-btn" onclick="go('g9.html')">✏️ Participio Passato Irregolare</button>
+        <button class="game-btn" onclick="go('g10.html')">⚖️ Passato Prossimo con Essere o Avere</button>
+        <button class="game-btn" onclick="go('verbi_riflessivi_passato.html')">⏳ Passato Prossimo Verbi Riflessivi</button>
+        <button class="game-btn" onclick="go('g16.html')">⏳ Imperfetto</button>
+        <button class="game-btn" onclick="go('imperfetto_passato_prossimo.html')">📖 Imperfetto o Passato Prossimo?</button>
+      </div>
+
+    </div> <!-- fine games-group verbi -->
+ <!-- <button class="game-btn" onclick="go('test.html')">beta testing 🔗 Connettivi Italiani</button> -->
+  </div> <!-- fine card -->
+  
+</div> <!-- fine container -->
 
 <div style="text-align: center; font-size: 0.75rem; color: #aaa; margin-top: 15px;">
-  versione: beta 0.1
+  versione: beta 0.1.2
 </div>
 
 <script>
@@ -168,31 +238,31 @@ function go(page){
   window.location.href = page;
 }
 
-// Gestione toggle delle sezioni (accordion)
-const toggles = document.querySelectorAll('.section-toggle');
-
-toggles.forEach(toggle => {
+// Gestione toggle per TUTTI i pulsanti con classe .section-toggle e .sub-toggle
+// (funziona allo stesso modo per entrambi i livelli)
+document.querySelectorAll('.section-toggle, .sub-toggle').forEach(toggle => {
   toggle.addEventListener('click', function(e) {
     e.stopPropagation();
     
-    // Ottieni il gruppo associato
+    // Ottieni il gruppo associato (data-group)
     const groupName = this.getAttribute('data-group');
-    const targetGroup = document.querySelector(`.games-group[data-group="${groupName}"]`);
+    // Cerca il div con classe .games-group o .sub-games che ha lo stesso data-group
+    // Usiamo un selettore che prende entrambi i tipi di contenitore
+    let targetGroup = document.querySelector(`.games-group[data-group="${groupName}"]`);
+    if (!targetGroup) {
+      targetGroup = document.querySelector(`.sub-games[data-group="${groupName}"]`);
+    }
     
-    // Toggle classe active sul bottone
-    this.classList.toggle('active');
-    
-    // Toggle visibilità del gruppo
-    if (targetGroup.classList.contains('show')) {
-      targetGroup.classList.remove('show');
-    } else {
-      targetGroup.classList.add('show');
+    if (targetGroup) {
+      // Toggle classe active sul pulsante
+      this.classList.toggle('active');
+      // Toggle visibilità del gruppo
+      targetGroup.classList.toggle('show');
     }
   });
 });
 
-// Opzionale: mantieni aperta la prima sezione all'avvio (opzionale)
-// Si può togliere il commento se si vuole la prima sezione già aperta
+// Opzionale: apri la prima sezione (BASIS) all'avvio (puoi commentare se preferisci)
 // const firstToggle = document.querySelector('.section-toggle');
 // if(firstToggle) {
 //   firstToggle.classList.add('active');
