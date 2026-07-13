@@ -3,60 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verbi al presente</title>
+<title>Verbi al presente - scrivi la forma corretta</title>
 <link rel="stylesheet" href="style.css">
 <style>
-/* stili identici al gioco “difficile” del meteo */
-.word {
-  font-size: 22px;
-  letter-spacing: 5px;
-  text-align: center;
-  word-break: keep-all;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 15px;
-  margin: 15px 0;
-}
-.word-segment {
-  display: inline-block;
-  letter-spacing: 5px;
-}
-.keyboard {
-  display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  gap: 5px;
-  margin-top: 10px;
-}
-.keyboard button {
-  padding: 8px;
-  font-size: 14px;
-}
-.reset-btn {
-  background: #ff9800;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 14px;
-  margin-top: 15px;
-  transition: all 0.2s;
-}
-.reset-btn:hover {
-  background: #e68900;
-}
-.button-group {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  align-items: center;
-  margin-top: 15px;
-  flex-wrap: wrap;
-}
-.hidden {
-  display: none;
-}
+/* stili generali (ereditati) */
 .counter {
   text-align: center;
   font-size: 14px;
@@ -80,16 +30,63 @@
   font-style: italic;
   margin-bottom: 10px;
 }
-.hangman-figure {
-  font-family: monospace;
-  font-size: 1rem;
-  white-space: pre;
-  background: #fafafa;
-  display: inline-block;
-  padding: 8px 12px;
-  border-radius: 12px;
-  margin: 10px auto;
-  text-align: left;
+.input-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 15px 0;
+}
+.input-area input {
+  width: 100%;
+  max-width: 300px;
+  padding: 12px 16px;
+  font-size: 1.2rem;
+  border: 2px solid #dce3ef;
+  border-radius: 40px;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.input-area input:focus {
+  border-color: #4facfe;
+}
+.input-area input:disabled {
+  background: #f5f5f5;
+  border-color: #ccc;
+}
+.button-group {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+  flex-wrap: wrap;
+}
+.hidden {
+  display: none;
+}
+.reset-btn {
+  background: #ff9800;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 15px;
+  transition: all 0.2s;
+}
+.reset-btn:hover {
+  background: #e68900;
+}
+.feedback-ok {
+  color: #27ae60;
+  font-weight: bold;
+}
+.feedback-ko {
+  color: #e74c3c;
+  font-weight: bold;
 }
 </style>
 </head>
@@ -101,22 +98,21 @@
 
 <div class="card">
   <h2>📖 Coniuga al presente!</h2>
-  <p style="text-align:center;">Completa la frase scrivendo il verbo giusto.</p>
+  <p style="text-align:center;">Scrivi la forma corretta del verbo.</p>
 
   <div id="counterInfo" class="counter"></div>
   <div id="fraseCompleta" class="frase-testo"></div>
-  <div id="traduzioneFrase" class="traduzione"></div>
+  <div id="traduzioneFrase" class="traduzione hidden"></div>
 
-  <div style="text-align:center;">
-    <div id="hangmanFigure" class="hangman-figure"></div>
+  <!-- Area per scrivere la risposta -->
+  <div class="input-area">
+    <input type="text" id="inputRisposta" placeholder="Scrivi il verbo..." autofocus>
   </div>
 
-  <div id="word" class="word"></div>
-  <div id="letters"></div>
-  <p id="res"></p>
+  <div id="res"></div>
 
   <div class="button-group">
-    <button id="nextBtn" class="next-btn" disabled>Avanti</button>
+    <button id="nextBtn" class="next-btn">▶ Avanti</button>
     <button id="resetBtn" class="reset-btn hidden" onclick="resetGame()">🔄 Ricomincia gioco</button>
   </div>
   <div id="continueGroup" class="button-group hidden">
@@ -176,23 +172,17 @@ const totalBatches = Math.ceil(tutteFrasi.length / BATCH_SIZE);
 let currentBatch = 0;
 let frasiBatch = [];
 let currentIndex = 0;
-let parolaCorrente = "";
-let paroleSeparate = [];
-let guessed = [];
-let errori = 0;
-let gameOver = false;
-let giocoCompletato = false;
-
+let rispostaCorrente = "";
 let totaleCorrette = 0;
 let totaleSbagliate = 0;
+let risposto = false;
+let giocoCompletato = false;
 
 // Elementi DOM
 const counterInfo = document.getElementById("counterInfo");
 const fraseCompletaDiv = document.getElementById("fraseCompleta");
 const traduzioneDiv = document.getElementById("traduzioneFrase");
-const hangmanFigure = document.getElementById("hangmanFigure");
-const wordDiv = document.getElementById("word");
-const lettersDiv = document.getElementById("letters");
+const inputRisposta = document.getElementById("inputRisposta");
 const resDiv = document.getElementById("res");
 const nextBtn = document.getElementById("nextBtn");
 const resetBtn = document.getElementById("resetBtn");
@@ -200,180 +190,69 @@ const continueGroup = document.getElementById("continueGroup");
 const continueBtn = document.getElementById("continueBtn");
 const abortBtn = document.getElementById("abortBtn");
 
-const hangmanStates = [
-  "  +---+\n  |   |\n      |\n      |\n      |\n      |\n=========",
-  "  +---+\n  |   |\n  O   |\n      |\n      |\n      |\n=========",
-  "  +---+\n  |   |\n  O   |\n  |   |\n      |\n      |\n=========",
-  "  +---+\n  |   |\n  O   |\n /|   |\n      |\n      |\n=========",
-  "  +---+\n  |   |\n  O   |\n /|\\  |\n      |\n      |\n=========",
-  "  +---+\n  |   |\n  O   |\n /|\\  |\n /    |\n      |\n=========",
-  "  +---+\n  |   |\n  O   |\n /|\\  |\n / \\  |\n      |\n========="
-];
-
 function aggiornaContatore() {
   const totaleInBatch = frasiBatch.length;
   counterInfo.innerText = `📋 Frase ${currentIndex+1} / ${totaleInBatch} (blocco ${currentBatch+1} di ${totalBatches}) 
 ✅ Corrette: ${totaleCorrette} | ❌ Sbagliate: ${totaleSbagliate}`;
 }
 
-function disegnaImpiccato() {
-  hangmanFigure.innerText = hangmanStates[errori];
-}
-
-function disegnaParola() {
-  wordDiv.innerHTML = "";
-  for (let parola of paroleSeparate) {
-    let segmentDiv = document.createElement("div");
-    segmentDiv.className = "word-segment";
-    let display = "";
-    for (let ch of parola) {
-      if (ch === "'" || ch === '-' || ch === ' ') {
-        display += ch;
-      } else {
-        let lowerCh = ch.toLowerCase();
-        let found = false;
-        for (let g of guessed) {
-          if (g.toLowerCase() === lowerCh) {
-            found = true;
-            break;
-          }
-        }
-        if (!found) {
-          for (let g of guessed) {
-            let gNorm = g.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-            let chNorm = lowerCh.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-            if (gNorm === chNorm) {
-              found = true;
-              break;
-            }
-          }
-        }
-        display += found ? ch : "_";
-      }
-    }
-    segmentDiv.innerText = display;
-    wordDiv.appendChild(segmentDiv);
-  }
-}
-
-function creaTastiera() {
-  const righe = ["qwertyuiop", "asdfghjkl", "zxcvbnm"];
-  let html = "";
-  for (let riga of righe) {
-    html += '<div class="keyboard">';
-    for (let lettera of riga) {
-      html += `<button onclick="scegliLettere('${lettera}')">${lettera}</button>`;
-    }
-    html += '</div>';
-  }
-  const accentate = ['à', 'è', 'é', 'ì', 'ò', 'ù'];
-  html += '<div class="keyboard">';
-  for (let acc of accentate) {
-    html += `<button onclick="scegliLettere('${acc}')">${acc}</button>`;
-  }
-  html += '</div>';
-  lettersDiv.innerHTML = html;
-}
-
-function abilitaTastiera(enable) {
-  const btns = lettersDiv.querySelectorAll("button");
-  btns.forEach(btn => {
-    if (enable && !gameOver && !giocoCompletato) {
-      btn.disabled = false;
-    } else {
-      btn.disabled = true;
-    }
-  });
-}
-
 function resetGameState() {
-  gameOver = false;
-  errori = 0;
-  guessed = [];
-  disegnaImpiccato();
-  abilitaTastiera(true);
-  resDiv.innerText = "";
-  nextBtn.disabled = true;
+  risposto = false;
+  inputRisposta.disabled = false;
+  inputRisposta.value = "";
+  inputRisposta.focus();
+  traduzioneDiv.classList.add("hidden");
+  resDiv.innerHTML = "";
+  nextBtn.textContent = "▶ Avanti";
+  nextBtn.disabled = false;
 }
 
-function controllaVittoria() {
-  let completato = true;
-  const segments = wordDiv.querySelectorAll(".word-segment");
-  for (let seg of segments) {
-    if (seg.innerText.includes("_")) {
-      completato = false;
-      break;
-    }
+function controllaRisposta() {
+  if (risposto) return;
+  const utente = inputRisposta.value.trim();
+  if (utente === "") {
+    resDiv.innerHTML = "⚠️ Scrivi una parola prima di controllare.";
+    resDiv.style.color = "#e67e22";
+    return;
   }
-  if (completato) {
-    gameOver = true;
-    abilitaTastiera(false);
-    resDiv.innerHTML = "🎉 BRAVO! PAROLA COMPLETA! Premi Avanti per continuare. 🎉";
-    resDiv.style.color = "#000000";
-    nextBtn.disabled = false;
+  const corretta = rispostaCorrente;
+  const isCorretto = (utente.toLowerCase() === corretta.toLowerCase());
+
+  risposto = true;
+  inputRisposta.disabled = true;
+
+  if (isCorretto) {
+    resDiv.innerHTML = `✅ CORRETTO!`;
+    resDiv.style.color = "#27ae60";
     totaleCorrette++;
-    aggiornaContatore();
-    return true;
+  } else {
+    resDiv.innerHTML = `❌ SBAGLIATO! La parola corretta è: <strong>“${corretta}”</strong>`;
+    resDiv.style.color = "#e74c3c";
+    totaleSbagliate++;
   }
-  return false;
+
+  // Mostra la traduzione e la parola corretta
+  const fraseCorrente = frasiBatch[currentIndex];
+  traduzioneDiv.innerText = `🇬🇧 ${fraseCorrente.traduzione}`;
+  traduzioneDiv.classList.remove("hidden");
+
+  aggiornaContatore();
+  nextBtn.textContent = "▶ Prossima frase";
 }
 
-function scegliLettere(lettera) {
-  if (gameOver || giocoCompletato) return;
-  if (guessed.includes(lettera)) return;
-  guessed.push(lettera);
-
-  let letteraTrovata = false;
-  let parolaIntera = paroleSeparate.join(" ");
-  let parolaLower = parolaIntera.toLowerCase();
-  let letteraNorm = lettera.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-  const accentiMap = {
-    'a': ['a','à'],
-    'e': ['e','è','é'],
-    'i': ['i','ì'],
-    'o': ['o','ò'],
-    'u': ['u','ù']
-  };
-  let caratteriDaCercare = [lettera];
-  if (accentiMap[letteraNorm]) {
-    caratteriDaCercare = accentiMap[letteraNorm];
+function prossimaFrase() {
+  if (!risposto) {
+    // Se non ancora risposto, esegue il controllo
+    controllaRisposta();
+    return;
   }
-  for (let cerca of caratteriDaCercare) {
-    if (parolaLower.includes(cerca)) {
-      letteraTrovata = true;
-      break;
-    }
+  // Se già risposto, passa alla prossima
+  if (currentIndex + 1 < frasiBatch.length) {
+    currentIndex++;
+    caricaFrase(currentIndex);
+  } else {
+    fineBatch();
   }
-
-  const btns = lettersDiv.querySelectorAll("button");
-  btns.forEach(btn => {
-    if (btn.innerText === lettera) {
-      btn.disabled = true;
-      if (letteraTrovata) {
-        btn.classList.add("correct");
-      } else {
-        btn.classList.add("wrong");
-      }
-    }
-  });
-
-  if (!letteraTrovata) {
-    errori++;
-    disegnaImpiccato();
-    if (errori >= 6) {
-      gameOver = true;
-      abilitaTastiera(false);
-      resDiv.innerHTML = `❌ HAI PERSO! La parola corretta era: "${parolaIntera}". Premi Avanti per passare alla prossima frase. ❌`;
-      resDiv.style.color = "#e74c3c";
-      nextBtn.disabled = false;
-      totaleSbagliate++;
-      aggiornaContatore();
-      return;
-    }
-  }
-
-  disegnaParola();
-  controllaVittoria();
 }
 
 function caricaFrase(indice) {
@@ -384,38 +263,21 @@ function caricaFrase(indice) {
   resetGameState();
   const frase = frasiBatch[indice];
   fraseCompletaDiv.innerText = frase.testo.replace("__________", "___________");
-  traduzioneDiv.innerText = frase.traduzione;
-  parolaCorrente = frase.risposta;
-  paroleSeparate = parolaCorrente.split(' ');
-  disegnaParola();
+  rispostaCorrente = frase.risposta;
   aggiornaContatore();
-
-  const btns = lettersDiv.querySelectorAll("button");
-  btns.forEach(btn => {
-    btn.disabled = false;
-    btn.classList.remove("correct", "wrong");
-  });
-  abilitaTastiera(true);
-}
-
-function prossimaFrase() {
-  if (!gameOver) {
-    resDiv.innerHTML = "Completa la parola o sbaglia prima di andare avanti!";
-    resDiv.style.color = "#000000";
-    return;
-  }
-  if (currentIndex + 1 < frasiBatch.length) {
-    currentIndex++;
-    caricaFrase(currentIndex);
-  } else {
-    fineBatch();
-  }
+  inputRisposta.disabled = false;
+  inputRisposta.value = "";
+  inputRisposta.focus();
+  traduzioneDiv.classList.add("hidden");
+  resDiv.innerHTML = "";
+  nextBtn.textContent = "▶ Avanti";
+  nextBtn.disabled = false;
+  risposto = false;
 }
 
 function fineBatch() {
-  gameOver = true;
   giocoCompletato = true;
-  abilitaTastiera(false);
+  inputRisposta.disabled = true;
   nextBtn.disabled = true;
   const prossimoBatch = currentBatch + 1;
   if (prossimoBatch < totalBatches) {
@@ -423,7 +285,7 @@ function fineBatch() {
     resDiv.innerHTML = `🏆 Hai completato il blocco ${currentBatch+1} di ${totalBatches}! 🏆<br>Vuoi continuare con le prossime 10 frasi?`;
     resDiv.style.color = "#000000";
   } else {
-    let percentuale = Math.round((totaleCorrette / (totaleCorrette + totaleSbagliate)) * 100);
+    let percentuale = Math.round((totaleCorrette / (totaleCorrette + totaleSbagliate)) * 100) || 0;
     resDiv.innerHTML = `🎉 COMPLIMENTI! Hai completato tutte e 40 le frasi! 🎉<br>
                         ✅ Corrette: ${totaleCorrette} &nbsp;|&nbsp; ❌ Sbagliate: ${totaleSbagliate}<br>
                         🎯 Percentuale successo: ${percentuale}%`;
@@ -459,33 +321,30 @@ function resetGame() {
   caricaFrase(0);
 }
 
-function handlePhysicalKey(e) {
-  if (gameOver || giocoCompletato) return;
-  let key = e.key;
-  if (key.length === 1) {
-    const allowed = /^[a-zA-Zàèéìòù]$/;
-    if (allowed.test(key)) {
-      e.preventDefault();
-      scegliLettere(key.toLowerCase());
-    }
+// Eventi
+nextBtn.addEventListener("click", prossimaFrase);
+
+// Supporto tasto Enter
+inputRisposta.addEventListener("keydown", function(e) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    prossimaFrase();
   }
-}
-document.addEventListener("keydown", handlePhysicalKey);
+});
 
+continueBtn.addEventListener("click", continuaBatch);
+abortBtn.addEventListener("click", () => {
+  continueGroup.classList.add("hidden");
+  resetBtn.classList.remove("hidden");
+  resDiv.innerHTML = "Gioco interrotto. Puoi ricominciare con 'Ricomincia gioco'.";
+  resDiv.style.color = "#000000";
+});
+resetBtn.onclick = resetGame;
+
+// Avvia
 function init() {
-  creaTastiera();
   resetGame();
-  nextBtn.onclick = prossimaFrase;
-  continueBtn.onclick = continuaBatch;
-  abortBtn.onclick = () => {
-    continueGroup.classList.add("hidden");
-    resetBtn.classList.remove("hidden");
-    resDiv.innerHTML = "Gioco interrotto. Puoi ricominciare con 'Ricomincia gioco'.";
-    resDiv.style.color = "#000000";
-  };
-  resetBtn.onclick = resetGame;
 }
-
 init();
 </script>
 </body>
