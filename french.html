@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flashcards Français — Appel Client Vélo</title>
+<style>
+:root{
+  --bg1:#0f172a; --bg2:#1e293b; --bg3:#0b1120;
+  --card:#ffffff; --card-back:#f8fafc;
+  --ink:#0f172a; --muted:#64748b;
+  --accent:#14b8a6; --accent2:#f59e0b;
+  --fr:#0f766e; --ipa:#7c3aed; --it:#b45309;
+  --shadow:0 20px 50px rgba(0,0,0,.35);
+  --radius:22px;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  min-height:100vh;
+  background: radial-gradient(1200px 600px at 10% 0%, #1e3a5f 0%, transparent 55%),
+              radial-gradient(1000px 500px at 100% 100%, #134e4a 0%, transparent 55%),
+              linear-gradient(160deg, var(--bg3), var(--bg1) 60%, var(--bg2));
+  color:#e2e8f0;
+  display:flex; flex-direction:column; align-items:center;
+  padding:24px 16px 60px;
+  gap:18px;
+}
+header{width:100%;max-width:920px;text-align:center}
+h1{
+  font-size:clamp(22px,4vw,34px); font-weight:800; letter-spacing:-.02em;
+  background:linear-gradient(90deg,#5eead4,#fbbf24,#f472b6);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  margin-bottom:6px;
+}
+.sub{color:#94a3b8;font-size:14px}
+.progress-wrap{width:100%;max-width:920px;height:8px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden;margin-top:6px}
+.progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),#22d3ee,#fbbf24);transition:width .4s ease;border-radius:99px}
+
+.filters{width:100%;max-width:920px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chip{
+  border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.05);
+  color:#cbd5e1; padding:7px 14px; border-radius:999px; cursor:pointer;
+  font-size:13px; font-weight:600; transition:all .2s; user-select:none;
+}
+.chip:hover{background:rgba(255,255,255,.12); color:#fff}
+.chip.active{background:linear-gradient(90deg,var(--accent),#0891b2); color:#00201d; border-color:transparent; box-shadow:0 6px 20px rgba(20,184,166,.35)}
+.chip .count{opacity:.65;font-weight:500;margin-left:4px;font-size:11px}
+
+.statsbar{width:100%;max-width:920px;display:flex;justify-content:space-between;align-items:center;color:#94a3b8;font-size:13px;padding:0 4px}
+.statsbar b{color:#e2e8f0}
+
+.card-area{width:100%;max-width:920px;perspective:1600px}
+.flashcard{position:relative;width:100%;min-height:420px;cursor:pointer;transition:transform .4s}
+.flashcard .inner{
+  position:relative;width:100%;min-height:420px;
+  transition:transform .7s cubic-bezier(.4,.2,.2,1);
+  transform-style:preserve-3d;
+}
+.flashcard.flipped .inner{transform:rotateY(180deg)}
+.face{
+  position:absolute;inset:0;
+  background:linear-gradient(160deg,#ffffff, #f1f5f9);
+  color:var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
+  backface-visibility:hidden; -webkit-backface-visibility:hidden;
+  padding:34px 34px 28px; display:flex; flex-direction:column;
+  overflow:auto;
+}
+.face.back{transform:rotateY(180deg); background:linear-gradient(160deg,#ecfeff,#f0fdfa)}
+.cat-tag{
+  position:absolute;top:18px;right:18px;
+  font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  padding:5px 10px;border-radius:999px;background:rgba(20,184,166,.12);color:#0f766e;
+}
+.essential-star{position:absolute;top:18px;left:18px;color:#f59e0b;font-size:20px;line-height:1}
+.fr-word{font-size:clamp(28px,5vw,46px);font-weight:800;letter-spacing:-.02em;color:var(--fr);margin-top:26px;line-height:1.15;word-break:break-word}
+.ipa{display:inline-block;margin-top:14px;font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:clamp(15px,2.4vw,19px);color:var(--ipa);background:rgba(124,58,237,.09);padding:6px 12px;border-radius:10px}
+.speaker{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:40px;height:40px;border-radius:50%;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--accent),#0891b2);color:#fff;
+  margin-left:12px;vertical-align:middle;transition:transform .15s, box-shadow .2s;
+  box-shadow:0 4px 14px rgba(20,184,166,.4);
+}
+.speaker:hover{transform:scale(1.08)}
+.speaker:active{transform:scale(.95)}
+.hint{color:#94a3b8;font-size:13px;margin-top:auto;padding-top:20px;text-align:center}
+
+.it-word{font-size:clamp(22px,3.5vw,30px);font-weight:700;color:var(--it);margin-top:26px}
+.example-box{margin-top:22px;padding:16px 18px;background:rgba(15,23,42,.05);border-left:4px solid var(--accent);border-radius:10px}
+.example-fr{font-style:italic;font-size:clamp(15px,2.2vw,17px);color:#0f172a;line-height:1.5}
+.example-fr b{color:var(--fr);font-style:normal;font-weight:700}
+.example-it{font-size:14px;color:#64748b;margin-top:6px;line-height:1.5}
+.context{margin-top:16px;font-size:13px;color:#475569;line-height:1.55}
+.context b{color:#0f766e}
+
+.controls{width:100%;max-width:920px;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:4px}
+.btn{
+  border:none;cursor:pointer;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:700;
+  background:rgba(255,255,255,.08);color:#e2e8f0;transition:all .18s;border:1px solid rgba(255,255,255,.12);
+  display:inline-flex;align-items:center;gap:8px;
+}
+.btn:hover{background:rgba(255,255,255,.16)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),#0891b2);color:#00201d;border-color:transparent;box-shadow:0 8px 24px rgba(20,184,166,.35)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.gold{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#3b1f00;border-color:transparent;box-shadow:0 8px 24px rgba(245,158,11,.35)}
+.btn.known-active{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border-color:transparent}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.kbd{font-size:11px;opacity:.6;font-weight:500}
+
+@media (max-width:640px){
+  body{padding:16px 10px 40px}
+  .flashcard,.flashcard .inner{min-height:480px}
+  .face{padding:24px 20px 20px}
+  .cat-tag{top:14px;right:14px;font-size:10px}
+  .essential-star{top:14px;left:14px;font-size:17px}
+  .fr-word{margin-top:36px}
+  .controls .btn{padding:11px 14px;font-size:13px}
+  .kbd{display:none}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Flashcards Français 🇫🇷</h1>
+  <div class="sub">Appel client — Magasin de vélos · Lausanne · Suisse</div>
+  <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+</header>
+
+<div class="filters" id="filters"></div>
+
+<div class="statsbar">
+  <div>🎯 Carta <b id="counter">1 / 1</b></div>
+  <div>✓ Conosciute: <b id="knownCount">0</b></div>
+</div>
+
+<div class="card-area">
+  <div class="flashcard" id="flashcard">
+    <div class="inner">
+      <div class="face front" id="faceFront">
+        <div class="essential-star" id="star" style="display:none">★</div>
+        <div class="cat-tag" id="catTag">—</div>
+        <div class="fr-word" id="frWord">—</div>
+        <div>
+          <span class="ipa" id="ipa">—</span>
+          <button class="speaker" id="speakerBtn" title="Ascolta la pronuncia" aria-label="Ascolta">🔊</button>
+        </div>
+        <div class="hint">Clicca la carta (o premi <span class="kbd">Spazio</span>) per vedere il significato →</div>
+      </div>
+      <div class="face back">
+        <div class="cat-tag" id="catTagBack">—</div>
+        <div class="it-word" id="itWord">—</div>
+        <div class="example-box">
+          <div class="example-fr" id="exampleFr">—</div>
+          <div class="example-it" id="exampleIt">—</div>
+        </div>
+        <div class="context" id="context">—</div>
+        <div class="hint">← Clicca per tornare al francese</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="btn" id="prevBtn">◀ Prec <span class="kbd">←</span></button>
+  <button class="btn primary" id="flipBtn">🔄 Gira <span class="kbd">Spazio</span></button>
+  <button class="btn" id="nextBtn">Succ ▶ <span class="kbd">→</span></button>
+  <button class="btn gold" id="shuffleBtn">🔀 Mescola</button>
+  <button class="btn" id="knownBtn">✓ Conosco</button>
+  <button class="btn" id="reviewBtn">🔁 Ripassa solo sconosciute</button>
+</div>
+
+<script>
+/* ============================================================
+   DATI — circa 200 flashcards
+   ============================================================ */
+const CARDS = [
+/* ---------- 1. SALUTATIONS & CONTACT ---------- */
+{fr:"Bonjour", ipa:"/bɔ̃.ʒuʁ/", it:"Buongiorno", ex:"Bonjour, je m'appelle Marco.", exIt:"Buongiorno, mi chiamo Marco.", ctx:"Saluto standard, formale e universale. Si usa fino al tardo pomeriggio.", cat:"Salutations", ess:true},
+{fr:"Bonsoir", ipa:"/bɔ̃.swaʁ/", it:"Buonasera", ex:"Bonsoir, excusez-moi de vous appeler à cette heure.", exIt:"Buonasera, mi scusi per averla chiamata a quest'ora.", ctx:"Saluto serale. In Svizzera romanda si usa dopo le 18.", cat:"Salutations"},
+{fr:"Enchanté", ipa:"/ɑ̃.ʃɑ̃.te/", it:"Piacere", ex:"Enchanté, Marc m'a beaucoup parlé de votre magasin.", exIt:"Piacere, Marc mi ha parlato molto del suo negozio.", ctx:"Si dice 'enchanté' se sei uomo, 'enchantée' se sei donna (si pronuncia uguale).", cat:"Salutations"},
+{fr:"Je m'appelle…", ipa:"/ʒə ma.pɛl/", it:"Mi chiamo…", ex:"Je m'appelle Marco, je suis spécialisé dans les sites web pour vélos.", exIt:"Mi chiamo Marco, sono specializzato nei siti web per bici.", ctx:"Formula standard per presentarsi.", cat:"Salutations", ess:true},
+{fr:"Je vous appelle de la part de…", ipa:"/ʒə vu za.pɛl də la paʁ də/", it:"La chiamo da parte di…", ex:"Je vous appelle de la part de Marc, de chez [fournisseur].", exIt:"La chiamo da parte di Marc, di [fornitore].", ctx:"Frase chiave del tuo script: identifica subito la fonte del referral.", cat:"Salutations", ess:true},
+{fr:"Marc m'a parlé de vous", ipa:"/maʁk ma paʁ.le də vu/", it:"Marc mi ha parlato di lei", ex:"Marc m'a parlé de vous et m'a dit que vous cherchiez de l'aide pour votre site.", exIt:"Marc mi ha parlato di lei e mi ha detto che cercava aiuto per il sito.", ctx:"Più naturale e caldo di 'Marc mi ha raccomandato a lei'.", cat:"Salutations", ess:true},
+{fr:"Est-ce que je vous dérange ?", ipa:"/ɛs kə ʒə vu de.ʁɑ̃ʒ/", it:"La disturbo?", ex:"Est-ce que je vous dérange en ce moment, ou vous avez cinq minutes ?", exIt:"La disturbo in questo momento, o ha cinque minuti?", ctx:"Formula di cortesia fondamentale all'inizio della chiamata.", cat:"Salutations", ess:true},
+{fr:"Vous avez cinq minutes ?", ipa:"/vu za.ve sɛ̃k mi.nyl/", it:"Ha cinque minuti?", ex:"Vous avez cinq minutes pour parler de votre site ?", exIt:"Ha cinque minuti per parlare del suo sito?", ctx:"Chiedere il permesso di parlare aumenta la disponibilità dell'interlocutore.", cat:"Salutations"},
+{fr:"Merci pour votre temps", ipa:"/mɛʁ.si puʁ vɔtʁ tɑ̃/", it:"Grazie per il suo tempo", ex:"Merci beaucoup pour votre temps, [Prénom].", exIt:"Grazie mille per il suo tempo, [Nome].", ctx:"Formula di chiusura professionale.", cat:"Salutations", ess:true},
+{fr:"Je vous en prie", ipa:"/ʒə vu zɑ̃ pʁi/", it:"Prego", ex:"— Merci. — Je vous en prie.", exIt:"— Grazie. — Prego.", ctx:"Risposta formale al ringraziamento.", cat:"Salutations"},
+{fr:"Pardon, vous pouvez répéter ?", ipa:"/paʁ.dɔ̃ vu pu.ve ʁe.pe.te/", it:"Scusi, può ripetere?", ex:"Pardon, vous pouvez répéter plus lentement ?", exIt:"Scusi, può ripetere più lentamente?", ctx:"Salvagente se non capisci. Nessun professionista ti giudicherà male.", cat:"Salutations", ess:true},
+{fr:"Plus lentement, s'il vous plaît", ipa:"/plys lɑ̃t.mɑ̃ sil vu plɛ/", it:"Più lentamente, per favore", ex:"Excusez-moi, plus lentement, s'il vous plaît.", exIt:"Mi scusi, più lentamente, per favore.", ctx:"Da usare senza imbarazzo: mostra che vuoi capire bene.", cat:"Salutations", ess:true},
+{fr:"Je ne comprends pas bien", ipa:"/ʒə nə kɔ̃.pʁɑ̃ pa bjɛ̃/", it:"Non capisco bene", ex:"Je ne comprends pas bien, vous pouvez reformuler ?", exIt:"Non capisco bene, può riformulare?", ctx:"Onesto e professionale.", cat:"Salutations"},
+{fr:"Comment dit-on… en français ?", ipa:"/kɔ.mɑ̃ di tɔ̃ ɑ̃ fʁɑ̃.sɛ/", it:"Come si dice… in francese?", ex:"Comment dit-on 'e-commerce' en français ?", exIt:"Come si dice 'e-commerce' in francese?", ctx:"Utile quando ti manca un termine.", cat:"Salutations"},
+{fr:"Excusez-moi", ipa:"/ɛks.ky.ze mwa/", it:"Mi scusi", ex:"Excusez-moi de vous déranger.", exIt:"Mi scusi per il disturbo.", ctx:"Formula di cortesia, più formale di 'pardon'.", cat:"Salutations"},
+{fr:"Avec plaisir", ipa:"/a.vɛk plɛ.ziʁ/", it:"Con piacere", ex:"— Vous pouvez m'envoyer la vidéo ? — Avec plaisir.", exIt:"— Può inviarmi il video? — Con piacere.", ctx:"Accettare una richiesta con entusiasmo professionale.", cat:"Salutations"},
+{fr:"Parfait", ipa:"/paʁ.fɛ/", it:"Perfetto", ex:"Parfait, je vous envoie la vidéo dans l'heure.", exIt:"Perfetto, le invio il video entro un'ora.", ctx:"Conferma di accordo.", cat:"Salutations"},
+{fr:"Très bien", ipa:"/tʁɛ bjɛ̃/", it:"Molto bene", ex:"Très bien, c'est noté.", exIt:"Molto bene, annotato.", ctx:"Conferma.", cat:"Salutations"},
+{fr:"D'accord", ipa:"/da.kɔʁ/", it:"D'accordo", ex:"D'accord, je comprends votre point de vue.", exIt:"D'accordo, capisco il suo punto di vista.", ctx:"Accordo o presa d'atto.", cat:"Salutations"},
+{fr:"Bien sûr", ipa:"/bjɛ̃ syʁ/", it:"Certo", ex:"Bien sûr, je peux vous envoyer un résumé par email.", exIt:"Certo, posso inviarle un riassunto via email.", ctx:"Accettazione disponibile.", cat:"Salutations"},
+
+/* ---------- 2. PRÉSENTATION PROFESSIONNELLE ---------- */
+{fr:"Je suis spécialisé dans…", ipa:"/ʒə sɥi spe.sja.li.ze dɑ̃/", it:"Sono specializzato in…", ex:"Je suis spécialisé dans les sites web pour les magasins de vélos.", exIt:"Sono specializzato nei siti web per i negozi di bici.", ctx:"Frase identitaria: non dire 'sono un insegnante', di' la specializzazione.", cat:"Présentation", ess:true},
+{fr:"J'accompagne des magasins comme le vôtre", ipa:"/ʒa.kɔ̃.paɲ de ma.ɡa.zɛ̃ kɔm lə votʁ/", it:"Affianco negozi come il suo", ex:"J'accompagne des magasins comme le vôtre pour développer leurs ventes en ligne.", exIt:"Affianco negozi come il suo per sviluppare le vendite online.", ctx:"Verbo 'accompagner' è molto usato nel business francese: significa affiancare, non solo aiutare.", cat:"Présentation", ess:true},
+{fr:"Je travaille avec une petite équipe", ipa:"/ʒə tʁa.vaj a.vɛk yn pətit e.kip/", it:"Lavoro con una piccola squadra", ex:"Je travaille avec une petite équipe, donc je m'occupe personnellement de la relation client.", exIt:"Lavoro con una piccola squadra, quindi mi occupo personalmente della relazione con il cliente.", ctx:"Ti posiziona come strutturato ma non impersonale.", cat:"Présentation"},
+{fr:"Je m'occupe personnellement de…", ipa:"/ʒə mɔ.kyp pɛʁ.sɔ.nɛl.mɑ̃ də/", it:"Mi occupo personalmente di…", ex:"Je m'occupe personnellement de la stratégie et du suivi.", exIt:"Mi occupo personalmente della strategia e del monitoraggio.", ctx:"Rassicura il cliente: non sarà gestito da un call center.", cat:"Présentation"},
+{fr:"La relation client", ipa:"/la ʁə.la.sjɔ̃ kli.jɑ̃/", it:"La relazione con il cliente", ex:"La relation client, c'est le cœur de mon travail.", exIt:"La relazione con il cliente è il cuore del mio lavoro.", ctx:"Espressione chiave del business francese.", cat:"Présentation"},
+{fr:"La stratégie", ipa:"/la stʁa.te.ʒi/", it:"La strategia", ex:"On définit d'abord la stratégie, ensuite on exécute.", exIt:"Prima definiamo la strategia, poi eseguiamo.", ctx:"Mostra che non sei solo un esecutore tecnico.", cat:"Présentation"},
+{fr:"Mon équipe et moi", ipa:"/mɔ̃ ne.kip e mwa/", it:"La mia squadra ed io", ex:"Mon équipe et moi, on travaille uniquement avec des magasins de vélos.", exIt:"La mia squadra ed io lavoriamo solo con negozi di bici.", ctx:"Formula elegante per dire 'io e il mio team'.", cat:"Présentation"},
+{fr:"Je connais bien Marc", ipa:"/ʒə kɔ.nɛ bjɛ̃ maʁk/", it:"Conosco bene Marc", ex:"Je connais bien Marc, on travaille ensemble depuis un moment.", exIt:"Conosco bene Marc, lavoriamo insieme da un po'.", ctx:"Se ti chiede 'ma lei conosce Marc?'.", cat:"Présentation", ess:true},
+{fr:"On travaille ensemble", ipa:"/ɔ̃ tʁa.vaj ɑ̃.sɑ̃bl/", it:"Lavoriamo insieme", ex:"Oui, on travaille ensemble depuis plusieurs mois.", exIt:"Sì, lavoriamo insieme da diversi mesi.", ctx:"Conferma la relazione professionale.", cat:"Présentation"},
+{fr:"Il m'a recommandé à vous", ipa:"/il ma ʁə.kɔ.mɑ̃.de a vu/", it:"Mi ha raccomandato a lei", ex:"Marc m'a recommandé à vous en pensant que je pouvais vous aider.", exIt:"Marc mi ha raccomandato a lei pensando che potessi aiutarla.", ctx:"Formula per rafforzare la fiducia del referral.", cat:"Présentation"},
+{fr:"Je vous contacte parce que…", ipa:"/ʒə vu kɔ̃.takt paʁs kə/", it:"La contatto perché…", ex:"Je vous contacte parce que j'ai vu votre site et j'ai remarqué plusieurs points.", exIt:"La contatto perché ho visto il suo sito e ho notato diversi punti.", ctx:"Apertura della chiamata a freddo.", cat:"Présentation"},
+{fr:"Je me présente rapidement", ipa:"/ʒə mə pʁe.zɑ̃t ʁa.pid.mɑ̃/", it:"Mi presento rapidamente", ex:"Je me présente rapidement : [nom], spécialisé dans les sites pour vélos.", exIt:"Mi presento rapidamente: [nome], specializzato nei siti per bici.", ctx:"Transizione breve prima delle domande.", cat:"Présentation"},
+
+/* ---------- 3. LE MAGASIN & LE BUSINESS ---------- */
+{fr:"Un magasin de vélos", ipa:"/œ̃ ma.ɡa.zɛ̃ də ve.lo/", it:"Un negozio di bici", ex:"Votre magasin de vélos est bien situé à Lausanne.", exIt:"Il suo negozio di bici è ben posizionato a Losanna.", ctx:"Base del vocabolario.", cat:"Magasin", ess:true},
+{fr:"Un atelier", ipa:"/œ̃ na.tə.lje/", it:"Un'officina", ex:"L'atelier est un service important pour fidéliser les clients.", exIt:"L'officina è un servizio importante per fidelizzare i clienti.", ctx:"Nel settore bici, l'atelier è spesso il vero centro di profitto.", cat:"Magasin", ess:true},
+{fr:"Le propriétaire", ipa:"/lə pʁɔ.pʁje.tɛʁ/", it:"Il proprietario", ex:"Le propriétaire du magasin m'a demandé de l'aide.", exIt:"Il proprietario del negozio mi ha chiesto aiuto.", ctx:"Termine formale.", cat:"Magasin"},
+{fr:"Un associé", ipa:"/œ̃ na.sɔ.sje/", it:"Un socio", ex:"Vous êtes le seul décideur, ou il y a un associé ?", exIt:"È l'unico a decidere, o c'è un socio?", ctx:"Domanda chiave per capire chi decide.", cat:"Magasin", ess:true},
+{fr:"Le gérant", ipa:"/lə ʒe.ʁɑ̃/", it:"Il gestore", ex:"Le gérant du magasin est aussi mécanicien.", exIt:"Il gestore del negozio è anche meccanico.", ctx:"Alternativa a 'propriétaire'.", cat:"Magasin"},
+{fr:"Un mécanicien", ipa:"/œ̃ me.ka.ni.sjɛ̃/", it:"Un meccanico", ex:"Le mécanicien s'occupe du montage et de l'entretien.", exIt:"Il meccanico si occupa del montaggio e della manutenzione.", ctx:"Figura chiave del negozio.", cat:"Magasin"},
+{fr:"La boutique", ipa:"/la bu.tik/", it:"Il negozio (fisico)", ex:"En boutique, vous avez un bel espace d'exposition.", exIt:"In negozio, ha un bello spazio espositivo.", ctx:"Indica il punto vendita fisico.", cat:"Magasin"},
+{fr:"Le stock", ipa:"/lə stɔk/", it:"La disponibilità / lo stock", ex:"Le stock est-il synchronisé avec le site ?", exIt:"La disponibilità è sincronizzata con il sito?", ctx:"Punto tecnico importante per un e-commerce bici.", cat:"Magasin", ess:true},
+{fr:"Le magasin physique", ipa:"/lə ma.ɡa.zɛ̃ fi.zik/", it:"Il negozio fisico", ex:"Le magasin physique reste essentiel pour l'essai des vélos.", exIt:"Il negozio fisico resta essenziale per la prova delle bici.", ctx:"Contrapposto a 'boutique en ligne'.", cat:"Magasin"},
+{fr:"La vente en ligne", ipa:"/la vɑ̃t ɑ̃ liɲ/", it:"La vendita online", ex:"La vente en ligne représente encore peu de votre chiffre d'affaires ?", exIt:"La vendita online rappresenta ancora poco del suo fatturato?", ctx:"Domanda utile per capire il business.", cat:"Magasin"},
+{fr:"Le chiffre d'affaires", ipa:"/lə ʃifʁ da.fɛʁ/", it:"Il fatturato", ex:"Le chiffre d'affaires du magasin dépend beaucoup de la saison.", exIt:"Il fatturato del negozio dipende molto dalla stagione.", ctx:"Termine tecnico fondamentale.", cat:"Magasin", ess:true},
+{fr:"La marge", ipa:"/la maʁʒ/", it:"Il margine", ex:"La marge sur les vélos est plus faible qu'on ne le pense.", exIt:"Il margine sulle bici è più basso di quanto si pensi.", ctx:"Argomento forte per il tuo posizionamento.", cat:"Magasin", ess:true},
+{fr:"Le bénéfice", ipa:"/lə be.ne.fis/", it:"Il profitto / l'utile", ex:"Le bénéfice réel vient des accessoires et de l'atelier.", exIt:"Il profitto reale viene dagli accessori e dall'officina.", ctx:"Da usare con cautela, non è un commercialista.", cat:"Magasin"},
+{fr:"Un devis", ipa:"/œ̃ də.vi/", it:"Un preventivo", ex:"Je peux vous préparer un devis détaillé.", exIt:"Posso prepararle un preventivo dettagliato.", ctx:"Parola chiave della vendita.", cat:"Magasin", ess:true},
+{fr:"Un client / une cliente", ipa:"/œ̃ kli.jɑ̃ / yn kli.jɑ̃t/", it:"Un cliente / una cliente", ex:"Un client qui cherche une e-MTB à 8 000 CHF ne doit pas abandonner le site.", exIt:"Un cliente che cerca una e-MTB da 8.000 CHF non deve abbandonare il sito.", ctx:"Nel video, parla di 'client', non di 'utente'.", cat:"Magasin"},
+{fr:"La clientèle", ipa:"/la kli.jɑ̃.tɛl/", it:"La clientela", ex:"Votre clientèle est exigeante et connaît bien les produits.", exIt:"La sua clientela è esigente e conosce bene i prodotti.", ctx:"Termine collettivo.", cat:"Magasin"},
+{fr:"Un essai", ipa:"/œ̃ ne.sɛ/", it:"Una prova / un test", ex:"Un client veut essayer une e-MTB avant d'acheter.", exIt:"Un cliente vuole provare una e-MTB prima di comprare.", ctx:"Momento cruciale del percorso d'acquisto.", cat:"Magasin", ess:true},
+{fr:"Un entretien", ipa:"/œ̃ nɑ̃.tʁə.tjɛ̃/", it:"Una manutenzione", ex:"L'entretien régulier fidélise le client.", exIt:"La manutenzione regolare fidelizza il cliente.", ctx:"Anche 'colloquio' in altri contesti; qui è manutenzione.", cat:"Magasin"},
+{fr:"La révision", ipa:"/la ʁe.vi.zjɔ̃/", it:"La revisione", ex:"Le magasin propose une révision gratuite après 6 mois.", exIt:"Il negozio propone una revisione gratuita dopo 6 mesi.", ctx:"Servizio post-vendita.", cat:"Magasin"},
+{fr:"Le montage", ipa:"/lə mɔ̃.taʒ/", it:"Il montaggio", ex:"Le montage d'un vélo haut de gamme prend du temps.", exIt:"Il montaggio di una bici di alta gamma richiede tempo.", ctx:"Costo nascosto per il negozio.", cat:"Magasin"},
+{fr:"La livraison", ipa:"/la li.vʁɛ.zɔ̃/", it:"La consegna", ex:"La livraison à domicile est un plus pour les clients.", exIt:"La consegna a domicilio è un plus per i clienti.", ctx:"Servizio che può essere valorizzato online.", cat:"Magasin"},
+{fr:"La garantie", ipa:"/la ɡa.ʁɑ̃.ti/", it:"La garanzia", ex:"La garantie rassure le client sur un achat à 5 000 CHF.", exIt:"La garanzia rassicura il cliente su un acquisto da 5.000 CHF.", ctx:"Elemento di fiducia.", cat:"Magasin"},
+{fr:"Le retour", ipa:"/lə ʁə.tuʁ/", it:"Il reso", ex:"La gestion des retours est un vrai coût pour le magasin.", exIt:"La gestione dei resi è un vero costo per il negozio.", ctx:"Da considerare nel percorso d'acquisto.", cat:"Magasin"},
+{fr:"En boutique", ipa:"/ɑ̃ bu.tik/", it:"In negozio", ex:"Le client peut venir essayer le vélo en boutique.", exIt:"Il cliente può venire a provare la bici in negozio.", ctx:"Espressione molto usata.", cat:"Magasin"},
+{fr:"Le service après-vente", ipa:"/lə sɛʁ.vis a.pʁɛ vɑ̃t/", it:"Il servizio post-vendita", ex:"Le service après-vente est un argument de vente fort.", exIt:"Il servizio post-vendita è un forte argomento di vendita.", ctx:"SAV in sigla.", cat:"Magasin"},
+
+/* ---------- 4. TYPES DE VÉLOS ---------- */
+{fr:"Un vélo", ipa:"/œ̃ ve.lo/", it:"Una bici", ex:"Un vélo de cette gamme coûte plusieurs milliers de francs.", exIt:"Una bici di questa gamma costa diverse migliaia di franchi.", ctx:"Base.", cat:"Types de vélos", ess:true},
+{fr:"Un vélo de route", ipa:"/œ̃ ve.lo də ʁut/", it:"Una bici da corsa", ex:"Le vélo de route est léger et rapide sur asphalte.", exIt:"La bici da corsa è leggera e veloce sull'asfalto.", ctx:"Anche 'vélo de course'.", cat:"Types de vélos", ess:true},
+{fr:"Un VTT", ipa:"/œ̃ ve.te.te/", it:"Una mountain bike", ex:"Le VTT est conçu pour les sentiers.", exIt:"La MTB è progettata per i sentieri.", ctx:"VTT = Vélo Tout Terrain. Si pronuncia lettera per lettera.", cat:"Types de vélos", ess:true},
+{fr:"Un vélo gravel", ipa:"/œ̃ ve.lo ɡʁa.vɛl/", it:"Una bici gravel", ex:"Le vélo gravel est polyvalent : route et chemins.", exIt:"La bici gravel è versatile: strada e sentieri.", ctx:"Segmento in forte crescita in Svizzera.", cat:"Types de vélos", ess:true},
+{fr:"Un vélo électrique", ipa:"/œ̃ ve.lo e.lɛk.tʁik/", it:"Una bici elettrica", ex:"Le vélo électrique représente 41 % du marché suisse.", exIt:"La bici elettrica rappresenta il 41% del mercato svizzero.", ctx:"Dato di mercato utile nel video.", cat:"Types de vélos", ess:true},
+{fr:"Un VAE", ipa:"/œ̃ ve.a.ə/", it:"Una e-bike (pedalata assistita)", ex:"Le VAE est très populaire en Suisse.", exIt:"La e-bike è molto popolare in Svizzera.", ctx:"VAE = Vélo à Assistance Électrique. Sigla professionale.", cat:"Types de vélos", ess:true},
+{fr:"Un vélo de ville", ipa:"/œ̃ ve.lo də vil/", it:"Una bici da città", ex:"Le vélo de ville est pratique pour les trajets quotidiens.", exIt:"La bici da città è pratica per gli spostamenti quotidiani.", ctx:"Categoria urbana.", cat:"Types de vélos"},
+{fr:"Un vélo de trekking", ipa:"/œ̃ ve.lo də tʁɛ.kiŋ/", it:"Una bici da trekking", ex:"Le vélo de trekking est polyvalent et confortable.", exIt:"La bici da trekking è versatile e confortevole.", ctx:"Categoria intermedia.", cat:"Types de vélos"},
+{fr:"Un vélo cargo", ipa:"/œ̃ ve.lo kaʁ.ɡo/", it:"Una cargo bike", ex:"Le vélo cargo peut transporter jusqu'à 200 kg.", exIt:"La cargo bike può trasportare fino a 200 kg.", ctx:"Nicchia in crescita nelle città svizzere.", cat:"Types de vélos", ess:true},
+{fr:"Un vélo pour enfants", ipa:"/œ̃ ve.lo puʁ ɑ̃.fɑ̃/", it:"Una bici per bambini", ex:"Le magasin vend aussi des vélos pour enfants.", exIt:"Il negozio vende anche bici per bambini.", ctx:"Categoria accessoria.", cat:"Types de vélos"},
+{fr:"Une e-MTB", ipa:"/yn i ɛm te be/", it:"Una e-MTB", ex:"Les e-MTB représentent environ un tiers de votre catalogue.", exIt:"Le e-MTB rappresentano circa un terzo del suo catalogo.", ctx:"Il tuo dato chiave: ~33% del listino.", cat:"Types de vélos", ess:true},
+{fr:"Un vélo tout-suspendu", ipa:"/œ̃ ve.lo tu sys.pɑ̃.dy/", it:"Una full suspension", ex:"Le tout-suspendu est idéal pour l'enduro.", exIt:"La full suspension è ideale per l'enduro.", ctx:"Contrapposto a 'semi-rigide'.", cat:"Types de vélos"},
+{fr:"Un vélo semi-rigide", ipa:"/œ̃ ve.lo sə.mi ʁi.ʒid/", it:"Una hardtail", ex:"Le semi-rigide est plus léger et moins cher.", exIt:"La hardtail è più leggera e meno costosa.", ctx:"Categoria MTB.", cat:"Types de vélos"},
+{fr:"Le cadre", ipa:"/lə kadʁ/", it:"Il telaio", ex:"Le cadre en carbone est plus léger.", exIt:"Il telaio in carbonio è più leggero.", ctx:"Componente principale.", cat:"Types de vélos", ess:true},
+{fr:"Le cadre en carbone", ipa:"/lə kadʁ ɑ̃ kaʁ.bɔn/", it:"Il telaio in carbonio", ex:"À ce prix, le cadre en carbone est indispensable.", exIt:"A questo prezzo, il telaio in carbonio è indispensabile.", ctx:"Materiale premium.", cat:"Types de vélos"},
+{fr:"Le cadre en aluminium", ipa:"/lə kadʁ ɑ̃ a.ly.mi.njɔm/", it:"Il telaio in alluminio", ex:"Le cadre en aluminium reste une option fiable.", exIt:"Il telaio in alluminio resta un'opzione affidabile.", ctx:"Materiale più economico.", cat:"Types de vélos"},
+{fr:"Le groupe", ipa:"/lə ɡʁup/", it:"Il gruppo (cambio/freni)", ex:"Le groupe Shimano Dura-Ace est haut de gamme.", exIt:"Il gruppo Shimano Dura-Ace è di alta gamma.", ctx:"Termine tecnico essenziale.", cat:"Types de vélos", ess:true},
+{fr:"La transmission", ipa:"/la tʁɑ̃s.mi.sjɔ̃/", it:"La trasmissione", ex:"La transmission électronique est de plus en plus répandue.", exIt:"La trasmissione elettronica è sempre più diffusa.", ctx:"Sistema di cambio.", cat:"Types de vélos"},
+{fr:"Les suspensions", ipa:"/le sys.pɑ̃.sjɔ̃/", it:"Le sospensioni", ex:"Les suspensions absorbent les chocs sur les sentiers.", exIt:"Le sospensioni assorbono gli urti sui sentieri.", ctx:"Componente chiave per MTB.", cat:"Types de vélos"},
+{fr:"La fourche", ipa:"/la fuʁʃ/", it:"La forcella", ex:"La fourche Fox Factory est un signe de qualité.", exIt:"La forcella Fox Factory è un segno di qualità.", ctx:"Sospensione anteriore.", cat:"Types de vélos"},
+{fr:"L'amortisseur", ipa:"/la.mɔʁ.ti.sœʁ/", it:"L'ammortizzatore", ex:"L'amortisseur arrière est réglable.", exIt:"L'ammortizzatore posteriore è regolabile.", ctx:"Sospensione posteriore.", cat:"Types de vélos"},
+{fr:"Les roues", ipa:"/le ʁu/", it:"Le ruote", ex:"Les roues en carbone coûtent très cher.", exIt:"Le ruote in carbonio costano molto.", ctx:"Componente premium.", cat:"Types de vélos"},
+{fr:"Les pneus", ipa:"/le pnø/", it:"I pneumatici", ex:"Les pneus larges sont typiques du gravel.", exIt:"I pneumatici larghi sono tipici del gravel.", ctx:"Componente distintivo del gravel.", cat:"Types de vélos"},
+{fr:"La taille", ipa:"/la taj/", it:"La taglia", ex:"Le client doit pouvoir filtrer par taille sur le site.", exIt:"Il cliente deve poter filtrare per taglia sul sito.", ctx:"Problema #1 dell'e-commerce bici.", cat:"Types de vélos", ess:true},
+{fr:"Le poids", ipa:"/lə pwa/", it:"Il peso", ex:"Le poids est un critère important pour les cyclistes.", exIt:"Il peso è un criterio importante per i ciclisti.", ctx:"Dato tecnico da mostrare in scheda prodotto.", cat:"Types de vélos"},
+{fr:"Le modèle", ipa:"/lə mɔ.dɛl/", it:"Il modello", ex:"Chaque modèle a ses spécificités techniques.", exIt:"Ogni modello ha le sue specifiche tecniche.", ctx:"Base.", cat:"Types de vélos"},
+{fr:"La marque", ipa:"/la maʁk/", it:"Il marchio", ex:"Vous vendez plusieurs marques : Orbea, Mondraker, Look…", exIt:"Lei vende diversi marchi: Orbea, Mondraker, Look…", ctx:"Nel video, cita i marchi per dimostrare competenza.", cat:"Types de vélos", ess:true},
+{fr:"La gamme", ipa:"/la ɡam/", it:"La gamma", ex:"La gamme Orbea Terra est très complète.", exIt:"La gamma Orbea Terra è molto completa.", ctx:"Insieme di modelli.", cat:"Types de vélos"},
+{fr:"Le millésime", ipa:"/lə mi.le.zim/", it:"L'anno modello", ex:"Le millésime 2026 est déjà disponible.", exIt:"L'anno modello 2026 è già disponibile.", ctx:"Termine tecnico usato nel settore.", cat:"Types de vélos"},
+{fr:"Le modèle 2026", ipa:"/lə mɔ.dɛl de.mil vɛ̃t.sis/", it:"Il modello 2026", ex:"Le modèle 2026 est en stock.", exIt:"Il modello 2026 è disponibile.", ctx:"Pronuncia: 'deux-mille-vingt-six'.", cat:"Types de vélos"},
+{fr:"Un vélo d'occasion", ipa:"/œ̃ ve.lo dɔ.ka.zjɔ̃/", it:"Una bici usata", ex:"Le magasin vend aussi des vélos d'occasion.", exIt:"Il negozio vende anche bici usate.", ctx:"Sezione 'occasion' del sito.", cat:"Types de vélos", ess:true},
+{fr:"Neuf", ipa:"/nœf/", it:"Nuovo", ex:"Un vélo neuf est couvert par la garantie.", exIt:"Una bici nuova è coperta da garanzia.", ctx:"Contrapposto a 'occasion'.", cat:"Types de vélos"},
+{fr:"Une promotion", ipa:"/yn pʁɔ.mɔ.sjɔ̃/", it:"Una promozione", ex:"Le site affiche des promotions mais pas toujours clairement.", exIt:"Il sito mostra promozioni ma non sempre chiaramente.", ctx:"Elemento da valorizzare online.", cat:"Types de vélos"},
+{fr:"Une réduction", ipa:"/yn ʁe.dyk.sjɔ̃/", it:"Uno sconto", ex:"Une réduction de 40 % est affichée.", exIt:"Uno sconto del 40% è mostrato.", ctx:"Termine standard.", cat:"Types de vélos"},
+{fr:"Les soldes", ipa:"/le sɔld/", it:"I saldi", ex:"Les soldes sont un moment clé pour le magasin.", exIt:"I saldi sono un momento chiave per il negozio.", ctx:"Periodo di sconti.", cat:"Types de vélos"},
+{fr:"La liquidation", ipa:"/la li.ki.da.sjɔ̃/", it:"La liquidazione", ex:"La page liquidation contient beaucoup de modèles.", exIt:"La pagina liquidazione contiene molti modelli.", ctx:"Sezione del sito.", cat:"Types de vélos"},
+{fr:"Le prix", ipa:"/lə pʁi/", it:"Il prezzo", ex:"Le prix est affiché en euros et en francs.", exIt:"Il prezzo è mostrato in euro e in franchi.", ctx:"Attenzione alla valuta (CHF vs EUR).", cat:"Types de vélos", ess:true},
+{fr:"Le prix de lancement", ipa:"/lə pʁi də lɑ̃s.mɑ̃/", it:"Il prezzo di lancio", ex:"Le prix de lancement est valable pour une durée limitée.", exIt:"Il prezzo di lancio è valido per un periodo limitato.", ctx:"Formula commerciale.", cat:"Types de vélos"},
+
+/* ---------- 5. PROBLÈMES DU SITE WEB ---------- */
+{fr:"Un site internet", ipa:"/œ̃ sit ɛ̃.tɛʁ.nɛt/", it:"Un sito internet", ex:"J'ai regardé votre site internet en détail.", exIt:"Ho guardato il suo sito internet in dettaglio.", ctx:"Base.", cat:"Problèmes site", ess:true},
+{fr:"Un site web", ipa:"/œ̃ sit wɛb/", it:"Un sito web", ex:"Le site web doit refléter la qualité du magasin.", exIt:"Il sito web deve riflettere la qualità del negozio.", ctx:"Sinonimo.", cat:"Problèmes site"},
+{fr:"Un site e-commerce", ipa:"/œ̃ sit e.kɔ.mɛʁs/", it:"Un e-commerce", ex:"Un site e-commerce doit gérer les tailles et les stocks.", exIt:"Un e-commerce deve gestire taglie e disponibilità.", ctx:"Tipo di sito.", cat:"Problèmes site", ess:true},
+{fr:"Une boutique en ligne", ipa:"/yn bu.tik ɑ̃ liɲ/", it:"Un negozio online", ex:"La boutique en ligne n'est pas à la hauteur du magasin physique.", exIt:"Il negozio online non è all'altezza del negozio fisico.", ctx:"Sinonimo.", cat:"Problèmes site"},
+{fr:"La page d'accueil", ipa:"/la paʒ da.kœj/", it:"La homepage", ex:"La page d'accueil ne met pas en avant les nouveautés.", exIt:"La homepage non mette in evidenza le novità.", ctx:"Prima impressione.", cat:"Problèmes site"},
+{fr:"Une page", ipa:"/yn paʒ/", it:"Una pagina", ex:"Certaines pages mettent trop de temps à charger.", exIt:"Alcune pagine impiegano troppo tempo a caricare.", ctx:"Base.", cat:"Problèmes site"},
+{fr:"Un lien", ipa:"/œ̃ ljɛ̃/", it:"Un link", ex:"Certains liens ne fonctionnent pas.", exIt:"Alcuni link non funzionano.", ctx:"Bug comune.", cat:"Problèmes site", ess:true},
+{fr:"Un lien qui ne fonctionne pas", ipa:"/œ̃ ljɛ̃ ki nə fɔ̃k.sjɔn pa/", it:"Un link che non funziona", ex:"J'ai trouvé un lien qui ne fonctionne pas sur la page contact.", exIt:"Ho trovato un link che non funziona nella pagina contatti.", ctx:"Da mostrare nel video.", cat:"Problèmes site", ess:true},
+{fr:"Un bug", ipa:"/œ̃ bœɡ/", it:"Un bug", ex:"Il y a plusieurs bugs sur le site.", exIt:"Ci sono diversi bug sul sito.", ctx:"Termine tecnico.", cat:"Problèmes site", ess:true},
+{fr:"Un problème technique", ipa:"/œ̃ pʁɔ.blɛm tɛk.nik/", it:"Un problema tecnico", ex:"Ce sont des problèmes techniques, pas seulement esthétiques.", exIt:"Sono problemi tecnici, non solo estetici.", ctx:"Argomento chiave.", cat:"Problèmes site", ess:true},
+{fr:"Un site lent", ipa:"/œ̃ sit lɑ̃/", it:"Un sito lento", ex:"Un site lent fait perdre des clients.", exIt:"Un sito lento fa perdere clienti.", ctx:"Problema #1.", cat:"Problèmes site", ess:true},
+{fr:"Un site rapide", ipa:"/œ̃ sit ʁa.pid/", it:"Un sito veloce", ex:"Un site rapide améliore la conversion.", exIt:"Un sito veloce migliora la conversione.", ctx:"Obiettivo.", cat:"Problèmes site"},
+{fr:"Le temps de chargement", ipa:"/lə tɑ̃ də ʃaʁ.ʒə.mɑ̃/", it:"Il tempo di caricamento", ex:"Le temps de chargement est de 8 secondes sur mobile.", exIt:"Il tempo di caricamento è di 8 secondi su mobile.", ctx:"Cita numeri concreti.", cat:"Problèmes site", ess:true},
+{fr:"L'affichage", ipa:"/la.fi.ʃaʒ/", it:"La visualizzazione", ex:"L'affichage n'est pas correct sur mobile.", exIt:"La visualizzazione non è corretta su mobile.", ctx:"Problema tecnico.", cat:"Problèmes site"},
+{fr:"L'affichage sur mobile", ipa:"/la.fi.ʃaʒ syʁ mɔ.bil/", it:"La visualizzazione su mobile", ex:"L'affichage sur mobile est le point le plus critique.", exIt:"La visualizzazione su mobile è il punto più critico.", ctx:"52% degli acquisti online in Svizzera è da mobile.", cat:"Problèmes site", ess:true},
+{fr:"Le responsive", ipa:"/lə ʁɛs.pɔ̃.siv/", it:"Il responsive", ex:"Le site n'est pas responsive : il faut zoomer pour lire.", exIt:"Il sito non è responsive: bisogna zoomare per leggere.", ctx:"Termine tecnico.", cat:"Problèmes site", ess:true},
+{fr:"L'expérience utilisateur", ipa:"/lɛks.pe.ʁjɑ̃s y.ti.li.za.tœʁ/", it:"L'esperienza utente", ex:"L'expérience utilisateur doit être fluide.", exIt:"L'esperienza utente deve essere fluida.", ctx:"UX in sigla.", cat:"Problèmes site"},
+{fr:"Le parcours d'achat", ipa:"/lə paʁ.kuʁ da.ʃa/", it:"Il percorso d'acquisto", ex:"Le parcours d'achat est trop compliqué.", exIt:"Il percorso d'acquisto è troppo complicato.", ctx:"Concetto chiave.", cat:"Problèmes site", ess:true},
+{fr:"Le tunnel de conversion", ipa:"/lə ty.nɛl də kɔ̃.vɛʁ.sjɔ̃/", it:"Il funnel di conversione", ex:"Le tunnel de conversion perd des clients à chaque étape.", exIt:"Il funnel di conversione perde clienti a ogni step.", ctx:"Termine tecnico avanzato.", cat:"Problèmes site"},
+{fr:"Ajouter au panier", ipa:"/a.ʒu.te o pa.nje/", it:"Aggiungere al carrello", ex:"Le bouton 'ajouter au panier' est trop petit.", exIt:"Il pulsante 'aggiungi al carrello' è troppo piccolo.", ctx:"CTA chiave.", cat:"Problèmes site", ess:true},
+{fr:"Le panier", ipa:"/lə pa.nje/", it:"Il carrello", ex:"Le panier n'est pas visible sur mobile.", exIt:"Il carrello non è visibile su mobile.", ctx:"Elemento UX.", cat:"Problèmes site"},
+{fr:"Finaliser une commande", ipa:"/fi.na.li.ze yn kɔ.mɑ̃d/", it:"Completare un ordine", ex:"Finaliser une commande prend trop de clics.", exIt:"Completare un ordine richiede troppi clic.", ctx:"Processo di checkout.", cat:"Problèmes site"},
+{fr:"Une commande", ipa:"/yn kɔ.mɑ̃d/", it:"Un ordine", ex:"Une commande doit être simple et rapide.", exIt:"Un ordine deve essere semplice e veloce.", ctx:"Base.", cat:"Problèmes site"},
+{fr:"Le paiement", ipa:"/lə pɛ.mɑ̃/", it:"Il pagamento", ex:"Le paiement en ligne doit inspirer confiance.", exIt:"Il pagamento online deve ispirare fiducia.", ctx:"Momento critico.", cat:"Problèmes site"},
+{fr:"Le paiement en ligne", ipa:"/lə pɛ.mɑ̃ ɑ̃ liɲ/", it:"Il pagamento online", ex:"Le paiement en ligne n'est pas sécurisé visuellement.", exIt:"Il pagamento online non è visivamente sicuro.", ctx:"Percezione di sicurezza.", cat:"Problèmes site"},
+{fr:"Le formulaire de contact", ipa:"/lə fɔʁ.my.lɛʁ də kɔ̃.takt/", it:"Il modulo di contatto", ex:"Le formulaire de contact ne fonctionne pas.", exIt:"Il modulo di contatto non funziona.", ctx:"Bug critico.", cat:"Problèmes site", ess:true},
+{fr:"Un formulaire", ipa:"/œ̃ fɔʁ.my.lɛʁ/", it:"Un modulo", ex:"Un formulaire trop long décourage les clients.", exIt:"Un modulo troppo lungo scoraggia i clienti.", ctx:"UX.", cat:"Problèmes site"},
+{fr:"Une demande de devis", ipa:"/yn də.mɑ̃d də də.vi/", it:"Una richiesta di preventivo", ex:"Une demande de devis est le premier pas vers une vente.", exIt:"Una richiesta di preventivo è il primo passo verso una vendita.", ctx:"Obiettivo del sito.", cat:"Problèmes site", ess:true},
+{fr:"Un message d'erreur", ipa:"/œ̃ me.saʒ dɛ.ʁœʁ/", it:"Un messaggio di errore", ex:"Un message d'erreur s'affiche quand on clique.", exIt:"Un messaggio di errore appare quando si clicca.", ctx:"Bug evidente.", cat:"Problèmes site"},
+{fr:"La navigation", ipa:"/la na.vi.ɡa.sjɔ̃/", it:"La navigazione", ex:"La navigation n'est pas intuitive.", exIt:"La navigazione non è intuitiva.", ctx:"UX.", cat:"Problèmes site", ess:true},
+{fr:"Le menu", ipa:"/lə mə.ny/", it:"Il menu", ex:"Le menu est trop chargé.", exIt:"Il menu è troppo pieno.", ctx:"UX.", cat:"Problèmes site"},
+{fr:"Un filtre", ipa:"/œ̃ filtʁ/", it:"Un filtro", ex:"Il n'y a pas de filtre par taille.", exIt:"Non c'è un filtro per taglia.", ctx:"Problema #1 e-commerce bici.", cat:"Problèmes site", ess:true},
+{fr:"Filtrer par taille", ipa:"/fil.tʁe paʁ taj/", it:"Filtrare per taglia", ex:"Le client doit pouvoir filtrer par taille.", exIt:"Il cliente deve poter filtrare per taglia.", ctx:"Funzionalità chiave.", cat:"Problèmes site", ess:true},
+{fr:"Filtrer par prix", ipa:"/fil.tʁe paʁ pʁi/", it:"Filtrare per prezzo", ex:"Filtrer par prix aide le client à choisir.", exIt:"Filtrare per prezzo aiuta il cliente a scegliere.", ctx:"Funzionalità.", cat:"Problèmes site"},
+{fr:"Filtrer par catégorie", ipa:"/fil.tʁe paʁ ka.te.ɡɔ.ʁi/", it:"Filtrare per categoria", ex:"Filtrer par catégorie (route, VTT, gravel) est essentiel.", exIt:"Filtrare per categoria (strada, MTB, gravel) è essenziale.", ctx:"Funzionalità.", cat:"Problèmes site"},
+{fr:"La recherche", ipa:"/la ʁə.ʃɛʁʃ/", it:"La ricerca", ex:"La recherche interne ne donne pas de bons résultats.", exIt:"La ricerca interna non dà buoni risultati.", ctx:"Funzionalità.", cat:"Problèmes site"},
+{fr:"Le moteur de recherche", ipa:"/lə mɔ.tœʁ də ʁə.ʃɛʁʃ/", it:"Il motore di ricerca", ex:"Le moteur de recherche doit être performant.", exIt:"Il motore di ricerca deve essere performante.", ctx:"Tecnico.", cat:"Problèmes site"},
+{fr:"La barre de recherche", ipa:"/la baʁ də ʁə.ʃɛʁʃ/", it:"La barra di ricerca", ex:"La barre de recherche n'est pas visible.", exIt:"La barra di ricerca non è visibile.", ctx:"UX.", cat:"Problèmes site"},
+{fr:"Trouver", ipa:"/tʁu.ve/", it:"Trovare", ex:"Le client ne trouve pas ce qu'il cherche.", exIt:"Il cliente non trova ciò che cerca.", ctx:"Verbo chiave.", cat:"Problèmes site"},
+{fr:"Chercher", ipa:"/ʃɛʁ.ʃe/", it:"Cercare", ex:"Le client cherche une e-MTB de sa taille.", exIt:"Il cliente cerca una e-MTB della sua taglia.", ctx:"Verbo.", cat:"Problèmes site"},
+{fr:"Abandonner", ipa:"/a.bɑ̃.dɔ.ne/", it:"Abbandonare", ex:"La plupart des clients abandonnent après 3 secondes.", exIt:"La maggior parte dei clienti abbandona dopo 3 secondi.", ctx:"Dato da citare.", cat:"Problèmes site", ess:true},
+{fr:"Quitter le site", ipa:"/ki.te lə sit/", it:"Lasciare il sito", ex:"Un client sur deux quitte le site sur mobile.", exIt:"Un cliente su due lascia il sito su mobile.", ctx:"Impatto del problema.", cat:"Problèmes site"},
+{fr:"Perdre des clients", ipa:"/pɛʁdʁ de kli.jɑ̃/", it:"Perdere clienti", ex:"Chaque jour, vous perdez des clients à cause du site.", exIt:"Ogni giorno perde clienti a causa del sito.", ctx:"Frase forte per il video.", cat:"Problèmes site", ess:true},
+{fr:"Une occasion manquée", ipa:"/yn ɔ.ka.zjɔ̃ ma.ne/", it:"Un'occasione mancata", ex:"Chaque visite qui abandonne est une occasion manquée.", exIt:"Ogni visita che abbandona è un'occasione mancata.", ctx:"Frase da usare nel video.", cat:"Problèmes site"},
+
+/* ---------- 6. SEO & VISIBILITÉ ---------- */
+{fr:"Le référencement", ipa:"/lə ʁe.fe.ʁɑ̃s.mɑ̃/", it:"La SEO / il posizionamento", ex:"Le référencement est essentiel pour être visible.", exIt:"La SEO è essenziale per essere visibili.", ctx:"Termine tecnico.", cat:"SEO", ess:true},
+{fr:"Le référencement naturel", ipa:"/lə ʁe.fe.ʁɑ̃s.mɑ̃ na.ty.ʁɛl/", it:"La SEO organica", ex:"Le référencement naturel prend du temps mais paie sur le long terme.", exIt:"La SEO organica richiede tempo ma paga nel lungo periodo.", ctx:"Contrapposto a 'référencement payant'.", cat:"SEO"},
+{fr:"Le SEO", ipa:"/lə se.o/", it:"La SEO", ex:"Le SEO local est crucial pour un magasin.", exIt:"La SEO locale è cruciale per un negozio.", ctx:"Sigla usata anche in francese.", cat:"SEO", ess:true},
+{fr:"Être bien positionné", ipa:"/ɛtʁ bjɛ̃ pɔ.zi.sjɔ.ne/", it:"Essere ben posizionato", ex:"Votre site n'est pas bien positionné sur Google.", exIt:"Il suo sito non è ben posizionato su Google.", ctx:"Frase chiave.", cat:"SEO", ess:true},
+{fr:"Les premiers résultats", ipa:"/le pʁə.mje ʁe.zyl.ta/", it:"I primi risultati", ex:"Votre site n'apparaît pas dans les premiers résultats.", exIt:"Il suo sito non appare nei primi risultati.", ctx:"Impatto concreto.", cat:"SEO", ess:true},
+{fr:"La première page de Google", ipa:"/la pʁə.mjɛʁ paʒ də ɡu.ɡl/", it:"La prima pagina di Google", ex:"Si vous n'êtes pas sur la première page, vous êtes invisible.", exIt:"Se non è in prima pagina, è invisibile.", ctx:"Concetto chiave.", cat:"SEO", ess:true},
+{fr:"Apparaître sur Google", ipa:"/a.pa.ʁɛtʁ syʁ ɡu.ɡl/", it:"Apparire su Google", ex:"Quand on cherche 'magasin vélo Lausanne', vous n'apparaissez pas.", exIt:"Quando si cerca 'negozio bici Losanna', lei non appare.", ctx:"Esempio concreto.", cat:"SEO", ess:true},
+{fr:"Les mots-clés", ipa:"/le mo kle/", it:"Le parole chiave", ex:"Les mots-clés doivent correspondre aux recherches des clients.", exIt:"Le parole chiave devono corrispondere alle ricerche dei clienti.", ctx:"Tecnico.", cat:"SEO"},
+{fr:"Une recherche Google", ipa:"/yn ʁə.ʃɛʁʃ ɡu.ɡl/", it:"Una ricerca su Google", ex:"J'ai fait une recherche Google pour tester.", exIt:"Ho fatto una ricerca su Google per testare.", ctx:"Metodo di analisi.", cat:"SEO"},
+{fr:"Le trafic", ipa:"/lə tʁa.fik/", it:"Il traffico", ex:"Le trafic organique est très faible.", exIt:"Il traffico organico è molto basso.", ctx:"Metrica.", cat:"SEO"},
+{fr:"Le trafic organique", ipa:"/lə tʁa.fik ɔʁ.ɡa.nik/", it:"Il traffico organico", ex:"Le trafic organique vient de la SEO.", exIt:"Il traffico organico viene dalla SEO.", ctx:"Metrica.", cat:"SEO"},
+{fr:"La visibilité", ipa:"/la vi.zi.bi.li.te/", it:"La visibilità", ex:"La visibilité en ligne est trop faible.", exIt:"La visibilità online è troppo bassa.", ctx:"Obiettivo.", cat:"SEO", ess:true},
+{fr:"La concurrence", ipa:"/la kɔ̃.ky.ʁɑ̃s/", it:"La concorrenza", ex:"La concurrence est mieux positionnée.", exIt:"La concorrenza è meglio posizionata.", ctx:"Argomento persuasivo.", cat:"SEO"},
+{fr:"Un concurrent", ipa:"/œ̃ kɔ̃.ky.ʁɑ̃/", it:"Un concorrente", ex:"Un concurrent apparaît avant vous sur Google.", exIt:"Un concorrente appare prima di lei su Google.", ctx:"Confronto.", cat:"SEO"},
+{fr:"Google My Business", ipa:"/ɡu.ɡl maj biz.nɛs/", it:"Google My Business", ex:"La fiche Google My Business doit être complète.", exIt:"La scheda Google My Business deve essere completa.", ctx:"Strumento locale.", cat:"SEO", ess:true},
+{fr:"Les avis clients", ipa:"/le za.vi kli.jɑ̃/", it:"Le recensioni dei clienti", ex:"Les avis clients sont un facteur de classement local.", exIt:"Le recensioni dei clienti sono un fattore di posizionamento locale.", ctx:"Importante per la SEO locale.", cat:"SEO", ess:true},
+{fr:"Les étoiles", ipa:"/le ze.twal/", it:"Le stelle", ex:"Votre magasin a 4,7 étoiles sur Google.", exIt:"Il suo negozio ha 4,7 stelle su Google.", ctx:"Recensioni.", cat:"SEO"},
+{fr:"La note", ipa:"/la nɔt/", it:"Il punteggio", ex:"La note moyenne est excellente.", exIt:"Il punteggio medio è eccellente.", ctx:"Recensioni.", cat:"SEO"},
+{fr:"Les résultats locaux", ipa:"/le ʁe.zyl.ta lɔ.ko/", it:"I risultati locali", ex:"Les résultats locaux sont affichés avec la carte.", exIt:"I risultati locali sono mostrati con la mappa.", ctx:"SEO locale.", cat:"SEO"},
+{fr:"La recherche locale", ipa:"/la ʁə.ʃɛʁʃ lɔ.kal/", it:"La ricerca locale", ex:"La recherche locale est la plus importante pour un magasin.", exIt:"La ricerca locale è la più importante per un negozio.", ctx:"Concetto chiave.", cat:"SEO"},
+{fr:"Être visible", ipa:"/ɛtʁ vi.zibl/", it:"Essere visibile", ex:"Être visible sur Google, c'est la base.", exIt:"Essere visibili su Google è la base.", ctx:"Obiettivo.", cat:"SEO"},
+{fr:"Être invisible", ipa:"/ɛtʁ ɛ̃.vi.zibl/", it:"Essere invisibile", ex:"Aujourd'hui, votre site est invisible.", exIt:"Oggi, il suo sito è invisibile.", ctx:"Impatto.", cat:"SEO", ess:true},
+{fr:"Les annuaires", ipa:"/le za.nɥɛʁ/", it:"Le directory", ex:"Inscrivez votre magasin dans les annuaires locaux.", exIt:"Iscriva il suo negozio nelle directory locali.", ctx:"Strumento SEO.", cat:"SEO"},
+{fr:"Une annuaire local", ipa:"/yn a.nɥɛʁ lɔ.kal/", it:"Una directory locale", ex:"local.ch et search.ch sont des annuaires locaux importants.", exIt:"local.ch e search.ch sono directory locali importanti.", ctx:"Contesto svizzero.", cat:"SEO"},
+{fr:"La fiche Google", ipa:"/la fiʃ ɡu.ɡl/", it:"La scheda Google", ex:"La fiche Google doit être à jour.", exIt:"La scheda Google deve essere aggiornata.", ctx:"SEO locale.", cat:"SEO"},
+{fr:"Le profil Google", ipa:"/lə pʁɔ.fil ɡu.ɡl/", it:"Il profilo Google", ex:"Le profil Google est la première chose que voit le client.", exIt:"Il profilo Google è la prima cosa che vede il cliente.", ctx:"Prima impressione.", cat:"SEO"},
+{fr:"Les statistiques", ipa:"/le sta.tis.tik/", it:"Le statistiche", ex:"Les statistiques montrent une baisse de trafic.", exIt:"Le statistiche mostrano un calo di traffico.", ctx:"Metriche.", cat:"SEO"},
+{fr:"Les données", ipa:"/le dɔ.ne/", it:"I dati", ex:"Les données sont essentielles pour décider.", exIt:"I dati sono essenziali per decidere.", ctx:"Metriche.", cat:"SEO"},
+{fr:"Le rapport mensuel", ipa:"/lə ʁa.pɔʁ mɑ̃.sɥɛl/", it:"Il report mensile", ex:"Je vous envoie un rapport mensuel.", exIt:"Le invio un report mensile.", ctx:"Servizio di manutenzione.", cat:"SEO"},
+
+/* ---------- 7. SOLUTIONS & SERVICES ---------- */
+{fr:"Une solution", ipa:"/yn sɔ.ly.sjɔ̃/", it:"Una soluzione", ex:"Je vous propose une solution concrète.", exIt:"Le propongo una soluzione concreta.", ctx:"Base.", cat:"Solutions", ess:true},
+{fr:"Proposer une solution", ipa:"/pʁɔ.po.ze yn sɔ.ly.sjɔ̃/", it:"Proporre una soluzione", ex:"Je vais vous proposer une solution pour chaque problème.", exIt:"Le propongo una soluzione per ogni problema.", ctx:"Struttura del video.", cat:"Solutions", ess:true},
+{fr:"Résoudre un problème", ipa:"/ʁe.zudʁ œ̃ pʁɔ.blɛm/", it:"Risolvere un problema", ex:"Je peux résoudre ces problèmes rapidement.", exIt:"Posso risolvere questi problemi rapidamente.", ctx:"Promessa.", cat:"Solutions", ess:true},
+{fr:"Corriger", ipa:"/kɔ.ʁi.ʒe/", it:"Correggere", ex:"Il faut corriger les bugs les plus critiques.", exIt:"Bisogna correggere i bug più critici.", ctx:"Azione.", cat:"Solutions"},
+{fr:"Améliorer", ipa:"/a.me.ljɔ.ʁe/", it:"Migliorare", ex:"On peut améliorer l'expérience mobile.", exIt:"Possiamo migliorare l'esperienza mobile.", ctx:"Azione.", cat:"Solutions"},
+{fr:"Optimiser", ipa:"/ɔp.ti.mi.ze/", it:"Ottimizzare", ex:"Optimiser le site pour le mobile est prioritaire.", exIt:"Ottimizzare il sito per il mobile è prioritario.", ctx:"Azione.", cat:"Solutions"},
+{fr:"La refonte", ipa:"/la ʁə.fɔ̃t/", it:"Il rifacimento", ex:"La refonte du site est une option.", exIt:"Il rifacimento del sito è un'opzione.", ctx:"Termine tecnico.", cat:"Solutions", ess:true},
+{fr:"Refondre le site", ipa:"/ʁə.fɔ̃dʁ lə sit/", it:"Rifare il sito", ex:"Refondre le site coûte plus cher, mais donne de meilleurs résultats.", exIt:"Rifare il sito costa di più, ma dà risultati migliori.", ctx:"Alternativa all'intervento d'emergenza.", cat:"Solutions", ess:true},
+{fr:"Créer un nouveau site", ipa:"/kʁe.e œ̃ nu.vo sit/", it:"Creare un sito nuovo", ex:"Créer un nouveau site sur Shopify serait plus simple.", exIt:"Creare un sito nuovo su Shopify sarebbe più semplice.", ctx:"Opzione completa.", cat:"Solutions"},
+{fr:"La maintenance", ipa:"/la mɛ̃.tə.nɑ̃s/", it:"La manutenzione", ex:"La maintenance mensuelle inclut les mises à jour.", exIt:"La manutenzione mensile include gli aggiornamenti.", ctx:"Servizio ricorrente.", cat:"Solutions", ess:true},
+{fr:"La maintenance mensuelle", ipa:"/la mɛ̃.tə.nɑ̃s mɑ̃.sɥɛl/", it:"La manutenzione mensile", ex:"La maintenance mensuelle coûte 150 CHF.", exIt:"La manutenzione mensile costa 150 CHF.", ctx:"Prezzo.", cat:"Solutions", ess:true},
+{fr:"Le suivi", ipa:"/lə sɥi/", it:"Il monitoraggio", ex:"Le suivi est inclus dans la maintenance.", exIt:"Il monitoraggio è incluso nella manutenzione.", ctx:"Servizio.", cat:"Solutions"},
+{fr:"Un contrat de maintenance", ipa:"/œ̃ kɔ̃.tʁa də mɛ̃.tə.nɑ̃s/", it:"Un contratto di manutenzione", ex:"Un contrat de maintenance vous libère l'esprit.", exIt:"Un contratto di manutenzione le libera la mente.", ctx:"Vantaggio.", cat:"Solutions"},
+{fr:"La gestion", ipa:"/la ʒɛs.tjɔ̃/", it:"La gestione", ex:"La gestion du site peut être déléguée.", exIt:"La gestione del sito può essere delegata.", ctx:"Concetto.", cat:"Solutions"},
+{fr:"Gérer", ipa:"/ʒe.ʁe/", it:"Gestire", ex:"Je gère le site pour vous.", exIt:"Gestisco il sito per lei.", ctx:"Verbo.", cat:"Solutions"},
+{fr:"La gestion du site", ipa:"/la ʒɛs.tjɔ̃ dy sit/", it:"La gestione del sito", ex:"La gestion du site ne sera plus votre problème.", exIt:"La gestione del sito non sarà più un suo problema.", ctx:"Promessa.", cat:"Solutions", ess:true},
+{fr:"La mise à jour", ipa:"/la miz a ʒuʁ/", it:"L'aggiornamento", ex:"Les mises à jour sont importantes pour la sécurité.", exIt:"Gli aggiornamenti sono importanti per la sicurezza.", ctx:"Servizio.", cat:"Solutions"},
+{fr:"Mettre à jour", ipa:"/mɛtʁ a ʒuʁ/", it:"Aggiornare", ex:"Je mets à jour le site chaque mois.", exIt:"Aggiorno il sito ogni mese.", ctx:"Verbo.", cat:"Solutions"},
+{fr:"La sauvegarde", ipa:"/la so.ɡaʁd/", it:"Il backup", ex:"La sauvegarde protège vos données.", exIt:"Il backup protegge i suoi dati.", ctx:"Servizio.", cat:"Solutions"},
+{fr:"La sécurité", ipa:"/la se.ky.ʁi.te/", it:"La sicurezza", ex:"La sécurité du site est primordiale.", exIt:"La sicurezza del sito è primordiale.", ctx:"Servizio.", cat:"Solutions"},
+{fr:"La formation", ipa:"/la fɔʁ.ma.sjɔ̃/", it:"La formazione", ex:"La formation de votre équipe est incluse.", exIt:"La formazione del suo team è inclusa.", ctx:"Servizio.", cat:"Solutions"},
+{fr:"Former", ipa:"/fɔʁ.me/", it:"Formare", ex:"Je peux former votre équipe à l'utilisation du site.", exIt:"Posso formare il suo team all'uso del sito.", ctx:"Azione.", cat:"Solutions"},
+{fr:"Accompagner", ipa:"/a.kɔ̃.pa.ɲe/", it:"Affiancare", ex:"Je vous accompagne dans la transition.", exIt:"La affianco nella transizione.", ctx:"Verbo chiave.", cat:"Solutions"},
+{fr:"Un accompagnement", ipa:"/œ̃ na.kɔ̃.paɲ.mɑ̃/", it:"Un affiancamento", ex:"L'accompagnement est inclus dans le service.", exIt:"L'affiancamento è incluso nel servizio.", ctx:"Sostantivo.", cat:"Solutions"},
+{fr:"Le service", ipa:"/lə sɛʁ.vis/", it:"Il servizio", ex:"Le service est mensuel.", exIt:"Il servizio è mensile.", ctx:"Base.", cat:"Solutions"},
+{fr:"Un service mensuel", ipa:"/œ̃ sɛʁ.vis mɑ̃.sɥɛl/", it:"Un servizio mensile", ex:"Un service mensuel vous garantit la tranquillité.", exIt:"Un servizio mensile le garantisce tranquillità.", ctx:"Offerta.", cat:"Solutions"},
+{fr:"Un abonnement", ipa:"/œ̃ na.bɔn.mɑ̃/", it:"Un abbonamento", ex:"L'abonnement inclut la maintenance et les modifications.", exIt:"L'abbonamento include manutenzione e modifiche.", ctx:"Modello ricorrente.", cat:"Solutions"},
+{fr:"Le rapport", ipa:"/lə ʁa.pɔʁ/", it:"Il report", ex:"Je vous envoie un rapport chaque mois.", exIt:"Le invio un report ogni mese.", ctx:"Servizio.", cat:"Solutions"},
+{fr:"Un audit", ipa:"/œ̃ no.dit/", it:"Un audit", ex:"Je peux faire un audit complet du site.", exIt:"Posso fare un audit completo del sito.", ctx:"Termine tecnico.", cat:"Solutions"},
+{fr:"Un audit du site", ipa:"/œ̃ no.dit dy sit/", it:"Un audit del sito", ex:"L'audit du site révèle plusieurs problèmes.", exIt:"L'audit del sito rivela diversi problemi.", ctx:"Servizio.", cat:"Solutions", ess:true},
+{fr:"Une analyse", ipa:"/yn a.na.liz/", it:"Un'analisi", ex:"Une analyse approfondie est nécessaire.", exIt:"È necessaria un'analisi approfondita.", ctx:"Servizio.", cat:"Solutions"},
+{fr:"Analyser", ipa:"/a.na.li.ze/", it:"Analizzare", ex:"J'ai analysé votre site en détail.", exIt:"Ho analizzato il suo sito in dettaglio.", ctx:"Verbo.", cat:"Solutions", ess:true},
+{fr:"Une recommandation", ipa:"/yn ʁə.kɔ.mɑ̃.da.sjɔ̃/", it:"Una raccomandazione", ex:"Voici mes recommandations.", exIt:"Ecco le mie raccomandazioni.", ctx:"Consegna.", cat:"Solutions"},
+{fr:"Un plan d'action", ipa:"/œ̃ plɑ̃ dak.sjɔ̃/", it:"Un piano d'azione", ex:"Je vous propose un plan d'action concret.", exIt:"Le propongo un piano d'azione concreto.", ctx:"Termine business.", cat:"Solutions", ess:true},
+{fr:"Une stratégie", ipa:"/yn stʁa.te.ʒi/", it:"Una strategia", ex:"On définit une stratégie ensemble.", exIt:"Definiamo una strategia insieme.", ctx:"Approccio.", cat:"Solutions"},
+{fr:"Un objectif", ipa:"/œ̃ nɔb.ʒɛk.tif/", it:"Un obiettivo", ex:"L'objectif est d'augmenter les demandes de devis.", exIt:"L'obiettivo è aumentare le richieste di preventivo.", ctx:"Goal.", cat:"Solutions"},
+{fr:"Le résultat", ipa:"/lə ʁe.zyl.ta/", it:"Il risultato", ex:"Le résultat sera visible en 2-3 mois.", exIt:"Il risultato sarà visibile in 2-3 mesi.", ctx:"Aspettativa.", cat:"Solutions"},
+{fr:"Les résultats", ipa:"/le ʁe.zyl.ta/", it:"I risultati", ex:"Les résultats seront mesurables.", exIt:"I risultati saranno misurabili.", ctx:"Metriche.", cat:"Solutions"},
+{fr:"Concret", ipa:"/kɔ̃.kʁɛ/", it:"Concreto", ex:"Une solution concrète et mesurable.", exIt:"Una soluzione concreta e misurabile.", ctx:"Aggettivo.", cat:"Solutions"},
+{fr:"Mesurable", ipa:"/mə.zy.ʁabl/", it:"Misurabile", ex:"Les résultats doivent être mesurables.", exIt:"I risultati devono essere misurabili.", ctx:"Aggettivo.", cat:"Solutions"},
+
+/* ---------- 8. PRIX & OFFRE ---------- */
+{fr:"Le prix", ipa:"/lə pʁi/", it:"Il prezzo", ex:"Le prix dépend de ce qu'on décide de faire.", exIt:"Il prezzo dipende da cosa decidiamo di fare.", ctx:"Frase per rimandare il prezzo.", cat:"Prix", ess:true},
+{fr:"Un devis", ipa:"/œ̃ də.vi/", it:"Un preventivo", ex:"Je vous prépare un devis détaillé.", exIt:"Le preparo un preventivo dettagliato.", ctx:"Documento commerciale.", cat:"Prix", ess:true},
+{fr:"Un tarif", ipa:"/œ̃ ta.ʁif/", it:"Una tariffa", ex:"Le tarif est fixé à 150 CHF par mois.", exIt:"La tariffa è fissata a 150 CHF al mese.", ctx:"Base.", cat:"Prix"},
+{fr:"Le budget", ipa:"/lə byd.ʒɛ/", it:"Il budget", ex:"Vous avez un budget en tête ?", exIt:"Ha un budget in mente?", ctx:"Domanda delicata.", cat:"Prix", ess:true},
+{fr:"Le coût", ipa:"/lə ku/", it:"Il costo", ex:"Le coût total est de 3 500 CHF.", exIt:"Il costo totale è di 3.500 CHF.", ctx:"Base.", cat:"Prix"},
+{fr:"Combien ça coûte ?", ipa:"/kɔ̃.bjɛ̃ sa kut/", it:"Quanto costa?", ex:"Combien ça coûte pour refaire le site ?", exIt:"Quanto costa rifare il sito?", ctx:"Domanda tipica del cliente.", cat:"Prix", ess:true},
+{fr:"Le prix dépend de…", ipa:"/lə pʁi de.pɑ̃ də/", it:"Il prezzo dipende da…", ex:"Le prix dépend de la solution choisie.", exIt:"Il prezzo dipende dalla soluzione scelta.", ctx:"Risposta all'obiezione.", cat:"Prix", ess:true},
+{fr:"Une offre", ipa:"/yn ɔfʁ/", it:"Un'offerta", ex:"Je vous fais une offre claire.", exIt:"Le faccio un'offerta chiara.", ctx:"Commerciale.", cat:"Prix"},
+{fr:"Une proposition", ipa:"/yn pʁɔ.po.zi.sjɔ̃/", it:"Una proposta", ex:"Voici ma proposition.", exIt:"Ecco la mia proposta.", ctx:"Commerciale.", cat:"Prix"},
+{fr:"Un forfait", ipa:"/œ̃ fɔʁ.fɛ/", it:"Un pacchetto / un forfait", ex:"Le forfait inclut le site et la maintenance.", exIt:"Il pacchetto include sito e manutenzione.", ctx:"Modello di prezzo.", cat:"Prix", ess:true},
+{fr:"Une option", ipa:"/yn ɔp.sjɔ̃/", it:"Un'opzione", ex:"La gestion des réseaux sociaux est une option.", exIt:"La gestione dei social è un'opzione.", ctx:"Upselling.", cat:"Prix"},
+{fr:"Une formule", ipa:"/yn fɔʁ.myl/", it:"Una formula", ex:"Je vous propose trois formules.", exIt:"Le propongo tre formule.", ctx:"Presentazione delle opzioni.", cat:"Prix"},
+{fr:"Le paiement en plusieurs fois", ipa:"/lə pɛ.mɑ̃ ɑ̃ ply.zjœʁ fwa/", it:"Il pagamento rateale", ex:"Le paiement en plusieurs fois est possible.", exIt:"Il pagamento rateale è possibile.", ctx:"Agevolazione.", cat:"Prix"},
+{fr:"Un investissement", ipa:"/œ̃ nɛ̃.vɛs.tis.mɑ̃/", it:"Un investimento", ex:"Ce n'est pas une dépense, c'est un investissement.", exIt:"Non è una spesa, è un investimento.", ctx:"Reframing del prezzo.", cat:"Prix", ess:true},
+{fr:"Rentable", ipa:"/ʁɑ̃.tabl/", it:"Redditizio", ex:"Le site doit être rentable.", exIt:"Il sito deve essere redditizio.", ctx:"Obiettivo.", cat:"Prix"},
+{fr:"Le retour sur investissement", ipa:"/lə ʁə.tuʁ syʁ ɛ̃.vɛs.tis.mɑ̃/", it:"Il ritorno sull'investimento", ex:"Le retour sur investissement est rapide.", exIt:"Il ritorno sull'investimento è rapido.", ctx:"ROI in sigla.", cat:"Prix"},
+{fr:"Un prix juste", ipa:"/œ̃ pʁi ʒyst/", it:"Un prezzo giusto", ex:"Je vous propose un prix juste, pas un prix au hasard.", exIt:"Le propongo un prezzo giusto, non un prezzo a caso.", ctx:"Frase chiave per giustificare il prezzo.", cat:"Prix", ess:true},
+{fr:"Un prix au hasard", ipa:"/œ̃ pʁi o a.zaʁ/", it:"Un prezzo a caso", ex:"Ce n'est pas un prix au hasard.", exIt:"Non è un prezzo a caso.", ctx:"Da contrapporre al prezzo giusto.", cat:"Prix"},
+{fr:"Sans engagement", ipa:"/sɑ̃ zɑ̃.ɡaʒ.mɑ̃/", it:"Senza impegno", ex:"C'est sans engagement.", exIt:"È senza impegno.", ctx:"Riduce la pressione.", cat:"Prix", ess:true},
+{fr:"Un devis détaillé", ipa:"/œ̃ də.vi de.taje/", it:"Un preventivo dettagliato", ex:"Je vous envoie un devis détaillé par email.", exIt:"Le invio un preventivo dettagliato via email.", ctx:"Documento.", cat:"Prix"},
+
+/* ---------- 9. RENDEZ-VOUS & SUIVI ---------- */
+{fr:"Un rendez-vous", ipa:"/œ̃ ʁɑ̃.de.vu/", it:"Un appuntamento", ex:"On peut prendre un rendez-vous ?", exIt:"Possiamo prendere un appuntamento?", ctx:"Base.", cat:"Rendez-vous", ess:true},
+{fr:"Prendre rendez-vous", ipa:"/pʁɑ̃dʁ ʁɑ̃.de.vu/", it:"Prendere un appuntamento", ex:"Je vous propose de prendre rendez-vous.", exIt:"Le propongo di prendere un appuntamento.", ctx:"Azione.", cat:"Rendez-vous", ess:true},
+{fr:"Fixer un rendez-vous", ipa:"/fik.se œ̃ ʁɑ̃.de.vu/", it:"Fissare un appuntamento", ex:"On fixe un rendez-vous pour jeudi ?", exIt:"Fissiamo un appuntamento per giovedì?", ctx:"Azione.", cat:"Rendez-vous", ess:true},
+{fr:"On se rappelle", ipa:"/ɔ̃ sə ʁa.pɛl/", it:"Ci richiamiamo", ex:"On se rappelle jeudi à 10h.", exIt:"Ci richiamiamo giovedì alle 10.", ctx:"Chiusura della chiamata.", cat:"Rendez-vous", ess:true},
+{fr:"Rappeler", ipa:"/ʁa.pə.le/", it:"Richiamare", ex:"Je vous rappelle demain matin.", exIt:"La richiamo domani mattina.", ctx:"Azione.", cat:"Rendez-vous"},
+{fr:"Je vous rappelle", ipa:"/ʒə vu ʁa.pɛl/", it:"La richiamo", ex:"Je vous rappelle jeudi à 10h.", exIt:"La richiamo giovedì alle 10.", ctx:"Impegno.", cat:"Rendez-vous", ess:true},
+{fr:"Qu'est-ce qui vous arrange ?", ipa:"/kɛs ki vu za.ʁɑ̃ʒ/", it:"Cosa le fa comodo?", ex:"Jeudi à 10h ou vendredi à 14h, qu'est-ce qui vous arrange ?", exIt:"Giovedì alle 10 o venerdì alle 14, cosa le fa comodo?", ctx:"Formula per fissare.", cat:"Rendez-vous", ess:true},
+{fr:"Ça vous convient ?", ipa:"/sa vu kɔ̃.vjɛ̃/", it:"Le va bene?", ex:"Jeudi à 10h, ça vous convient ?", exIt:"Giovedì alle 10, le va bene?", ctx:"Conferma.", cat:"Rendez-vous", ess:true},
+{fr:"Jeudi à dix heures", ipa:"/ʒø.di a di zœʁ/", it:"Giovedì alle dieci", ex:"Jeudi à dix heures, c'est parfait pour moi.", exIt:"Giovedì alle dieci, è perfetto per me.", ctx:"Formula oraria.", cat:"Rendez-vous"},
+{fr:"Vendredi à quatorze heures", ipa:"/vɑ̃.dʁə.di a ka.tɔʁ.z‿œʁ/", it:"Venerdì alle quattordici", ex:"Vendredi à quatorze heures, ça marche.", exIt:"Venerdì alle quattordici, va bene.", ctx:"Formula oraria.", cat:"Rendez-vous"},
+{fr:"La semaine prochaine", ipa:"/la sə.mɛn pʁɔ.ʃɛn/", it:"La prossima settimana", ex:"On peut se rappeler la semaine prochaine.", exIt:"Possiamo richiamarci la prossima settimana.", ctx:"Tempo.", cat:"Rendez-vous"},
+{fr:"Demain", ipa:"/də.mɛ̃/", it:"Domani", ex:"Je vous envoie la vidéo aujourd'hui, et on se rappelle demain.", exIt:"Le invio il video oggi, e ci richiamiamo domani.", ctx:"Tempo.", cat:"Rendez-vous"},
+{fr:"Aujourd'hui", ipa:"/o.ʒuʁ.dɥi/", it:"Oggi", ex:"Je vous envoie la vidéo aujourd'hui.", exIt:"Le invio il video oggi.", ctx:"Tempo.", cat:"Rendez-vous"},
+{fr:"Un email", ipa:"/œ̃ ni.mɛl/", it:"Un'email", ex:"Je vous envoie un email avec le lien.", exIt:"Le invio un'email con il link.", ctx:"Comunicazione.", cat:"Rendez-vous"},
+{fr:"Envoyer un email", ipa:"/ɑ̃.vwa.je œ̃ ni.mɛl/", it:"Inviare un'email", ex:"Je vais vous envoyer un email dans l'heure.", exIt:"Le invio un'email entro un'ora.", ctx:"Azione.", cat:"Rendez-vous", ess:true},
+{fr:"Une adresse email", ipa:"/yn a.dʁɛs i.mɛl/", it:"Un indirizzo email", ex:"À quelle adresse email je vous envoie la vidéo ?", exIt:"A quale indirizzo email le invio il video?", ctx:"Domanda pratica.", cat:"Rendez-vous", ess:true},
+{fr:"Je vous l'envoie dans l'heure", ipa:"/ʒə vu lɑ̃.vwa dɑ̃ lœʁ/", it:"Glielo invio entro un'ora", ex:"Parfait, je vous l'envoie dans l'heure.", exIt:"Perfetto, glielo invio entro un'ora.", ctx:"Impegno concreto.", cat:"Rendez-vous", ess:true},
+{fr:"Vous avez bien reçu ?", ipa:"/vu za.ve bjɛ̃ ʁə.sy/", it:"Ha ricevuto bene?", ex:"Vous avez bien reçu mon email ?", exIt:"Ha ricevuto bene la mia email?", ctx:"Verifica.", cat:"Rendez-vous"},
+{fr:"Un rappel", ipa:"/œ̃ ʁa.pɛl/", it:"Un promemoria", ex:"Je vous envoie un rappel par SMS.", exIt:"Le invio un promemoria via SMS.", ctx:"Servizio.", cat:"Rendez-vous"},
+{fr:"Un SMS de rappel", ipa:"/œ̃ ɛs.ɛm.ɛs də ʁa.pɛl/", it:"Un SMS di promemoria", ex:"Un SMS de rappel sera envoyé la veille.", exIt:"Un SMS di promemoria sarà inviato il giorno prima.", ctx:"Servizio.", cat:"Rendez-vous"},
+{fr:"Le compte-rendu", ipa:"/lə kɔ̃t ʁɑ̃.dy/", it:"Il resoconto", ex:"Je vous envoie un compte-rendu de notre échange.", exIt:"Le invio un resoconto del nostro scambio.", ctx:"Documento.", cat:"Rendez-vous"},
+{fr:"Un résumé", ipa:"/œ̃ ʁe.zy.me/", it:"Un riassunto", ex:"Voici un résumé de ce qu'on a dit.", exIt:"Ecco un riassunto di ciò che ci siamo detti.", ctx:"Documento.", cat:"Rendez-vous"},
+{fr:"La prochaine étape", ipa:"/la pʁɔ.ʃɛn e.tap/", it:"Il prossimo passo", ex:"La prochaine étape, c'est la vidéo.", exIt:"Il prossimo passo è il video.", ctx:"Processo.", cat:"Rendez-vous", ess:true},
+
+/* ---------- 10. GESTION DES OBJECTIONS ---------- */
+{fr:"Je comprends parfaitement", ipa:"/ʒə kɔ̃.pʁɑ̃ paʁ.fɛt.mɑ̃/", it:"Capisco perfettamente", ex:"Je comprends parfaitement votre point de vue.", exIt:"Capisco perfettamente il suo punto di vista.", ctx:"Empatia.", cat:"Objections", ess:true},
+{fr:"Ne vous inquiétez pas", ipa:"/nə vu zɛ̃.kje.te pa/", it:"Non si preoccupi", ex:"Ne vous inquiétez pas, c'est sans engagement.", exIt:"Non si preoccupi, è senza impegno.", ctx:"Rassicurazione.", cat:"Objections", ess:true},
+{fr:"C'est une bonne question", ipa:"/sɛ tyn bɔn kɛs.tjɔ̃/", it:"È una buona domanda", ex:"C'est une bonne question. Le prix dépend de ce qu'on décide.", exIt:"È una buona domanda. Il prezzo dipende da cosa decidiamo.", ctx:"Riconoscere l'obiezione.", cat:"Objections", ess:true},
+{fr:"C'est possible", ipa:"/sɛ pɔ.sibl/", it:"È possibile", ex:"C'est possible, mais il faut vérifier.", exIt:"È possibile, ma bisogna verificare.", ctx:"Risposta morbida.", cat:"Objections"},
+{fr:"Ça dépend de…", ipa:"/sa de.pɑ̃ də/", it:"Dipende da…", ex:"Ça dépend de la solution choisie.", exIt:"Dipende dalla soluzione scelta.", ctx:"Risposta all'obiezione sul prezzo.", cat:"Objections", ess:true},
+{fr:"Si vous voulez", ipa:"/si vu vu.le/", it:"Se vuole", ex:"Si vous voulez, on peut en reparler tranquillement.", exIt:"Se vuole, ne possiamo riparlare con calma.", ctx:"Morbidezza.", cat:"Objections"},
+{fr:"On en reparlera", ipa:"/ɔ̃ nɑ̃ ʁə.paʁ.lə.ʁa/", it:"Ne riparleremo", ex:"On en reparlera tranquillement.", exIt:"Ne riparleremo con calma.", ctx:"Differire.", cat:"Objections", ess:true},
+{fr:"Tranquillement", ipa:"/tʁɑ̃.kil.mɑ̃/", it:"Con calma", ex:"On en parle tranquillement.", exIt:"Ne parliamo con calma.", ctx:"Avverbio utile.", cat:"Objections"},
+{fr:"Sans pression", ipa:"/sɑ̃ pʁɛ.sjɔ̃/", it:"Senza pressione", ex:"C'est sans pression.", exIt:"È senza pressione.", ctx:"Rassicurazione.", cat:"Objections"},
+{fr:"Je ne veux pas vous vendre quelque chose", ipa:"/ʒə nə vø pa vu vɑ̃dʁ kɛl.kə ʃoz/", it:"Non voglio venderle qualcosa", ex:"Je ne veux pas vous vendre quelque chose, je veux comprendre votre situation.", exIt:"Non voglio venderle qualcosa, voglio capire la sua situazione.", ctx:"Disarmare la diffidenza.", cat:"Objections", ess:true},
+{fr:"Je veux comprendre votre situation", ipa:"/ʒə vø kɔ̃.pʁɑ̃dʁ vɔtʁ si.tɥa.sjɔ̃/", it:"Voglio capire la sua situazione", ex:"Avant tout, je veux comprendre votre situation.", exIt:"Prima di tutto, voglio capire la sua situazione.", ctx:"Approccio consulenziale.", cat:"Objections", ess:true},
+{fr:"C'est justement pour ça", ipa:"/sɛ ʒys.tə.mɑ̃ puʁ sa/", it:"È proprio per questo", ex:"C'est justement pour ça que je vous propose la vidéo.", exIt:"È proprio per questo che le propongo il video.", ctx:"Aggancio.", cat:"Objections", ess:true},
+{fr:"Vous avez raison", ipa:"/vu za.ve ʁɛ.zɔ̃/", it:"Ha ragione", ex:"Vous avez raison, c'est important.", exIt:"Ha ragione, è importante.", ctx:"Validare.", cat:"Objections"},
+{fr:"Je note", ipa:"/ʒə nɔt/", it:"Annoto", ex:"Je note, c'est un point important.", exIt:"Annoto, è un punto importante.", ctx:"Far vedere che ascolti.", cat:"Objections"},
+{fr:"Bonne remarque", ipa:"/bɔn ʁə.maʁk/", it:"Buona osservazione", ex:"Bonne remarque, je vais vérifier.", exIt:"Buona osservazione, verifico.", ctx:"Validare.", cat:"Objections"},
+{fr:"Laissez-moi vérifier", ipa:"/lɛ.se mwa ve.ʁi.fje/", it:"Mi lasci verificare", ex:"Laissez-moi vérifier et je reviens vers vous.", exIt:"Mi lasci verificare e torno da lei.", ctx:"Gestione.", cat:"Objections"},
+{fr:"Je reviens vers vous", ipa:"/ʒə ʁə.vjɛ̃ vɛʁ vu/", it:"Torno da lei", ex:"Je reviens vers vous rapidement.", exIt:"Torno da lei rapidamente.", ctx:"Formula business.", cat:"Objections", ess:true},
+{fr:"On peut en parler", ipa:"/ɔ̃ pø tɑ̃ paʁ.le/", it:"Possiamo parlarne", ex:"On peut en parler jeudi.", exIt:"Possiamo parlarne giovedì.", ctx:"Proposta.", cat:"Objections"},
+{fr:"Qu'est-ce que vous en pensez ?", ipa:"/kɛs kə vu zɑ̃ pɑ̃.se/", it:"Cosa ne pensa?", ex:"Qu'est-ce que vous en pensez ?", exIt:"Cosa ne pensa?", ctx:"Coinvolgere.", cat:"Objections", ess:true},
+{fr:"Ça vous parle ?", ipa:"/sa vu paʁl/", it:"Le dice qualcosa?", ex:"Ça vous parle, ce problème ?", exIt:"Le dice qualcosa, questo problema?", ctx:"Verifica.", cat:"Objections"},
+{fr:"Vous voyez ce que je veux dire ?", ipa:"/vu vwa.je sə kə ʒə vø diʁ/", it:"Capisce cosa intendo?", ex:"Vous voyez ce que je veux dire ?", exIt:"Capisce cosa intendo?", ctx:"Verifica.", cat:"Objections"},
+
+/* ---------- 11. EXPRESSIONS DE TRANSITION ---------- */
+{fr:"Tout d'abord", ipa:"/tu da.bɔʁ/", it:"Prima di tutto", ex:"Tout d'abord, je vais vous montrer les problèmes.", exIt:"Prima di tutto, le mostro i problemi.", ctx:"Struttura del video.", cat:"Transitions", ess:true},
+{fr:"Ensuite", ipa:"/ɑ̃.sɥit/", it:"Poi", ex:"Ensuite, je vous propose une solution.", exIt:"Poi, le propongo una soluzione.", ctx:"Struttura.", cat:"Transitions"},
+{fr:"En fait", ipa:"/ɑ̃ fɛt/", it:"In effetti", ex:"En fait, le problème est plus profond.", exIt:"In effetti, il problema è più profondo.", ctx:"Transizione.", cat:"Transitions", ess:true},
+{fr:"Par exemple", ipa:"/paʁ ɛɡ.zɑ̃pl/", it:"Per esempio", ex:"Par exemple, la page contact ne fonctionne pas.", exIt:"Per esempio, la pagina contatti non funziona.", ctx:"Esempio.", cat:"Transitions", ess:true},
+{fr:"C'est-à-dire", ipa:"/sɛ ta diʁ/", it:"Cioè", ex:"C'est-à-dire que le client ne trouve pas.", exIt:"Cioè che il cliente non trova.", ctx:"Chiarimento.", cat:"Transitions"},
+{fr:"Autrement dit", ipa:"/o.tʁə.mɑ̃ di/", it:"In altre parole", ex:"Autrement dit, vous perdez de l'argent.", exIt:"In altre parole, perde soldi.", ctx:"Riformulazione.", cat:"Transitions"},
+{fr:"En résumé", ipa:"/ɑ̃ ʁe.zy.me/", it:"In sintesi", ex:"En résumé, il y a trois problèmes principaux.", exIt:"In sintesi, ci sono tre problemi principali.", ctx:"Sintesi.", cat:"Transitions", ess:true},
+{fr:"Pour résumer", ipa:"/puʁ ʁe.zy.me/", it:"Per riassumere", ex:"Pour résumer, voici ce que je propose.", exIt:"Per riassumere, ecco cosa propongo.", ctx:"Sintesi.", cat:"Transitions"},
+{fr:"En conclusion", ipa:"/ɑ̃ kɔ̃.kly.zjɔ̃/", it:"In conclusione", ex:"En conclusion, je vous propose un appel.", exIt:"In conclusione, le propongo una chiamata.", ctx:"Chiusura.", cat:"Transitions"},
+{fr:"Justement", ipa:"/ʒys.tə.mɑ̃/", it:"Appunto", ex:"Justement, j'ai remarqué la même chose.", exIt:"Appunto, ho notato la stessa cosa.", ctx:"Connessione.", cat:"Transitions"},
+{fr:"Effectivement", ipa:"/e.fɛk.tiv.mɑ̃/", it:"Effettivamente", ex:"Effectivement, c'est un problème.", exIt:"Effettivamente, è un problema.", ctx:"Conferma.", cat:"Transitions"},
+{fr:"D'ailleurs", ipa:"/da.jœʁ/", it:"Tra l'altro", ex:"D'ailleurs, la version mobile est encore plus lente.", exIt:"Tra l'altro, la versione mobile è ancora più lenta.", ctx:"Aggiunta.", cat:"Transitions"},
+{fr:"Cependant", ipa:"/sə.pɑ̃.dɑ̃/", it:"Tuttavia", ex:"Cependant, il y a une solution.", exIt:"Tuttavia, c'è una soluzione.", ctx:"Contrapposizione.", cat:"Transitions"},
+{fr:"Par contre", ipa:"/paʁ kɔ̃tʁ/", it:"Invece", ex:"Par contre, le SEO est faible.", exIt:"Invece, la SEO è debole.", ctx:"Contrapposizione.", cat:"Transitions"},
+{fr:"Par ailleurs", ipa:"/paʁ a.jœʁ/", it:"Inoltre", ex:"Par ailleurs, les filtres manquent.", exIt:"Inoltre, mancano i filtri.", ctx:"Aggiunta.", cat:"Transitions"},
+{fr:"De plus", ipa:"/də plys/", it:"In più", ex:"De plus, le site est lent.", exIt:"In più, il sito è lento.", ctx:"Aggiunta.", cat:"Transitions"},
+{fr:"En revanche", ipa:"/ɑ̃ ʁə.vɑ̃ʃ/", it:"Invece", ex:"En revanche, le design est correct.", exIt:"Invece, il design è corretto.", ctx:"Contrapposizione.", cat:"Transitions"},
+{fr:"Donc", ipa:"/dɔ̃k/", it:"Quindi", ex:"Donc, on a trois problèmes.", exIt:"Quindi, abbiamo tre problemi.", ctx:"Conclusione.", cat:"Transitions"},
+{fr:"Alors", ipa:"/a.lɔʁ/", it:"Allora", ex:"Alors, qu'est-ce qu'on fait ?", exIt:"Allora, cosa facciamo?", ctx:"Transizione.", cat:"Transitions"},
+{fr:"Voilà", ipa:"/vwa.la/", it:"Ecco", ex:"Voilà ce que j'ai trouvé.", exIt:"Ecco cosa ho trovato.", ctx:"Presentazione.", cat:"Transitions", ess:true},
+
+/* ---------- 12. MARCHÉ SUISSE & CHIFFRES ---------- */
+{fr:"Le marché", ipa:"/lə maʁ.ʃe/", it:"Il mercato", ex:"Le marché suisse est en baisse.", exIt:"Il mercato svizzero è in calo.", ctx:"Contesto.", cat:"Marché suisse", ess:true},
+{fr:"Le marché suisse", ipa:"/lə maʁ.ʃe sɥis/", it:"Il mercato svizzero", ex:"Le marché suisse est le plus riche d'Europe.", exIt:"Il mercato svizzero è il più ricco d'Europa.", ctx:"Contesto.", cat:"Marché suisse", ess:true},
+{fr:"En Suisse", ipa:"/ɑ̃ sɥis/", it:"In Svizzera", ex:"En Suisse, 52 % des achats en ligne se font sur mobile.", exIt:"In Svizzera, il 52% degli acquisti online avviene da mobile.", ctx:"Dato chiave.", cat:"Marché suisse", ess:true},
+{fr:"Le canton", ipa:"/lə kɑ̃.tɔ̃/", it:"Il cantone", ex:"Le canton de Vaud est un marché important.", exIt:"Il cantone di Vaud è un mercato importante.", ctx:"Divisione amministrativa svizzera.", cat:"Marché suisse"},
+{fr:"Lausanne", ipa:"/lo.zan/", it:"Losanna", ex:"Le magasin est situé à Lausanne.", exIt:"Il negozio si trova a Losanna.", ctx:"Città del cliente.", cat:"Marché suisse", ess:true},
+{fr:"Genève", ipa:"/ʒə.nɛv/", it:"Ginevra", ex:"Genève est un marché premium.", exIt:"Ginevra è un mercato premium.", ctx:"Città svizzera.", cat:"Marché suisse"},
+{fr:"Le pourcentage", ipa:"/lə puʁ.sɑ̃.taʒ/", it:"La percentuale", ex:"Le pourcentage de croissance est élevé.", exIt:"La percentuale di crescita è alta.", ctx:"Dato.", cat:"Marché suisse"},
+{fr:"Pour cent", ipa:"/puʁ sɑ̃/", it:"Per cento", ex:"Une croissance de 30 pour cent.", exIt:"Una crescita del 30 per cento.", ctx:"Dato.", cat:"Marché suisse"},
+{fr:"La croissance", ipa:"/la kʁwa.sɑ̃s/", it:"La crescita", ex:"Le segment gravel est en croissance.", exIt:"Il segmento gravel è in crescita.", ctx:"Dato.", cat:"Marché suisse", ess:true},
+{fr:"En croissance", ipa:"/ɑ̃ kʁwa.sɑ̃s/", it:"In crescita", ex:"Le gravel est en forte croissance.", exIt:"Il gravel è in forte crescita.", ctx:"Dato.", cat:"Marché suisse", ess:true},
+{fr:"La baisse", ipa:"/la bɛs/", it:"Il calo", ex:"Le marché est en baisse de 7,4 %.", exIt:"Il mercato è in calo del 7,4%.", ctx:"Dato.", cat:"Marché suisse"},
+{fr:"En baisse", ipa:"/ɑ̃ bɛs/", it:"In calo", ex:"Le marché global est en baisse.", exIt:"Il mercato globale è in calo.", ctx:"Dato.", cat:"Marché suisse"},
+{fr:"Le segment", ipa:"/lə sɛɡ.mɑ̃/", it:"Il segmento", ex:"Le segment gravel représente 7,6 % du marché.", exIt:"Il segmento gravel rappresenta il 7,6% del mercato.", ctx:"Dato.", cat:"Marché suisse", ess:true},
+{fr:"Le segment gravel", ipa:"/lə sɛɡ.mɑ̃ ɡʁa.vɛl/", it:"Il segmento gravel", ex:"Le segment gravel est le plus dynamique.", exIt:"Il segmento gravel è il più dinamico.", ctx:"Dato.", cat:"Marché suisse", ess:true},
+{fr:"Le segment sportif", ipa:"/lə sɛɡ.mɑ̃ spɔʁ.tif/", it:"Il segmento sportivo", ex:"Le segment sportif résiste à la baisse.", exIt:"Il segmento sportivo resiste al calo.", ctx:"Dato.", cat:"Marché suisse", ess:true},
+{fr:"Le haut de gamme", ipa:"/lə o də ɡam/", it:"L'alta gamma", ex:"Le haut de gamme est moins touché par la crise.", exIt:"L'alta gamma è meno colpita dalla crisi.", ctx:"Dato.", cat:"Marché suisse", ess:true},
+{fr:"Le moyen de gamme", ipa:"/lə mwa.jɛ̃ də ɡam/", it:"La media gamma", ex:"Le moyen de gamme souffre le plus.", exIt:"La media gamma soffre di più.", ctx:"Dato.", cat:"Marché suisse"},
+{fr:"Les chiffres", ipa:"/le ʃifʁ/", it:"I numeri", ex:"Les chiffres parlent d'eux-mêmes.", exIt:"I numeri parlano da soli.", ctx:"Argomento.", cat:"Marché suisse"},
+{fr:"Les statistiques", ipa:"/le sta.tis.tik/", it:"Le statistiche", ex:"Les statistiques montrent une croissance.", exIt:"Le statistiche mostrano una crescita.", ctx:"Dato.", cat:"Marché suisse"},
+{fr:"Une étude", ipa:"/yn e.tyd/", it:"Uno studio", ex:"Une étude récente confirme la tendance.", exIt:"Uno studio recente conferma la tendenza.", ctx:"Fonte.", cat:"Marché suisse"},
+{fr:"Une enquête", ipa:"/yn ɑ̃.kɛt/", it:"Un'indagine", ex:"Une enquête de Velosuisse montre la tendance.", exIt:"Un'indagine di Velosuisse mostra la tendenza.", ctx:"Fonte.", cat:"Marché suisse"},
+{fr:"Un rapport", ipa:"/œ̃ ʁa.pɔʁ/", it:"Un rapporto", ex:"Un rapport annuel est publié.", exIt:"Viene pubblicato un rapporto annuale.", ctx:"Fonte.", cat:"Marché suisse"},
+{fr:"Les données du marché", ipa:"/le dɔ.ne dy maʁ.ʃe/", it:"I dati di mercato", ex:"Les données du marché sont claires.", exIt:"I dati di mercato sono chiari.", ctx:"Fonte.", cat:"Marché suisse"},
+{fr:"Les ventes", ipa:"/le vɑ̃t/", it:"Le vendite", ex:"Les ventes de gravel ont augmenté d'un tiers.", exIt:"Le vendite di gravel sono aumentate di un terzo.", ctx:"Dato.", cat:"Marché suisse", ess:true},
+{fr:"Une unité", ipa:"/yn y.ni.te/", it:"Un'unità", ex:"21 702 unités de gravel vendues.", exIt:"21.702 unità di gravel vendute.", ctx:"Dato.", cat:"Marché suisse"},
+{fr:"Le volume", ipa:"/lə vɔ.lym/", it:"Il volume", ex:"Le volume total est de 316 000 vélos.", exIt:"Il volume totale è di 316.000 bici.", ctx:"Dato.", cat:"Marché suisse"},
+{fr:"La part de marché", ipa:"/la paʁ də maʁ.ʃe/", it:"La quota di mercato", ex:"La part de marché du gravel augmente.", exIt:"La quota di mercato del gravel aumenta.", ctx:"Dato.", cat:"Marché suisse"},
+{fr:"L'augmentation", ipa:"/loɡ.mɑ̃.ta.sjɔ̃/", it:"L'aumento", ex:"L'augmentation est de 33 %.", exIt:"L'aumento è del 33%.", ctx:"Dato.", cat:"Marché suisse"},
+{fr:"La diminution", ipa:"/la di.mi.ny.sjɔ̃/", it:"La diminuzione", ex:"La diminution est de 7,4 %.", exIt:"La diminuzione è del 7,4%.", ctx:"Dato.", cat:"Marché suisse"},
+{fr:"Une augmentation de 30 %", ipa:"/yn oɡ.mɑ̃.ta.sjɔ̃ də tʁɑ̃t puʁ sɑ̃/", it:"Un aumento del 30%", ex:"Une augmentation de 30 % en un an.", exIt:"Un aumento del 30% in un anno.", ctx:"Dato.", cat:"Marché suisse"},
+{fr:"Doubler", ipa:"/du.ble/", it:"Raddoppiare", ex:"Les ventes d'e-gravel ont doublé.", exIt:"Le vendite di e-gravel sono raddoppiate.", ctx:"Dato.", cat:"Marché suisse", ess:true},
+
+/* ---------- 13. VAE & GRAVEL SPECIFICS ---------- */
+{fr:"L'assistance électrique", ipa:"/la.sis.tɑ̃s e.lɛk.tʁik/", it:"L'assistenza elettrica", ex:"L'assistance électrique est légère.", exIt:"L'assistenza elettrica è leggera.", ctx:"Tecnico.", cat:"VAE & Gravel", ess:true},
+{fr:"Le moteur", ipa:"/lə mɔ.tœʁ/", it:"Il motore", ex:"Le moteur est intégré dans le cadre.", exIt:"Il motore è integrato nel telaio.", ctx:"Tecnico.", cat:"VAE & Gravel", ess:true},
+{fr:"Le moteur central", ipa:"/lə mɔ.tœʁ sɑ̃.tʁal/", it:"Il motore centrale", ex:"Un moteur central offre un meilleur équilibre.", exIt:"Un motore centrale offre un migliore equilibrio.", ctx:"Tecnico.", cat:"VAE & Gravel"},
+{fr:"Le moteur dans le moyeu", ipa:"/lə mɔ.tœʁ dɑ̃ lə mwa.jø/", it:"Il motore nel mozzo", ex:"Un moteur dans le moyeu est plus discret.", exIt:"Un motore nel mozzo è più discreto.", ctx:"Tecnico.", cat:"VAE & Gravel"},
+{fr:"La batterie", ipa:"/la ba.tʁi/", it:"La batteria", ex:"La batterie offre 360 Wh.", exIt:"La batteria offre 360 Wh.", ctx:"Tecnico.", cat:"VAE & Gravel", ess:true},
+{fr:"La batterie intégrée", ipa:"/la ba.tʁi ɛ̃.te.ɡʁe/", it:"La batteria integrata", ex:"La batterie intégrée est invisible.", exIt:"La batteria integrata è invisibile.", ctx:"Tecnico.", cat:"VAE & Gravel"},
+{fr:"La batterie amovible", ipa:"/la ba.tʁi a.mɔ.vibl/", it:"La batteria rimovibile", ex:"La batterie amovible est pratique.", exIt:"La batteria rimovibile è pratica.", ctx:"Tecnico.", cat:"VAE & Gravel", ess:true},
+{fr:"L'autonomie", ipa:"/lo.tɔ.nɔ.mi/", it:"L'autonomia", ex:"L'autonomie peut atteindre 100 km.", exIt:"L'autonomia può raggiungere i 100 km.", ctx:"Tecnico.", cat:"VAE & Gravel", ess:true},
+{fr:"La puissance", ipa:"/la pɥi.sɑ̃s/", it:"La potenza", ex:"La puissance du moteur est de 250 W.", exIt:"La potenza del motore è di 250 W.", ctx:"Tecnico.", cat:"VAE & Gravel"},
+{fr:"Le couple", ipa:"/lə kupl/", it:"La coppia", ex:"Le couple est de 85 Nm.", exIt:"La coppia è di 85 Nm.", ctx:"Tecnico.", cat:"VAE & Gravel", ess:true},
+{fr:"Les Newton-mètres", ipa:"/le nju.tɔn mɛtʁ/", it:"I Newton-metri", ex:"Le couple s'exprime en Newton-mètres.", exIt:"La coppia si esprime in Newton-metri.", ctx:"Tecnico.", cat:"VAE & Gravel"},
+{fr:"Le watt", ipa:"/lə wat/", it:"Il watt", ex:"Le moteur délivre 250 watts.", exIt:"Il motore eroga 250 watt.", ctx:"Tecnico.", cat:"VAE & Gravel"},
+{fr:"Le watt-heure", ipa:"/lə wa.tœʁ/", it:"Il wattora", ex:"La batterie fait 800 Wh.", exIt:"La batteria è da 800 Wh.", ctx:"Tecnico.", cat:"VAE & Gravel"},
+{fr:"Recharger", ipa:"/ʁə.ʃaʁ.ʒe/", it:"Ricaricare", ex:"Il faut recharger la batterie.", exIt:"Bisogna ricaricare la batteria.", ctx:"Verbo.", cat:"VAE & Gravel"},
+{fr:"Le chargeur", ipa:"/lə ʃaʁ.ʒœʁ/", it:"Il caricatore", ex:"Le chargeur est fourni.", exIt:"Il caricatore è fornito.", ctx:"Oggetto.", cat:"VAE & Gravel"},
+{fr:"L'écran", ipa:"/le.kʁɑ̃/", it:"Lo schermo", ex:"L'écran affiche le niveau de batterie.", exIt:"Lo schermo mostra il livello della batteria.", ctx:"Componente.", cat:"VAE & Gravel"},
+{fr:"Le mode d'assistance", ipa:"/lə mɔd da.sis.tɑ̃s/", it:"La modalità di assistenza", ex:"Il y a quatre modes d'assistance.", exIt:"Ci sono quattro modalità di assistenza.", ctx:"Tecnico.", cat:"VAE & Gravel"},
+{fr:"L'assistance légère", ipa:"/la.sis.tɑ̃s le.ʒɛʁ/", it:"L'assistenza leggera", ex:"L'assistance légère est parfaite pour le gravel.", exIt:"L'assistenza leggera è perfetta per il gravel.", ctx:"Light e-MTB.", cat:"VAE & Gravel", ess:true},
+{fr:"Light e-MTB", ipa:"/lajt e ɛm te be/", it:"Light e-MTB", ex:"Les light e-MTB pèsent moins de 18 kg.", exIt:"Le light e-MTB pesano meno di 18 kg.", ctx:"Categoria.", cat:"VAE & Gravel", ess:true},
+{fr:"Full power", ipa:"/ful pa.wœʁ/", it:"Full power", ex:"Les full power sont plus lourds mais plus puissants.", exIt:"Le full power sono più pesanti ma più potenti.", ctx:"Categoria.", cat:"VAE & Gravel"},
+{fr:"Le gravel", ipa:"/lə ɡʁa.vɛl/", it:"Il gravel", ex:"Le gravel est un segment en pleine expansion.", exIt:"Il gravel è un segmento in piena espansione.", ctx:"Categoria.", cat:"VAE & Gravel", ess:true},
+{fr:"Un vélo gravel", ipa:"/œ̃ ve.lo ɡʁa.vɛl/", it:"Una bici gravel", ex:"Un vélo gravel peut tout faire.", exIt:"Una bici gravel può fare tutto.", ctx:"Categoria.", cat:"VAE & Gravel", ess:true},
+{fr:"La pratique du gravel", ipa:"/la pʁa.tik dy ɡʁa.vɛl/", it:"La pratica del gravel", ex:"La pratique du gravel séduit de plus en plus.", exIt:"La pratica del gravel conquista sempre più persone.", ctx:"Tendenza.", cat:"VAE & Gravel"},
+{fr:"Le gravel électrique", ipa:"/lə ɡʁa.vɛl e.lɛk.tʁik/", it:"L'e-gravel", ex:"Le gravel électrique a doublé ses ventes.", exIt:"L'e-gravel ha raddoppiato le vendite.", ctx:"Categoria.", cat:"VAE & Gravel", ess:true},
+{fr:"Les chemins de terre", ipa:"/le ʃə.mɛ̃ də tɛʁ/", it:"I sentieri sterrati", ex:"Le gravel est fait pour les chemins de terre.", exIt:"Il gravel è fatto per i sentieri sterrati.", ctx:"Terreno.", cat:"VAE & Gravel"},
+{fr:"La route", ipa:"/la ʁut/", it:"La strada", ex:"Le gravel passe de la route aux chemins.", exIt:"Il gravel passa dalla strada ai sentieri.", ctx:"Terreno.", cat:"VAE & Gravel"},
+{fr:"L'asphalte", ipa:"/la.sfalt/", it:"L'asfalto", ex:"Sur l'asphalte, le gravel reste rapide.", exIt:"Sull'asfalto, il gravel resta veloce.", ctx:"Terreno.", cat:"VAE & Gravel"},
+{fr:"Le gravier", ipa:"/lə ɡʁa.vje/", it:"La ghiaia", ex:"Le gravier est le terrain de prédilection du gravel.", exIt:"La ghiaia è il terreno preferito del gravel.", ctx:"Terreno.", cat:"VAE & Gravel", ess:true},
+{fr:"Le tout-terrain", ipa:"/lə tu tɛ.ʁɛ̃/", it:"Il fuoristrada", ex:"Le tout-terrain demande plus de polyvalence.", exIt:"Il fuoristrada richiede più versatilità.", ctx:"Terreno.", cat:"VAE & Gravel"},
+{fr:"Le bikepacking", ipa:"/lə bajk.pa.kiŋ/", it:"Il bikepacking", ex:"Le bikepacking est une pratique en vogue.", exIt:"Il bikepacking è una pratica di moda.", ctx:"Tendenza.", cat:"VAE & Gravel", ess:true},
+{fr:"Les sacoches", ipa:"/le sa.kɔʃ/", it:"Le borse (per bici)", ex:"Les sacoches se fixent au cadre.", exIt:"Le borse si fissano al telaio.", ctx:"Accessori.", cat:"VAE & Gravel"},
+{fr:"Le porte-bagages", ipa:"/lə pɔʁt ba.ɡaʒ/", it:"Il portapacchi", ex:"Le porte-bagages est indispensable pour le bikepacking.", exIt:"Il portapacchi è indispensabile per il bikepacking.", ctx:"Accessori.", cat:"VAE & Gravel"},
+{fr:"La position de conduite", ipa:"/la pɔ.zi.sjɔ̃ də kɔ̃.dɥit/", it:"La posizione di guida", ex:"La position de conduite est plus droite.", exIt:"La posizione di guida è più eretta.", ctx:"Ergonomia.", cat:"VAE & Gravel"},
+{fr:"Les pneus larges", ipa:"/le pnø laʁʒ/", it:"I pneumatici larghi", ex:"Les pneus larges offrent plus de confort.", exIt:"I pneumatici larghi offrono più comfort.", ctx:"Tecnico.", cat:"VAE & Gravel", ess:true},
+
+/* ---------- 14. AU TÉLÉPHONE ---------- */
+{fr:"Allô ?", ipa:"/a.lo/", it:"Pronto?", ex:"Allô ? Bonjour, je suis bien chez [magasin] ?", exIt:"Pronto? Buongiorno, sono da [negozio]?", ctx:"Apertura telefonica.", cat:"Téléphone", ess:true},
+{fr:"Je suis bien chez… ?", ipa:"/ʒə sɥi bjɛ̃ ʃe/", it:"Sono da…?", ex:"Je suis bien chez Bicycles Shop ?", exIt:"Sono da Bicycles Shop?", ctx:"Verifica del numero.", cat:"Téléphone", ess:true},
+{fr:"C'est de la part de qui ?", ipa:"/sɛ də la paʁ də ki/", it:"Da parte di chi?", ex:"— Je vous appelle de la part de Marc. — C'est de la part de qui ?", exIt:"— La chiamo da parte di Marc. — Da parte di chi?", ctx:"Risposta tipica.", cat:"Téléphone"},
+{fr:"Ne quittez pas", ipa:"/nə ki.te pa/", it:"Non riattacchi", ex:"Ne quittez pas, je vous passe le responsable.", exIt:"Non riattacchi, le passo il responsabile.", ctx:"In attesa.", cat:"Téléphone"},
+{fr:"Un instant s'il vous plaît", ipa:"/œ̃ nɛ̃s.tɑ̃ sil vu plɛ/", it:"Un attimo per favore", ex:"Un instant s'il vous plaît, je cherche votre dossier.", exIt:"Un attimo per favore, cerco il suo fascicolo.", ctx:"Attesa.", cat:"Téléphone"},
+{fr:"La ligne est mauvaise", ipa:"/la liɲ ɛ mo.vɛz/", it:"La linea è cattiva", ex:"Je suis désolé, la ligne est mauvaise.", exIt:"Mi dispiace, la linea è cattiva.", ctx:"Problema tecnico.", cat:"Téléphone"},
+{fr:"Je vous entends mal", ipa:"/ʒə vu zɑ̃.tɑ̃ mal/", it:"La sento male", ex:"Je vous entends mal, vous pouvez répéter ?", exIt:"La sento male, può ripetere?", ctx:"Problema tecnico.", cat:"Téléphone", ess:true},
+{fr:"On s'est mal compris", ipa:"/ɔ̃ sɛ mal kɔ̃.pʁi/", it:"Ci siamo capiti male", ex:"Je crois qu'on s'est mal compris.", exIt:"Credo che ci siamo capiti male.", ctx:"Chiarimento.", cat:"Téléphone"},
+{fr:"Je vais vous envoyer un email", ipa:"/ʒə vɛ vu zɑ̃.vwa.je œ̃ ni.mɛl/", it:"Le mando un'email", ex:"Je vais vous envoyer un email avec la vidéo.", exIt:"Le mando un'email con il video.", ctx:"Azione.", cat:"Téléphone", ess:true},
+{fr:"Vous pouvez m'envoyer un email ?", ipa:"/vu pu.ve mɑ̃.vwa.je œ̃ ni.mɛl/", it:"Può mandarmi un'email?", ex:"Vous pouvez m'envoyer un email avec le lien ?", exIt:"Può mandarmi un'email con il link?", ctx:"Richiesta.", cat:"Téléphone", ess:true},
+{fr:"Je vous envoie ça tout de suite", ipa:"/ʒə vu zɑ̃.vwa sa tu də sɥit/", it:"Glielo mando subito", ex:"Je vous envoie ça tout de suite.", exIt:"Glielo mando subito.", ctx:"Azione.", cat:"Téléphone", ess:true},
+{fr:"Je vous rappelle demain", ipa:"/ʒə vu ʁa.pɛl də.mɛ̃/", it:"La richiamo domani", ex:"Je vous rappelle demain matin.", exIt:"La richiamo domani mattina.", ctx:"Impegno.", cat:"Téléphone", ess:true},
+{fr:"Merci de votre patience", ipa:"/mɛʁ.si də vɔtʁ pa.sjɑ̃s/", it:"Grazie per la sua pazienza", ex:"Merci de votre patience.", exIt:"Grazie per la sua pazienza.", ctx:"Cortesia.", cat:"Téléphone"},
+{fr:"Désolé de vous avoir dérangé", ipa:"/de.zɔ.le də vu za.vwaʁ de.ʁɑ̃.ʒe/", it:"Scusi per averla disturbata", ex:"Désolé de vous avoir dérangé, bonne journée.", exIt:"Scusi per averla disturbata, buona giornata.", ctx:"Chiusura.", cat:"Téléphone"},
+{fr:"Bonne continuation", ipa:"/bɔn kɔ̃.ti.nɥa.sjɔ̃/", it:"Buona continuazione", ex:"Bonne continuation, [Prénom] !", exIt:"Buona continuazione, [Nome]!", ctx:"Chiusura.", cat:"Téléphone"},
+{fr:"Bonne fin de journée", ipa:"/bɔn fɛ̃ də ʒuʁ.ne/", it:"Buon resto della giornata", ex:"Merci et bonne fin de journée.", exIt:"Grazie e buon resto della giornata.", ctx:"Chiusura.", cat:"Téléphone", ess:true},
+{fr:"Au revoir", ipa:"/o ʁə.vwaʁ/", it:"Arrivederci", ex:"Au revoir, à jeudi.", exIt:"Arrivederci, a giovedì.", ctx:"Chiusura.", cat:"Téléphone", ess:true},
+{fr:"À bientôt", ipa:"/a bjɛ̃.to/", it:"A presto", ex:"À bientôt, [Prénom].", exIt:"A presto, [Nome].", ctx:"Chiusura.", cat:"Téléphone"},
+{fr:"Bonne journée", ipa:"/bɔn ʒuʁ.ne/", it:"Buona giornata", ex:"Merci, bonne journée à vous.", exIt:"Grazie, buona giornata a lei.", ctx:"Chiusura.", cat:"Téléphone", ess:true}
+];
+
+/* ============================================================
+   LOGICA APP
+   ============================================================ */
+const $ = (id) => document.getElementById(id);
+const state = {
+  cards: [],
+  filtered: [],
+  current: 0,
+  flipped: false,
+  known: new Set(JSON.parse(localStorage.getItem('fr_known') || '[]')),
+  category: 'Tutte',
+  onlyUnknown: false
+};
+
+/* --- Salva su localStorage --- */
+function saveKnown(){
+  localStorage.setItem('fr_known', JSON.stringify([...state.known]));
+  $('knownCount').textContent = state.known.size;
+}
+
+/* --- Costruisci filtri --- */
+function buildFilters(){
+  const cats = ['Tutte', ...new Set(CARDS.map(c => c.cat))];
+  const filtersEl = $('filters');
+  filtersEl.innerHTML = '';
+  cats.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'chip' + (cat === state.category ? ' active' : '');
+    btn.dataset.cat = cat;
+    const count = cat === 'Tutte' ? CARDS.length : CARDS.filter(c => c.cat === cat).length;
+    btn.innerHTML = `${cat} <span class="count">${count}</span>`;
+    btn.addEventListener('click', () => {
+      state.category = cat;
+      state.current = 0;
+      state.flipped = false;
+      applyFilter();
+      document.querySelectorAll('.chip').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
+    });
+    filtersEl.appendChild(btn);
+  });
+}
+
+/* --- Applica filtro --- */
+function applyFilter(){
+  let list = state.category === 'Tutte' ? [...CARDS] : CARDS.filter(c => c.cat === state.category);
+  if (state.onlyUnknown) list = list.filter(c => !state.known.has(c.fr));
+  state.filtered = list;
+  if (state.current >= list.length) state.current = 0;
+  render();
+}
+
+/* --- Renderizza la carta corrente --- */
+function render(){
+  const fc = $('flashcard');
+  fc.classList.toggle('flipped', state.flipped);
+  if (!state.filtered.length){
+    $('frWord').textContent = '—';
+    $('ipa').textContent = '—';
+    $('itWord').textContent = 'Nessuna carta in questa selezione';
+    $('exampleFr').textContent = '';
+    $('exampleIt').textContent = '';
+    $('context').textContent = '';
+    $('catTag').textContent = '—';
+    $('catTagBack').textContent = '—';
+    $('counter').textContent = '0 / 0';
+    $('star').style.display = 'none';
+    return;
+  }
+  const c = state.filtered[state.current];
+  $('frWord').textContent = c.fr;
+  $('ipa').textContent = c.ipa;
+  $('itWord').textContent = c.it;
+  $('exampleFr').innerHTML = c.ex.replace(new RegExp(c.fr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), m => `<b>${m}</b>`);
+  $('exampleIt').textContent = c.exIt;
+  $('context').innerHTML = `<b>Contesto:</b> ${c.ctx}`;
+  $('catTag').textContent = c.cat;
+  $('catTagBack').textContent = c.cat;
+  $('star').style.display = c.ess ? 'block' : 'none';
+  $('counter').textContent = `${state.current + 1} / ${state.filtered.length}`;
+  // aggiorna classe "conosciuta"
+  const isKnown = state.known.has(c.fr);
+  $('knownBtn').classList.toggle('known-active', isKnown);
+  $('knownBtn').innerHTML = isKnown ? '✓ Conosciuta' : '✓ Conosco';
+  updateProgress();
+}
+
+/* --- Progress bar --- */
+function updateProgress(){
+  const total = state.filtered.length;
+  const pct = total ? ((state.current + 1) / total) * 100 : 0;
+  $('progressBar').style.width = pct + '%';
+}
+
+/* --- Flip --- */
+function flip(){
+  state.flipped = !state.flipped;
+  $('flashcard').classList.toggle('flipped', state.flipped);
+}
+
+/* --- Naviga --- */
+function next(){
+  if (!state.filtered.length) return;
+  state.current = (state.current + 1) % state.filtered.length;
+  state.flipped = false;
+  render();
+}
+function prev(){
+  if (!state.filtered.length) return;
+  state.current = (state.current - 1 + state.filtered.length) % state.filtered.length;
+  state.flipped = false;
+  render();
+}
+
+/* --- Shuffle --- */
+function shuffle(){
+  for (let i = state.filtered.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [state.filtered[i], state.filtered[j]] = [state.filtered[j], state.filtered[i]];
+  }
+  state.current = 0;
+  state.flipped = false;
+  render();
+}
+
+/* --- Toggle known --- */
+function toggleKnown(){
+  if (!state.filtered.length) return;
+  const c = state.filtered[state.current];
+  if (state.known.has(c.fr)){
+    state.known.delete(c.fr);
+  } else {
+    state.known.add(c.fr);
+  }
+  saveKnown();
+  render();
+}
+
+/* --- Toggle "solo sconosciute" --- */
+function toggleReview(){
+  state.onlyUnknown = !state.onlyUnknown;
+  $('reviewBtn').classList.toggle('primary', state.onlyUnknown);
+  state.current = 0;
+  state.flipped = false;
+  applyFilter();
+}
+
+/* --- Speech --- */
+function speak(text, event){
+  if (event) event.stopPropagation();
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'fr-FR';
+  u.rate = 0.85;
+  const voices = window.speechSynthesis.getVoices();
+  const fr = voices.find(v => v.lang.startsWith('fr'));
+  if (fr) u.voice = fr;
+  window.speechSynthesis.speak(u);
+}
+
+/* --- Eventi --- */
+$('flashcard').addEventListener('click', flip);
+$('flipBtn').addEventListener('click', flip);
+$('nextBtn').addEventListener('click', next);
+$('prevBtn').addEventListener('click', prev);
+$('shuffleBtn').addEventListener('click', shuffle);
+$('knownBtn').addEventListener('click', toggleKnown);
+$('reviewBtn').addEventListener('click', toggleReview);
+$('speakerBtn').addEventListener('click', (e) => {
+  if (!state.filtered.length) return;
+  speak(state.filtered[state.current].fr, e);
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.code === 'Space' || e.code === 'Enter'){ e.preventDefault(); flip(); }
+  else if (e.code === 'ArrowRight'){ e.preventDefault(); next(); }
+  else if (e.code === 'ArrowLeft'){ e.preventDefault(); prev(); }
+});
+
+/* --- Init --- */
+window.addEventListener('load', () => {
+  // pre-carica le voci per la speech
+  if ('speechSynthesis' in window) window.speechSynthesis.getVoices();
+  buildFilters();
+  applyFilter();
+  saveKnown();
+});
+</script>
+</body>
+</html>
